@@ -1,0 +1,1958 @@
+{
+  "updatedAt": "2026-07-23T12:17:36.976Z",
+  "createdAt": "2026-07-23T11:54:59.802Z",
+  "id": "PGxUrAok89DfXs9u",
+  "name": "A2 Disparo v3.2",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## A2 Disparo v3.2 — Automático (1/hora, máx 10/dia)\n\nEnvio automático via Evolution (atitude-principal), 1 lead por execução.\nCron 0 8-17 * * 1-5 = 10 slots/dia (seg–sex). Delay aleatório 1–40min por execução.\n\n**Proteções anti-loop/anti-bloqueio:**\n1. Kill switch: config.disparo.valor.ativo = false desliga tudo\n2. Modo teste: config.disparo.valor.modo_teste = true redireciona TODO envio para valor.numero_teste (interação registrada como msg1_teste, fora da cota real)\n3. Claim atômico do lead (status fila → abordando) ANTES de gerar/enviar — execução concorrente aborta\n4. Cota diária contada em INTERACOES (msg1 saída hoje), não em empresas.criado_em (bug do v3.1 corrigido)\n5. Falha de envio: SEM retry automático — marca falha_envio + alerta no seu WhatsApp pessoal\n6. Eco do envio (fromMe=true) já é descartado pelo G1 do W1 — sem loop com o A2 Resposta\n\n**Antes de ativar:**\n1. Rodar o SQL de config (ver conversa): chave disparo com {ativo, modo_teste, numero_teste, limite_diario}\n2. Conferir credenciais: Supabase API, Claude API, Evolution apikey\n3. Testar com modo_teste=true + execução manual (botão Execute) antes de ligar o Schedule",
+        "height": 480,
+        "width": 460
+      },
+      "id": "f8752171-1f52-4d43-84c9-662c0a9e1ec7",
+      "name": "Instruções",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8-17 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "e0665dea-602c-4a5f-a7b4-025b7c411254",
+      "name": "A cada hora (8h-17h seg-sex)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/config?chave=eq.disparo&select=valor",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "47d901f3-0935-4648-8452-683f2266064d",
+      "name": "Ler Config Disparo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        560
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Kill switch + janela + parâmetros. Tudo num nó só para abortar cedo e barato.\nlet cfgRaw = null;\ntry { cfgRaw = $input.first().json; } catch (e) { cfgRaw = null; }\nconst cfg = (Array.isArray(cfgRaw) ? cfgRaw[0] : cfgRaw)?.valor || {};\n\nconst ativo = cfg.ativo !== false;            // default ligado só se a chave existir\nconst modoTeste = cfg.modo_teste === true;\nconst numeroTeste = String(cfg.numero_teste || '');\nconst limiteDiario = Number(cfg.limite_diario ?? 10);\n\nif (modoTeste && !numeroTeste) throw new Error('modo_teste=true mas numero_teste não configurado — abortando por segurança');\n\n// Janela 8h–18h seg–sex (São Paulo = UTC-3, sem horário de verão)\nconst sp = new Date(Date.now() - 3 * 3600 * 1000);\nconst dia = sp.getUTCDay();\nconst hora = sp.getUTCHours();\nconst dentroJanela = dia >= 1 && dia <= 5 && hora >= 8 && hora < 18;\n\nconst prosseguir = ativo && dentroJanela;\n\nreturn [{ json: {\n  prosseguir,\n  motivo_parada: !ativo ? 'kill_switch' : (!dentroJanela ? 'fora_da_janela' : null),\n  modo_teste: modoTeste,\n  numero_teste: numeroTeste,\n  limite_diario: limiteDiario,\n  hoje_sp: sp.toISOString().slice(0, 10)\n} }];"
+      },
+      "id": "a0a6f2f3-d566-4c53-b5ef-0cb8233dd004",
+      "name": "Checar Kill Switch + Janela",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.prosseguir }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "aa0000c1-0000-0000-0000-0000000000c1"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8ae4206a-f8cc-43ea-9dfd-ba5014963c1d",
+      "name": "Pode rodar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        624,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/interacoes?select=id&etapa=eq.msg1&direcao=eq.saida&criado_em=gte.{{ $json.hoje_sp }}T00:00:00-03:00",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "5b00d2bf-cb44-4037-a283-2bd25df4bde0",
+      "name": "Contar Enviados Hoje (interacoes)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        832,
+        496
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cota: conta interações msg1 de HOJE (fonte correta — corrige o bug do v3.1\n// que contava por empresas.criado_em). msg1_teste não entra (etapa diferente).\nconst ctx = $('Checar Kill Switch + Janela').first().json;\nlet enviados = 0;\ntry {\n  enviados = $input.all().map(i => i.json).flat().filter(j => j && j.id !== undefined).length;\n} catch (e) { enviados = 0; }\nconst temCota = enviados < ctx.limite_diario;\nreturn [{ json: { ...ctx, enviados_hoje: enviados, tem_cota: temCota } }];"
+      },
+      "id": "5f6dca22-4a2e-43d0-b422-9a91bf0bfb32",
+      "name": "Calcular Cota",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.tem_cota }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "aa0000c2-0000-0000-0000-0000000000c2"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c2a86ce1-68e3-4163-91ea-8285c74da524",
+      "name": "Tem cota?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/vw_fila_disparo?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "24a51489-c9dc-42ee-b033-bbddb849dcfa",
+      "name": "Buscar 1 Lead da Fila",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1456,
+        432
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Valida se veio lead (fila pode estar vazia)\nconst itens = $input.all().map(i => i.json).flat().filter(l => l && l.id);\nif (itens.length === 0) return [{ json: { __vazio: true } }];\nconst ctx = $('Calcular Cota').first().json;\nreturn [{ json: { lead: itens[0], ctx } }];"
+      },
+      "id": "8f4a712e-f7a4-405c-8ba1-2b683764d8bc",
+      "name": "Preparar Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.__vazio !== true }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "542f6eca-f40f-4417-aa5a-bddd593ff4e4",
+      "name": "Tem lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.lead.id }}&status=eq.fila",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'abordando' }) }}",
+        "options": {}
+      },
+      "id": "6c4be01e-3a8a-414b-8112-633a0b32720c",
+      "name": "Claim do Lead (fila->abordando)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        368
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// O claim é a proteção anti-duplicata: o PATCH só afeta a linha se ela AINDA\n// estiver com status='fila'. Se outra execução chegou primeiro, a resposta vem\n// vazia — e esta execução aborta sem enviar nada.\nconst resp = $input.all().map(i => i.json).flat().filter(r => r && r.id);\nconst base = $('Preparar Lead').first().json;\nif (resp.length === 0) return [{ json: { __claim_falhou: true } }];\nreturn [{ json: { lead: base.lead, ctx: base.ctx } }];"
+      },
+      "id": "51bc45c3-f527-4a45-bfc0-171d5dc88a91",
+      "name": "Claim OK?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.__claim_falhou !== true }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1498b68-a6ea-40ca-b630-22488fe4dc4f",
+      "name": "Prosseguir com envio?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/roteiros?select=perfil_oferta,guia,exemplo,servicos&etapa=eq.msg1&ativo=eq.true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "2b3f461e-15ae-4004-bdb8-24bfb6bf9b72",
+      "name": "Buscar Roteiros",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2704,
+        304
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Claim OK?').first().json;\nconst lead = base.lead;\nlet roteiros = [];\ntry { roteiros = $input.all().map(i => i.json).flat(); } catch (e) { roteiros = []; }\nconst roteiro = roteiros.find(r => r.perfil_oferta === lead.perfil_oferta) || null;\nreturn [{ json: { lead, ctx: base.ctx, roteiro } }];"
+      },
+      "id": "7d51a717-425e-451f-8c62-080fa3111dfa",
+      "name": "Juntar Lead + Roteiro",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2912,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 700, system: 'Voce escreve a primeira mensagem de WhatsApp da Atitude Solucoes para prospeccao B2B local. REGRAS RIGIDAS: (1) 3 a 5 linhas curtas, tom humano e caloroso, nunca robotico. (2) A primeira frase cita o nome da pessoa e um dado real e especifico do negocio (nunca generico). (3) PROIBIDO incluir qualquer link ou URL. (4) PROIBIDO citar preco, CNPJ, capital social ou qualquer dado cadastral. (5) PROIBIDO usar as palavras: gratis, promocao, imperdivel, desconto, urgente, oportunidade unica. (6) PROIBIDO emoji em sequencia (no maximo 1, opcional). (7) Termine com um pedido de permissao curto (uma pergunta), nunca com uma afirmacao. (8) Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem explicacao. (9) A mensagem deve ser um UNICO bloco de texto corrido, sem linha em branco no meio, sem quebra de paragrafo -- nunca use duas quebras de linha seguidas.', messages: [{ role: 'user', content: 'GUIA DE TOM PARA ESTE PERFIL:\\n' + ($json.roteiro?.guia || 'Seja natural e especifico.') + '\\n\\nEXEMPLO DE REFERENCIA (nao copie, apenas o estilo):\\n' + ($json.roteiro?.exemplo || '') + '\\n\\nDADOS REAIS DESTE LEAD (use apenas o que fizer sentido, nao force todos):\\n' + JSON.stringify({ nome_socio: $json.lead.nome_socio, nome_negocio: $json.lead.nome_exibicao, municipio: $json.lead.municipio, bairro: $json.lead.bairro, segmento: $json.lead.segmento || $json.lead.cnae_descricao, dor: $json.lead.dor_resumida, gbp_rating: $json.lead.gbp_rating, gbp_avaliacoes: $json.lead.gbp_avaliacoes, review_em_destaque: $json.lead.gbp_reviews?.[0]?.texto || null }) + '\\n\\nEscreva a mensagem agora.' }] }) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "e1cc6c40-bcdd-476a-b848-ae2f2911d461",
+      "name": "Claude Gerar Mensagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3120,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bpESiJdh8gzn8U1F",
+          "name": "Claude API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Valida a mensagem (mesmas regras do v3.1) e resolve o DESTINO:\n// modo_teste=true => numero_teste, senão o WhatsApp real do lead.\nconst base = $('Juntar Lead + Roteiro').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\n\nlet texto = null;\ntry {\n  texto = ($input.first().json.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();\n} catch (e) { texto = null; }\n\nconst PROIBIDAS = /\\b(gr[aá]tis|promo[cç][aã]o|imperd[ií]vel|desconto|urgente|oportunidade [uú]nica)\\b/i;\nconst TEM_LINK = /https?:\\/\\/|www\\./i;\nconst valido = !!texto && !TEM_LINK.test(texto) && !PROIBIDAS.test(texto)\n  && texto.length >= 60 && texto.length <= 700 && /\\?/.test(texto);\n\nconst FALLBACK = ('Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Vi a ' + lead.nome_exibicao + ' aqui em ' + lead.municipio + ' e reparei em algumas coisas na presenca digital de voces que podem estar deixando clientes pelo caminho. Posso te mostrar rapidinho o que encontrei?').replace(/\\s+/g, ' ').trim();\n\nconst mensagem = valido ? texto : FALLBACK;\nconst destino = ctx.modo_teste ? ctx.numero_teste : String(lead.whatsapp || '');\nif (!destino) throw new Error('Lead sem WhatsApp — abortando (lead ' + lead.slug + ' fica em status abordando para revisão)');\n\n// Delay humano aleatório: 60s a 40min antes do envio\nconst delaySegundos = 60 + Math.floor(Math.random() * 2340);\n//const delaySegundos = 30; // T-D1: delay curto só para teste — REVERTER depois\n\nreturn [{ json: {\n  lead, ctx, mensagem,\n  copy_fallback: !valido,\n  destino,\n  etapa: ctx.modo_teste ? 'msg1_teste' : 'msg1',\n  delay_segundos: delaySegundos\n} }];"
+      },
+      "id": "08267024-35b9-46db-9d86-19e47f6cca40",
+      "name": "Validar + Resolver Destino",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delay_segundos }}"
+      },
+      "id": "9df67df2-04c1-4209-b021-6503da5fce33",
+      "name": "Delay Humano (1-40min)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3536,
+        304
+      ],
+      "webhookId": "aa0000dd-0000-0000-0000-0000000000dd"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $json.destino, text: $json.mensagem, delay: 4000 }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "e7c73243-9691-464b-9bc8-4d585da4675f",
+      "name": "Evolution Enviar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3744,
+        304
+      ],
+      "retryOnFail": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lGhduTvTTMaZoDWT",
+          "name": "Evolution apikey"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Interpreta o resultado do envio. NUNCA faz retry — falha vai para o branch de alerta.\nconst prep = $('Validar + Resolver Destino').first().json;\nconst resp = $input.first().json || {};\nconst evolutionId = resp?.key?.id || null;\nconst enviou = !!evolutionId;\nreturn [{ json: { ...prep, enviou, evolution_id: evolutionId, resposta_envio: enviou ? null : JSON.stringify(resp).slice(0, 400) } }];"
+      },
+      "id": "9d46908d-7aeb-4c3c-90bb-5203627e1207",
+      "name": "Avaliar Envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3952,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.enviou }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "aa0000c3-0000-0000-0000-0000000000c3"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "290aac04-fbbe-4c08-9256-614d497f9b42",
+      "name": "Enviou?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/interacoes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ empresa_id: $json.lead.id, canal: 'whatsapp', direcao: 'saida', etapa: $json.etapa, roteiro_codigo: ($json.lead.perfil_oferta + '_msg1'), mensagem: $json.mensagem, copy_fallback: $json.copy_fallback, evolution_id: $json.evolution_id }) }}",
+        "options": {}
+      },
+      "id": "39f81840-5362-4e94-bac8-6fd09339f626",
+      "name": "Registrar Interação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4368,
+        240
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $('Avaliar Envio').first().json.lead.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify( $('Avaliar Envio').first().json.ctx.modo_teste ? { status: 'fila' } : { status: 'abordado', estagio_conversa: 'aguardando_resposta', enviado_manual_em: new Date().toISOString() } ) }}",
+        "options": {}
+      },
+      "id": "84a0dcb3-57b8-48c5-90c7-a1715540ea6c",
+      "name": "Marcar Lead Abordado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4576,
+        240
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.lead.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'falha_envio', obs: ('Falha no envio automatico em ' + new Date().toISOString() + ' | ' + ($json.resposta_envio || 'sem detalhe')).slice(0, 500) }) }}",
+        "options": {}
+      },
+      "id": "ba794ed4-6830-4e5c-8264-7aa9b2e47078",
+      "name": "Marcar Falha de Envio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4368,
+        432
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: '5562981394546', text: ('⚠️ A2 Disparo v3.2: falha no envio para ' + $('Avaliar Envio').first().json.lead.nome_exibicao + ' (' + $('Avaliar Envio').first().json.lead.slug + '). Lead marcado como falha_envio — revisar manualmente. Sem retry automatico.') }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "2645ce14-ed93-476d-814a-e454ca6d810e",
+      "name": "Alerta Falha (WhatsApp pessoal)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4576,
+        432
+      ],
+      "retryOnFail": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lGhduTvTTMaZoDWT",
+          "name": "Evolution apikey"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "A cada hora (8h-17h seg-sex)": {
+      "main": [
+        [
+          {
+            "node": "Ler Config Disparo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler Config Disparo": {
+      "main": [
+        [
+          {
+            "node": "Checar Kill Switch + Janela",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Checar Kill Switch + Janela": {
+      "main": [
+        [
+          {
+            "node": "Pode rodar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pode rodar?": {
+      "main": [
+        [
+          {
+            "node": "Contar Enviados Hoje (interacoes)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar Enviados Hoje (interacoes)": {
+      "main": [
+        [
+          {
+            "node": "Calcular Cota",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Cota": {
+      "main": [
+        [
+          {
+            "node": "Tem cota?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem cota?": {
+      "main": [
+        [
+          {
+            "node": "Buscar 1 Lead da Fila",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar 1 Lead da Fila": {
+      "main": [
+        [
+          {
+            "node": "Preparar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Lead": {
+      "main": [
+        [
+          {
+            "node": "Tem lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem lead?": {
+      "main": [
+        [
+          {
+            "node": "Claim do Lead (fila->abordando)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim do Lead (fila->abordando)": {
+      "main": [
+        [
+          {
+            "node": "Claim OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim OK?": {
+      "main": [
+        [
+          {
+            "node": "Prosseguir com envio?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prosseguir com envio?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Roteiros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Roteiros": {
+      "main": [
+        [
+          {
+            "node": "Juntar Lead + Roteiro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Juntar Lead + Roteiro": {
+      "main": [
+        [
+          {
+            "node": "Claude Gerar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Gerar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Validar + Resolver Destino",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar + Resolver Destino": {
+      "main": [
+        [
+          {
+            "node": "Delay Humano (1-40min)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay Humano (1-40min)": {
+      "main": [
+        [
+          {
+            "node": "Evolution Enviar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution Enviar": {
+      "main": [
+        [
+          {
+            "node": "Avaliar Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avaliar Envio": {
+      "main": [
+        [
+          {
+            "node": "Enviou?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviou?": {
+      "main": [
+        [
+          {
+            "node": "Registrar Interação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar Falha de Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Interação": {
+      "main": [
+        [
+          {
+            "node": "Marcar Lead Abordado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar Falha de Envio": {
+      "main": [
+        [
+          {
+            "node": "Alerta Falha (WhatsApp pessoal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:A cada hora (8h-17h seg-sex)": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "1a625d6b-675b-4f9d-9c80-48ee41c02ef6",
+  "activeVersionId": "1a625d6b-675b-4f9d-9c80-48ee41c02ef6",
+  "versionCounter": 7,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-07-23T11:54:59.802Z",
+      "createdAt": "2026-07-23T11:54:59.802Z",
+      "role": "workflow:owner",
+      "workflowId": "PGxUrAok89DfXs9u",
+      "projectId": "Qw2S8PfyrGHokeXF",
+      "project": {
+        "updatedAt": "2026-07-08T02:03:48.782Z",
+        "createdAt": "2026-07-08T01:51:47.911Z",
+        "id": "Qw2S8PfyrGHokeXF",
+        "name": "Atitude Soluções <atitudesolucoesinteligentes@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-07-23T12:20:45.844Z",
+    "createdAt": "2026-07-23T12:17:36.977Z",
+    "versionId": "1a625d6b-675b-4f9d-9c80-48ee41c02ef6",
+    "workflowId": "PGxUrAok89DfXs9u",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## A2 Disparo v3.2 — Automático (1/hora, máx 10/dia)\n\nEnvio automático via Evolution (atitude-principal), 1 lead por execução.\nCron 0 8-17 * * 1-5 = 10 slots/dia (seg–sex). Delay aleatório 1–40min por execução.\n\n**Proteções anti-loop/anti-bloqueio:**\n1. Kill switch: config.disparo.valor.ativo = false desliga tudo\n2. Modo teste: config.disparo.valor.modo_teste = true redireciona TODO envio para valor.numero_teste (interação registrada como msg1_teste, fora da cota real)\n3. Claim atômico do lead (status fila → abordando) ANTES de gerar/enviar — execução concorrente aborta\n4. Cota diária contada em INTERACOES (msg1 saída hoje), não em empresas.criado_em (bug do v3.1 corrigido)\n5. Falha de envio: SEM retry automático — marca falha_envio + alerta no seu WhatsApp pessoal\n6. Eco do envio (fromMe=true) já é descartado pelo G1 do W1 — sem loop com o A2 Resposta\n\n**Antes de ativar:**\n1. Rodar o SQL de config (ver conversa): chave disparo com {ativo, modo_teste, numero_teste, limite_diario}\n2. Conferir credenciais: Supabase API, Claude API, Evolution apikey\n3. Testar com modo_teste=true + execução manual (botão Execute) antes de ligar o Schedule",
+          "height": 480,
+          "width": 460
+        },
+        "id": "f8752171-1f52-4d43-84c9-662c0a9e1ec7",
+        "name": "Instruções",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 8-17 * * 1-5"
+              }
+            ]
+          }
+        },
+        "id": "e0665dea-602c-4a5f-a7b4-025b7c411254",
+        "name": "A cada hora (8h-17h seg-sex)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          560
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/config?chave=eq.disparo&select=valor",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "options": {}
+        },
+        "id": "47d901f3-0935-4648-8452-683f2266064d",
+        "name": "Ler Config Disparo",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          208,
+          560
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Kill switch + janela + parâmetros. Tudo num nó só para abortar cedo e barato.\nlet cfgRaw = null;\ntry { cfgRaw = $input.first().json; } catch (e) { cfgRaw = null; }\nconst cfg = (Array.isArray(cfgRaw) ? cfgRaw[0] : cfgRaw)?.valor || {};\n\nconst ativo = cfg.ativo !== false;            // default ligado só se a chave existir\nconst modoTeste = cfg.modo_teste === true;\nconst numeroTeste = String(cfg.numero_teste || '');\nconst limiteDiario = Number(cfg.limite_diario ?? 10);\n\nif (modoTeste && !numeroTeste) throw new Error('modo_teste=true mas numero_teste não configurado — abortando por segurança');\n\n// Janela 8h–18h seg–sex (São Paulo = UTC-3, sem horário de verão)\nconst sp = new Date(Date.now() - 3 * 3600 * 1000);\nconst dia = sp.getUTCDay();\nconst hora = sp.getUTCHours();\nconst dentroJanela = dia >= 1 && dia <= 5 && hora >= 8 && hora < 18;\n\nconst prosseguir = ativo && dentroJanela;\n\nreturn [{ json: {\n  prosseguir,\n  motivo_parada: !ativo ? 'kill_switch' : (!dentroJanela ? 'fora_da_janela' : null),\n  modo_teste: modoTeste,\n  numero_teste: numeroTeste,\n  limite_diario: limiteDiario,\n  hoje_sp: sp.toISOString().slice(0, 10)\n} }];"
+        },
+        "id": "a0a6f2f3-d566-4c53-b5ef-0cb8233dd004",
+        "name": "Checar Kill Switch + Janela",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          416,
+          560
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.prosseguir }}",
+                "rightValue": "true",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                },
+                "id": "aa0000c1-0000-0000-0000-0000000000c1"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "8ae4206a-f8cc-43ea-9dfd-ba5014963c1d",
+        "name": "Pode rodar?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          624,
+          560
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/interacoes?select=id&etapa=eq.msg1&direcao=eq.saida&criado_em=gte.{{ $json.hoje_sp }}T00:00:00-03:00",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "options": {}
+        },
+        "id": "5b00d2bf-cb44-4037-a283-2bd25df4bde0",
+        "name": "Contar Enviados Hoje (interacoes)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          832,
+          496
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Cota: conta interações msg1 de HOJE (fonte correta — corrige o bug do v3.1\n// que contava por empresas.criado_em). msg1_teste não entra (etapa diferente).\nconst ctx = $('Checar Kill Switch + Janela').first().json;\nlet enviados = 0;\ntry {\n  enviados = $input.all().map(i => i.json).flat().filter(j => j && j.id !== undefined).length;\n} catch (e) { enviados = 0; }\nconst temCota = enviados < ctx.limite_diario;\nreturn [{ json: { ...ctx, enviados_hoje: enviados, tem_cota: temCota } }];"
+        },
+        "id": "5f6dca22-4a2e-43d0-b422-9a91bf0bfb32",
+        "name": "Calcular Cota",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1040,
+          496
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.tem_cota }}",
+                "rightValue": "true",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                },
+                "id": "aa0000c2-0000-0000-0000-0000000000c2"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "c2a86ce1-68e3-4163-91ea-8285c74da524",
+        "name": "Tem cota?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1248,
+          496
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/vw_fila_disparo?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score&limit=1",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "options": {}
+        },
+        "id": "24a51489-c9dc-42ee-b033-bbddb849dcfa",
+        "name": "Buscar 1 Lead da Fila",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1456,
+          432
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Valida se veio lead (fila pode estar vazia)\nconst itens = $input.all().map(i => i.json).flat().filter(l => l && l.id);\nif (itens.length === 0) return [{ json: { __vazio: true } }];\nconst ctx = $('Calcular Cota').first().json;\nreturn [{ json: { lead: itens[0], ctx } }];"
+        },
+        "id": "8f4a712e-f7a4-405c-8ba1-2b683764d8bc",
+        "name": "Preparar Lead",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1664,
+          432
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.__vazio !== true }}",
+                "rightValue": "true",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "542f6eca-f40f-4417-aa5a-bddd593ff4e4",
+        "name": "Tem lead?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1872,
+          432
+        ]
+      },
+      {
+        "parameters": {
+          "method": "PATCH",
+          "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.lead.id }}&status=eq.fila",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Prefer",
+                "value": "return=representation"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ status: 'abordando' }) }}",
+          "options": {}
+        },
+        "id": "6c4be01e-3a8a-414b-8112-633a0b32720c",
+        "name": "Claim do Lead (fila->abordando)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2080,
+          368
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// O claim é a proteção anti-duplicata: o PATCH só afeta a linha se ela AINDA\n// estiver com status='fila'. Se outra execução chegou primeiro, a resposta vem\n// vazia — e esta execução aborta sem enviar nada.\nconst resp = $input.all().map(i => i.json).flat().filter(r => r && r.id);\nconst base = $('Preparar Lead').first().json;\nif (resp.length === 0) return [{ json: { __claim_falhou: true } }];\nreturn [{ json: { lead: base.lead, ctx: base.ctx } }];"
+        },
+        "id": "51bc45c3-f527-4a45-bfc0-171d5dc88a91",
+        "name": "Claim OK?",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2288,
+          368
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.__claim_falhou !== true }}",
+                "rightValue": "true",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a1498b68-a6ea-40ca-b630-22488fe4dc4f",
+        "name": "Prosseguir com envio?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2496,
+          368
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/roteiros?select=perfil_oferta,guia,exemplo,servicos&etapa=eq.msg1&ativo=eq.true",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "options": {}
+        },
+        "id": "2b3f461e-15ae-4004-bdb8-24bfb6bf9b72",
+        "name": "Buscar Roteiros",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2704,
+          304
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const base = $('Claim OK?').first().json;\nconst lead = base.lead;\nlet roteiros = [];\ntry { roteiros = $input.all().map(i => i.json).flat(); } catch (e) { roteiros = []; }\nconst roteiro = roteiros.find(r => r.perfil_oferta === lead.perfil_oferta) || null;\nreturn [{ json: { lead, ctx: base.ctx, roteiro } }];"
+        },
+        "id": "7d51a717-425e-451f-8c62-080fa3111dfa",
+        "name": "Juntar Lead + Roteiro",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2912,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.anthropic.com/v1/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "anthropic-version",
+                "value": "2023-06-01"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 700, system: 'Voce escreve a primeira mensagem de WhatsApp da Atitude Solucoes para prospeccao B2B local. REGRAS RIGIDAS: (1) 3 a 5 linhas curtas, tom humano e caloroso, nunca robotico. (2) A primeira frase cita o nome da pessoa e um dado real e especifico do negocio (nunca generico). (3) PROIBIDO incluir qualquer link ou URL. (4) PROIBIDO citar preco, CNPJ, capital social ou qualquer dado cadastral. (5) PROIBIDO usar as palavras: gratis, promocao, imperdivel, desconto, urgente, oportunidade unica. (6) PROIBIDO emoji em sequencia (no maximo 1, opcional). (7) Termine com um pedido de permissao curto (uma pergunta), nunca com uma afirmacao. (8) Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem explicacao. (9) A mensagem deve ser um UNICO bloco de texto corrido, sem linha em branco no meio, sem quebra de paragrafo -- nunca use duas quebras de linha seguidas.', messages: [{ role: 'user', content: 'GUIA DE TOM PARA ESTE PERFIL:\\n' + ($json.roteiro?.guia || 'Seja natural e especifico.') + '\\n\\nEXEMPLO DE REFERENCIA (nao copie, apenas o estilo):\\n' + ($json.roteiro?.exemplo || '') + '\\n\\nDADOS REAIS DESTE LEAD (use apenas o que fizer sentido, nao force todos):\\n' + JSON.stringify({ nome_socio: $json.lead.nome_socio, nome_negocio: $json.lead.nome_exibicao, municipio: $json.lead.municipio, bairro: $json.lead.bairro, segmento: $json.lead.segmento || $json.lead.cnae_descricao, dor: $json.lead.dor_resumida, gbp_rating: $json.lead.gbp_rating, gbp_avaliacoes: $json.lead.gbp_avaliacoes, review_em_destaque: $json.lead.gbp_reviews?.[0]?.texto || null }) + '\\n\\nEscreva a mensagem agora.' }] }) }}",
+          "options": {
+            "timeout": 60000
+          }
+        },
+        "id": "e1cc6c40-bcdd-476a-b848-ae2f2911d461",
+        "name": "Claude Gerar Mensagem",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3120,
+          304
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "bpESiJdh8gzn8U1F",
+            "name": "Claude API"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Valida a mensagem (mesmas regras do v3.1) e resolve o DESTINO:\n// modo_teste=true => numero_teste, senão o WhatsApp real do lead.\nconst base = $('Juntar Lead + Roteiro').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\n\nlet texto = null;\ntry {\n  texto = ($input.first().json.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();\n} catch (e) { texto = null; }\n\nconst PROIBIDAS = /\\b(gr[aá]tis|promo[cç][aã]o|imperd[ií]vel|desconto|urgente|oportunidade [uú]nica)\\b/i;\nconst TEM_LINK = /https?:\\/\\/|www\\./i;\nconst valido = !!texto && !TEM_LINK.test(texto) && !PROIBIDAS.test(texto)\n  && texto.length >= 60 && texto.length <= 700 && /\\?/.test(texto);\n\nconst FALLBACK = ('Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Vi a ' + lead.nome_exibicao + ' aqui em ' + lead.municipio + ' e reparei em algumas coisas na presenca digital de voces que podem estar deixando clientes pelo caminho. Posso te mostrar rapidinho o que encontrei?').replace(/\\s+/g, ' ').trim();\n\nconst mensagem = valido ? texto : FALLBACK;\nconst destino = ctx.modo_teste ? ctx.numero_teste : String(lead.whatsapp || '');\nif (!destino) throw new Error('Lead sem WhatsApp — abortando (lead ' + lead.slug + ' fica em status abordando para revisão)');\n\n// Delay humano aleatório: 60s a 40min antes do envio\nconst delaySegundos = 60 + Math.floor(Math.random() * 2340);\n//const delaySegundos = 30; // T-D1: delay curto só para teste — REVERTER depois\n\nreturn [{ json: {\n  lead, ctx, mensagem,\n  copy_fallback: !valido,\n  destino,\n  etapa: ctx.modo_teste ? 'msg1_teste' : 'msg1',\n  delay_segundos: delaySegundos\n} }];"
+        },
+        "id": "08267024-35b9-46db-9d86-19e47f6cca40",
+        "name": "Validar + Resolver Destino",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3328,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "amount": "={{ $json.delay_segundos }}"
+        },
+        "id": "9df67df2-04c1-4209-b021-6503da5fce33",
+        "name": "Delay Humano (1-40min)",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          3536,
+          304
+        ],
+        "webhookId": "aa0000dd-0000-0000-0000-0000000000dd"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ number: $json.destino, text: $json.mensagem, delay: 4000 }) }}",
+          "options": {
+            "timeout": 45000
+          }
+        },
+        "id": "e7c73243-9691-464b-9bc8-4d585da4675f",
+        "name": "Evolution Enviar",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3744,
+          304
+        ],
+        "retryOnFail": false,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "lGhduTvTTMaZoDWT",
+            "name": "Evolution apikey"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Interpreta o resultado do envio. NUNCA faz retry — falha vai para o branch de alerta.\nconst prep = $('Validar + Resolver Destino').first().json;\nconst resp = $input.first().json || {};\nconst evolutionId = resp?.key?.id || null;\nconst enviou = !!evolutionId;\nreturn [{ json: { ...prep, enviou, evolution_id: evolutionId, resposta_envio: enviou ? null : JSON.stringify(resp).slice(0, 400) } }];"
+        },
+        "id": "9d46908d-7aeb-4c3c-90bb-5203627e1207",
+        "name": "Avaliar Envio",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3952,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.enviou }}",
+                "rightValue": "true",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                },
+                "id": "aa0000c3-0000-0000-0000-0000000000c3"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "290aac04-fbbe-4c08-9256-614d497f9b42",
+        "name": "Enviou?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          4160,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/interacoes",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ empresa_id: $json.lead.id, canal: 'whatsapp', direcao: 'saida', etapa: $json.etapa, roteiro_codigo: ($json.lead.perfil_oferta + '_msg1'), mensagem: $json.mensagem, copy_fallback: $json.copy_fallback, evolution_id: $json.evolution_id }) }}",
+          "options": {}
+        },
+        "id": "39f81840-5362-4e94-bac8-6fd09339f626",
+        "name": "Registrar Interação",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4368,
+          240
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "PATCH",
+          "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $('Avaliar Envio').first().json.lead.id }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify( $('Avaliar Envio').first().json.ctx.modo_teste ? { status: 'fila' } : { status: 'abordado', estagio_conversa: 'aguardando_resposta', enviado_manual_em: new Date().toISOString() } ) }}",
+          "options": {}
+        },
+        "id": "84a0dcb3-57b8-48c5-90c7-a1715540ea6c",
+        "name": "Marcar Lead Abordado",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4576,
+          240
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "PATCH",
+          "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.lead.id }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ status: 'falha_envio', obs: ('Falha no envio automatico em ' + new Date().toISOString() + ' | ' + ($json.resposta_envio || 'sem detalhe')).slice(0, 500) }) }}",
+          "options": {}
+        },
+        "id": "ba794ed4-6830-4e5c-8264-7aa9b2e47078",
+        "name": "Marcar Falha de Envio",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4368,
+          432
+        ],
+        "alwaysOutputData": true,
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ number: '5562981394546', text: ('⚠️ A2 Disparo v3.2: falha no envio para ' + $('Avaliar Envio').first().json.lead.nome_exibicao + ' (' + $('Avaliar Envio').first().json.lead.slug + '). Lead marcado como falha_envio — revisar manualmente. Sem retry automatico.') }) }}",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "id": "2645ce14-ed93-476d-814a-e454ca6d810e",
+        "name": "Alerta Falha (WhatsApp pessoal)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4576,
+          432
+        ],
+        "retryOnFail": false,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "lGhduTvTTMaZoDWT",
+            "name": "Evolution apikey"
+          }
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "A cada hora (8h-17h seg-sex)": {
+        "main": [
+          [
+            {
+              "node": "Ler Config Disparo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ler Config Disparo": {
+        "main": [
+          [
+            {
+              "node": "Checar Kill Switch + Janela",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Checar Kill Switch + Janela": {
+        "main": [
+          [
+            {
+              "node": "Pode rodar?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pode rodar?": {
+        "main": [
+          [
+            {
+              "node": "Contar Enviados Hoje (interacoes)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Contar Enviados Hoje (interacoes)": {
+        "main": [
+          [
+            {
+              "node": "Calcular Cota",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calcular Cota": {
+        "main": [
+          [
+            {
+              "node": "Tem cota?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tem cota?": {
+        "main": [
+          [
+            {
+              "node": "Buscar 1 Lead da Fila",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar 1 Lead da Fila": {
+        "main": [
+          [
+            {
+              "node": "Preparar Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Lead": {
+        "main": [
+          [
+            {
+              "node": "Tem lead?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tem lead?": {
+        "main": [
+          [
+            {
+              "node": "Claim do Lead (fila->abordando)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claim do Lead (fila->abordando)": {
+        "main": [
+          [
+            {
+              "node": "Claim OK?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claim OK?": {
+        "main": [
+          [
+            {
+              "node": "Prosseguir com envio?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prosseguir com envio?": {
+        "main": [
+          [
+            {
+              "node": "Buscar Roteiros",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Roteiros": {
+        "main": [
+          [
+            {
+              "node": "Juntar Lead + Roteiro",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Juntar Lead + Roteiro": {
+        "main": [
+          [
+            {
+              "node": "Claude Gerar Mensagem",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claude Gerar Mensagem": {
+        "main": [
+          [
+            {
+              "node": "Validar + Resolver Destino",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validar + Resolver Destino": {
+        "main": [
+          [
+            {
+              "node": "Delay Humano (1-40min)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delay Humano (1-40min)": {
+        "main": [
+          [
+            {
+              "node": "Evolution Enviar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evolution Enviar": {
+        "main": [
+          [
+            {
+              "node": "Avaliar Envio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Avaliar Envio": {
+        "main": [
+          [
+            {
+              "node": "Enviou?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviou?": {
+        "main": [
+          [
+            {
+              "node": "Registrar Interação",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Marcar Falha de Envio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Registrar Interação": {
+        "main": [
+          [
+            {
+              "node": "Marcar Lead Abordado",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Marcar Falha de Envio": {
+        "main": [
+          [
+            {
+              "node": "Alerta Falha (WhatsApp pessoal)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Atitude Soluções",
+    "name": "Version 1a625d6b",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-07-23T12:20:45.841Z",
+        "id": 75,
+        "workflowId": "PGxUrAok89DfXs9u",
+        "versionId": "1a625d6b-675b-4f9d-9c80-48ee41c02ef6",
+        "event": "activated",
+        "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    ]
+  }
+}
