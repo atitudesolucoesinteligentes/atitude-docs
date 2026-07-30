@@ -1,0 +1,1013 @@
+{
+  "updatedAt": "2026-07-28T20:03:26.985Z",
+  "createdAt": "2026-07-28T19:40:23.998Z",
+  "id": "sHEZd1huhrUMWoE0",
+  "name": "Raio-X Registrar + Devolução (avaliacao-presenca)",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "raiox-registrar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1af7709b-1458-488e-9445-cbe92ac8e6ff",
+      "name": "Webhook Raio-X",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        0
+      ],
+      "webhookId": "raiox-registrar"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============ VALIDAR TOKEN + PAYLOAD ============\nconst TOKEN_ESPERADO = '16b9aaf079b00de57bd1cf5cfeb5f1b447aa7704e94baaa3';\n\nconst headers = $json.headers || {};\nconst token = headers['x-raiox-token'] || headers['X-Raiox-Token'] || '';\nif (token !== TOKEN_ESPERADO) {\n  throw new Error('Token inválido no header x-raiox-token');\n}\n\nconst b = $json.body || {};\nconst empresaId = Number(b.empresa_id);\nif (!Number.isInteger(empresaId) || empresaId <= 0) {\n  throw new Error('empresa_id obrigatório (inteiro). Lead novo: criar antes via SQL da Etapa 5 da skill.');\n}\n\nconst numero = String(b.numero || '').replace(/\\D/g, '');\nif (!/^55\\d{10,11}$/.test(numero)) {\n  throw new Error('numero obrigatório no formato 55DDDNÚMERO (apenas dígitos): recebido \"' + b.numero + '\"');\n}\n\nconst a = b.achados || {};\nconst placar = a.placar || {};\nconst valoresValidos = ['ok', 'atencao', 'ausente'];\nconst pilaresObrigatorios = ['google_maps', 'site', 'instagram', 'consistencia'];\nfor (const p of pilaresObrigatorios) {\n  if (!valoresValidos.includes(placar[p])) {\n    throw new Error('placar.' + p + ' obrigatório com valor ok|atencao|ausente');\n  }\n}\n\nconst servicosValidos = ['criacao_site', 'redesign_site', 'config_gbp', 'instagram', 'nenhuma'];\nconst recomendacao = a.recomendacao_principal || 'nenhuma';\nif (!servicosValidos.includes(recomendacao)) {\n  throw new Error('recomendacao_principal inválida: ' + recomendacao);\n}\n\n// Coerência: recomendação não pode contradizer pilar ok\nconst mapaPilar = { criacao_site: 'site', redesign_site: 'site', config_gbp: 'google_maps', instagram: 'instagram' };\nif (mapaPilar[recomendacao] && placar[mapaPilar[recomendacao]] === 'ok') {\n  throw new Error('recomendacao_principal \"' + recomendacao + '\" contradiz o pilar \"' + mapaPilar[recomendacao] + '\" = ok');\n}\n\n// Derivar contraindicados do placar se não vierem explícitos\nlet contraindicados = Array.isArray(a.produtos_contraindicados) ? a.produtos_contraindicados : null;\nif (!contraindicados) {\n  contraindicados = [];\n  if (placar.site === 'ok') contraindicados.push('criacao_site', 'redesign_site');\n  if (placar.google_maps === 'ok') contraindicados.push('config_gbp');\n}\n\nconst achados = {\n  versao: 1,\n  avaliado_em: a.avaliado_em || new Date().toISOString().slice(0, 10),\n  placar,\n  pontos_fortes: Array.isArray(a.pontos_fortes) ? a.pontos_fortes.slice(0, 4) : [],\n  custa_cliente: Array.isArray(a.custa_cliente) ? a.custa_cliente.slice(0, 5) : [],\n  gargalo_principal: String(a.gargalo_principal || '').slice(0, 300),\n  recomendacao_principal: recomendacao,\n  produtos_contraindicados: [...new Set(contraindicados)]\n};\n\n// Mensagem de devolução: string ou array de até 2 balões (balão 1 + ponte suave)\nlet baloes = [];\nif (Array.isArray(b.mensagem_devolucao)) baloes = b.mensagem_devolucao.filter(Boolean).map(s => String(s).trim());\nelse if (typeof b.mensagem_devolucao === 'string' && b.mensagem_devolucao.trim()) baloes = [b.mensagem_devolucao.trim()];\nbaloes = baloes.slice(0, 2).map(s => s.slice(0, 1500));\nif (baloes.length === 0) throw new Error('mensagem_devolucao obrigatória (string ou array de até 2 balões)');\n\nconst followupDias = Number.isFinite(Number(b.followup_dias)) ? Math.max(0, Number(b.followup_dias)) : 2;\n\nreturn [{ json: { empresa_id: empresaId, numero, achados, baloes, followup_dias: followupDias } }];"
+      },
+      "id": "eb48509e-19ca-470d-9dff-286994f03314",
+      "name": "Validar Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.empresa_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ raiox_achados: $json.achados, raiox_em: new Date().toISOString(), estagio_conversa: 'qualificando' }) }}",
+        "options": {}
+      },
+      "id": "0fcce52e-446e-4fc7-9e4a-0e7f8c8c98d0",
+      "name": "Gravar Achados (empresas)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -656,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_EVOLUTION_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $('Validar Payload').first().json.numero, text: $('Validar Payload').first().json.baloes[0] }) }}",
+        "options": {}
+      },
+      "id": "66666ee1-f496-4a70-9d21-7c3481cf6d7f",
+      "name": "Enviar Balão 1 (devolução)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -432,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-tem-balao2",
+              "leftValue": "={{ $('Validar Payload').first().json.baloes.length }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "041dc313-76cc-48c5-b718-fde1210f666d",
+      "name": "Tem 2º balão?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "de4d797c-05e3-458b-964b-11d7e1c897fb",
+      "name": "Aguardar (natural)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        -96
+      ],
+      "webhookId": "rx-wait-raiox-devolucao"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_EVOLUTION_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $('Validar Payload').first().json.numero, text: $('Validar Payload').first().json.baloes[1] }) }}",
+        "options": {}
+      },
+      "id": "3ca17c0a-f975-43f3-a140-37f9216acd82",
+      "name": "Enviar Balão 2 (ponte)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/interacoes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ empresa_id: $('Validar Payload').first().json.empresa_id, canal: 'whatsapp', direcao: 'saida', etapa: 'avaliacao_entregue', mensagem: $('Validar Payload').first().json.baloes.join(' | '), midia_tipo: 'texto' }) }}",
+        "options": {}
+      },
+      "id": "1e615705-6e56-41c1-9e82-14f693b6c2f2",
+      "name": "Registrar Interação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-tem-fup",
+              "leftValue": "={{ $('Validar Payload').first().json.followup_dias }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "225d261b-0886-41e8-9498-b9546c546871",
+      "name": "Agendar follow-up?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/followups_agendados",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ empresa_id: $('Validar Payload').first().json.empresa_id, tipo: 'avaliacao_sem_resposta', devido_em: $now.plus({ days: $('Validar Payload').first().json.followup_dias }).toISO(), contexto: 'Verificar se o lead visualizou o raio-x de presença digital e se quer avançar. Gargalo: ' + ($('Validar Payload').first().json.achados.gargalo_principal || 'ver raiox_achados') }) }}",
+        "options": {}
+      },
+      "id": "cc5061dd-7fa4-4343-bbe6-b00f0b478700",
+      "name": "Agendar Follow-up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_EVOLUTION_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: '5562981394546', text: '📄 RAIO-X REGISTRADO + DEVOLUÇÃO ENVIADA\\n\\nEmpresa id: ' + $('Validar Payload').first().json.empresa_id + '\\nWhatsApp: https://wa.me/' + $('Validar Payload').first().json.numero + '\\nRecomendação: ' + $('Validar Payload').first().json.achados.recomendacao_principal + '\\nContraindicados: ' + ($('Validar Payload').first().json.achados.produtos_contraindicados.join(', ') || 'nenhum') + '\\n\\n⚠️ AGORA ENVIE O PDF manualmente na conversa do lead — a mensagem de devolução já foi entregue e menciona o PDF.' }) }}",
+        "options": {}
+      },
+      "id": "27df87fc-5624-45f4-b2dd-f84f7cfb4ae0",
+      "name": "Lembrete: Enviar PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1136,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, empresa_id: $('Validar Payload').first().json.empresa_id, devolucao_enviada: true, baloes: $('Validar Payload').first().json.baloes.length, recomendacao: $('Validar Payload').first().json.achados.recomendacao_principal, contraindicados: $('Validar Payload').first().json.achados.produtos_contraindicados, followup_dias: $('Validar Payload').first().json.followup_dias, proximo_passo: 'ENVIAR O PDF MANUALMENTE na conversa do lead' }) }}",
+        "options": {}
+      },
+      "id": "07b2d9d6-bf5e-464c-b36d-bd49f8ef2ac7",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Raio-X": {
+      "main": [
+        [
+          {
+            "node": "Validar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Payload": {
+      "main": [
+        [
+          {
+            "node": "Gravar Achados (empresas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar Achados (empresas)": {
+      "main": [
+        [
+          {
+            "node": "Enviar Balão 1 (devolução)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Balão 1 (devolução)": {
+      "main": [
+        [
+          {
+            "node": "Tem 2º balão?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem 2º balão?": {
+      "main": [
+        [
+          {
+            "node": "Aguardar (natural)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Interação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguardar (natural)": {
+      "main": [
+        [
+          {
+            "node": "Enviar Balão 2 (ponte)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Balão 2 (ponte)": {
+      "main": [
+        [
+          {
+            "node": "Registrar Interação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Interação": {
+      "main": [
+        [
+          {
+            "node": "Agendar follow-up?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendar follow-up?": {
+      "main": [
+        [
+          {
+            "node": "Agendar Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lembrete: Enviar PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendar Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Lembrete: Enviar PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lembrete: Enviar PDF": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "9057aad8-85f8-4bcc-afde-9d0530bd74d3",
+  "activeVersionId": "9057aad8-85f8-4bcc-afde-9d0530bd74d3",
+  "versionCounter": 2,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-07-28T19:40:23.998Z",
+      "createdAt": "2026-07-28T19:40:23.998Z",
+      "role": "workflow:owner",
+      "workflowId": "sHEZd1huhrUMWoE0",
+      "projectId": "Qw2S8PfyrGHokeXF",
+      "project": {
+        "updatedAt": "2026-07-08T02:03:48.782Z",
+        "createdAt": "2026-07-08T01:51:47.911Z",
+        "id": "Qw2S8PfyrGHokeXF",
+        "name": "Atitude Soluções <atitudesolucoesinteligentes@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-07-28T20:05:04.565Z",
+    "createdAt": "2026-07-28T20:03:26.987Z",
+    "versionId": "9057aad8-85f8-4bcc-afde-9d0530bd74d3",
+    "workflowId": "sHEZd1huhrUMWoE0",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "raiox-registrar",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "1af7709b-1458-488e-9445-cbe92ac8e6ff",
+        "name": "Webhook Raio-X",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -1104,
+          0
+        ],
+        "webhookId": "raiox-registrar"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============ VALIDAR TOKEN + PAYLOAD ============\nconst TOKEN_ESPERADO = '16b9aaf079b00de57bd1cf5cfeb5f1b447aa7704e94baaa3';\n\nconst headers = $json.headers || {};\nconst token = headers['x-raiox-token'] || headers['X-Raiox-Token'] || '';\nif (token !== TOKEN_ESPERADO) {\n  throw new Error('Token inválido no header x-raiox-token');\n}\n\nconst b = $json.body || {};\nconst empresaId = Number(b.empresa_id);\nif (!Number.isInteger(empresaId) || empresaId <= 0) {\n  throw new Error('empresa_id obrigatório (inteiro). Lead novo: criar antes via SQL da Etapa 5 da skill.');\n}\n\nconst numero = String(b.numero || '').replace(/\\D/g, '');\nif (!/^55\\d{10,11}$/.test(numero)) {\n  throw new Error('numero obrigatório no formato 55DDDNÚMERO (apenas dígitos): recebido \"' + b.numero + '\"');\n}\n\nconst a = b.achados || {};\nconst placar = a.placar || {};\nconst valoresValidos = ['ok', 'atencao', 'ausente'];\nconst pilaresObrigatorios = ['google_maps', 'site', 'instagram', 'consistencia'];\nfor (const p of pilaresObrigatorios) {\n  if (!valoresValidos.includes(placar[p])) {\n    throw new Error('placar.' + p + ' obrigatório com valor ok|atencao|ausente');\n  }\n}\n\nconst servicosValidos = ['criacao_site', 'redesign_site', 'config_gbp', 'instagram', 'nenhuma'];\nconst recomendacao = a.recomendacao_principal || 'nenhuma';\nif (!servicosValidos.includes(recomendacao)) {\n  throw new Error('recomendacao_principal inválida: ' + recomendacao);\n}\n\n// Coerência: recomendação não pode contradizer pilar ok\nconst mapaPilar = { criacao_site: 'site', redesign_site: 'site', config_gbp: 'google_maps', instagram: 'instagram' };\nif (mapaPilar[recomendacao] && placar[mapaPilar[recomendacao]] === 'ok') {\n  throw new Error('recomendacao_principal \"' + recomendacao + '\" contradiz o pilar \"' + mapaPilar[recomendacao] + '\" = ok');\n}\n\n// Derivar contraindicados do placar se não vierem explícitos\nlet contraindicados = Array.isArray(a.produtos_contraindicados) ? a.produtos_contraindicados : null;\nif (!contraindicados) {\n  contraindicados = [];\n  if (placar.site === 'ok') contraindicados.push('criacao_site', 'redesign_site');\n  if (placar.google_maps === 'ok') contraindicados.push('config_gbp');\n}\n\nconst achados = {\n  versao: 1,\n  avaliado_em: a.avaliado_em || new Date().toISOString().slice(0, 10),\n  placar,\n  pontos_fortes: Array.isArray(a.pontos_fortes) ? a.pontos_fortes.slice(0, 4) : [],\n  custa_cliente: Array.isArray(a.custa_cliente) ? a.custa_cliente.slice(0, 5) : [],\n  gargalo_principal: String(a.gargalo_principal || '').slice(0, 300),\n  recomendacao_principal: recomendacao,\n  produtos_contraindicados: [...new Set(contraindicados)]\n};\n\n// Mensagem de devolução: string ou array de até 2 balões (balão 1 + ponte suave)\nlet baloes = [];\nif (Array.isArray(b.mensagem_devolucao)) baloes = b.mensagem_devolucao.filter(Boolean).map(s => String(s).trim());\nelse if (typeof b.mensagem_devolucao === 'string' && b.mensagem_devolucao.trim()) baloes = [b.mensagem_devolucao.trim()];\nbaloes = baloes.slice(0, 2).map(s => s.slice(0, 1500));\nif (baloes.length === 0) throw new Error('mensagem_devolucao obrigatória (string ou array de até 2 balões)');\n\nconst followupDias = Number.isFinite(Number(b.followup_dias)) ? Math.max(0, Number(b.followup_dias)) : 2;\n\nreturn [{ json: { empresa_id: empresaId, numero, achados, baloes, followup_dias: followupDias } }];"
+        },
+        "id": "eb48509e-19ca-470d-9dff-286994f03314",
+        "name": "Validar Payload",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -880,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "PATCH",
+          "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.empresa_id }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ raiox_achados: $json.achados, raiox_em: new Date().toISOString(), estagio_conversa: 'qualificando' }) }}",
+          "options": {}
+        },
+        "id": "0fcce52e-446e-4fc7-9e4a-0e7f8c8c98d0",
+        "name": "Gravar Achados (empresas)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -656,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_EVOLUTION_KEY}}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ number: $('Validar Payload').first().json.numero, text: $('Validar Payload').first().json.baloes[0] }) }}",
+          "options": {}
+        },
+        "id": "66666ee1-f496-4a70-9d21-7c3481cf6d7f",
+        "name": "Enviar Balão 1 (devolução)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -432,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cond-tem-balao2",
+                "leftValue": "={{ $('Validar Payload').first().json.baloes.length }}",
+                "rightValue": 1,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "041dc313-76cc-48c5-b718-fde1210f666d",
+        "name": "Tem 2º balão?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -208,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "amount": 3
+        },
+        "id": "de4d797c-05e3-458b-964b-11d7e1c897fb",
+        "name": "Aguardar (natural)",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          16,
+          -96
+        ],
+        "webhookId": "rx-wait-raiox-devolucao"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_EVOLUTION_KEY}}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ number: $('Validar Payload').first().json.numero, text: $('Validar Payload').first().json.baloes[1] }) }}",
+          "options": {}
+        },
+        "id": "3ca17c0a-f975-43f3-a140-37f9216acd82",
+        "name": "Enviar Balão 2 (ponte)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          240,
+          -96
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/interacoes",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ empresa_id: $('Validar Payload').first().json.empresa_id, canal: 'whatsapp', direcao: 'saida', etapa: 'avaliacao_entregue', mensagem: $('Validar Payload').first().json.baloes.join(' | '), midia_tipo: 'texto' }) }}",
+          "options": {}
+        },
+        "id": "1e615705-6e56-41c1-9e82-14f693b6c2f2",
+        "name": "Registrar Interação",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          464,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cond-tem-fup",
+                "leftValue": "={{ $('Validar Payload').first().json.followup_dias }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "225d261b-0886-41e8-9498-b9546c546871",
+        "name": "Agendar follow-up?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          688,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/followups_agendados",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ empresa_id: $('Validar Payload').first().json.empresa_id, tipo: 'avaliacao_sem_resposta', devido_em: $now.plus({ days: $('Validar Payload').first().json.followup_dias }).toISO(), contexto: 'Verificar se o lead visualizou o raio-x de presença digital e se quer avançar. Gargalo: ' + ($('Validar Payload').first().json.achados.gargalo_principal || 'ver raiox_achados') }) }}",
+          "options": {}
+        },
+        "id": "cc5061dd-7fa4-4343-bbe6-b00f0b478700",
+        "name": "Agendar Follow-up",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          912,
+          -96
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_EVOLUTION_KEY}}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ number: '5562981394546', text: '📄 RAIO-X REGISTRADO + DEVOLUÇÃO ENVIADA\\n\\nEmpresa id: ' + $('Validar Payload').first().json.empresa_id + '\\nWhatsApp: https://wa.me/' + $('Validar Payload').first().json.numero + '\\nRecomendação: ' + $('Validar Payload').first().json.achados.recomendacao_principal + '\\nContraindicados: ' + ($('Validar Payload').first().json.achados.produtos_contraindicados.join(', ') || 'nenhum') + '\\n\\n⚠️ AGORA ENVIE O PDF manualmente na conversa do lead — a mensagem de devolução já foi entregue e menciona o PDF.' }) }}",
+          "options": {}
+        },
+        "id": "27df87fc-5624-45f4-b2dd-f84f7cfb4ae0",
+        "name": "Lembrete: Enviar PDF",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1136,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ ok: true, empresa_id: $('Validar Payload').first().json.empresa_id, devolucao_enviada: true, baloes: $('Validar Payload').first().json.baloes.length, recomendacao: $('Validar Payload').first().json.achados.recomendacao_principal, contraindicados: $('Validar Payload').first().json.achados.produtos_contraindicados, followup_dias: $('Validar Payload').first().json.followup_dias, proximo_passo: 'ENVIAR O PDF MANUALMENTE na conversa do lead' }) }}",
+          "options": {}
+        },
+        "id": "07b2d9d6-bf5e-464c-b36d-bd49f8ef2ac7",
+        "name": "Responder OK",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1360,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook Raio-X": {
+        "main": [
+          [
+            {
+              "node": "Validar Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validar Payload": {
+        "main": [
+          [
+            {
+              "node": "Gravar Achados (empresas)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gravar Achados (empresas)": {
+        "main": [
+          [
+            {
+              "node": "Enviar Balão 1 (devolução)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Balão 1 (devolução)": {
+        "main": [
+          [
+            {
+              "node": "Tem 2º balão?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tem 2º balão?": {
+        "main": [
+          [
+            {
+              "node": "Aguardar (natural)",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Registrar Interação",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aguardar (natural)": {
+        "main": [
+          [
+            {
+              "node": "Enviar Balão 2 (ponte)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Balão 2 (ponte)": {
+        "main": [
+          [
+            {
+              "node": "Registrar Interação",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Registrar Interação": {
+        "main": [
+          [
+            {
+              "node": "Agendar follow-up?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agendar follow-up?": {
+        "main": [
+          [
+            {
+              "node": "Agendar Follow-up",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Lembrete: Enviar PDF",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agendar Follow-up": {
+        "main": [
+          [
+            {
+              "node": "Lembrete: Enviar PDF",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Lembrete: Enviar PDF": {
+        "main": [
+          [
+            {
+              "node": "Responder OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Atitude Soluções",
+    "name": "Version 9057aad8",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-07-28T20:05:04.563Z",
+        "id": 94,
+        "workflowId": "sHEZd1huhrUMWoE0",
+        "versionId": "9057aad8-85f8-4bcc-afde-9d0530bd74d3",
+        "event": "activated",
+        "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    ]
+  }
+}
