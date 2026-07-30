@@ -1,0 +1,978 @@
+{
+  "updatedAt": "2026-07-29T13:21:23.627Z",
+  "createdAt": "2026-07-16T18:03:24.304Z",
+  "id": "NLAtaqdypvL2i8wD",
+  "name": "A0 Busca CNPJá v2",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Estado inicial da paginação — viaja dentro dos itens daqui em diante\nconst busca = $('Resolver Código IBGE1').first().json;\nconst impResp = $('Criar Importação1').first().json;\nconst importacaoId = Array.isArray(impResp) ? impResp[0]?.id : impResp.id;\nif (!importacaoId) throw new Error('Importação não retornou id (confira o header Prefer: return=representation)');\nconst listId = $('Consolidar Lista').first().json.list_id || null;\n\nreturn [{ json: { state: {\n  importacao_id: importacaoId,\n  token: null,\n  ultimo_token: null,\n  paginas: 0,\n  acumulado: 0,\n  maximo: busca.maximo,\n  cnaes: busca.cnae,\n  codigo_ibge: busca.codigo_ibge,\n  list_id: listId\n} } }];"
+      },
+      "id": "34e86cf3-fbde-40d4-a4d2-d3ef5ad557ab",
+      "name": "Estado Inicial",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/socios",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.socios_lote.length ? $json.socios_lote : []) }}",
+        "options": {}
+      },
+      "id": "14d4abd4-c1cc-421a-b872-96655c9a3095",
+      "name": "Inserir Sócios (lote)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3680,
+        560
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## A0 Busca CNPJá — v2\n\nCorreções: estado da paginação viaja nos itens (sem static data) · municipality/limit como números · sócios inseridos em lote (1 chamada por página)\n\n**Configurar:** credencial Header Auth (Authorization = chave CNPJá) no nó \"CNPJá /office\" · credencial Supabase API nos 4 nós HTTP Supabase · trocar SEU-PROJETO.supabase.co",
+        "height": 240,
+        "width": 380
+      },
+      "id": "e38ee8dd-9afa-4d3c-926f-48190768db87",
+      "name": "Instruções1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "A0 — Busca de Empresas (CNPJá)",
+        "formDescription": "Informe o CNAE, o estado, a cidade e o máximo de registros",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "CNAE",
+              "placeholder": "9602502 (múltiplos separados por vírgula)",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Estado (UF)",
+              "placeholder": "GO",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Cidade",
+              "placeholder": "Anápolis",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Máximo de registros",
+              "fieldType": "number",
+              "placeholder": "100",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a9fa63c7-6b6c-4e03-b242-0f3cb2dfbdc6",
+      "name": "Formulário Busca1",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        656
+      ],
+      "webhookId": "07b5ad0a-fc00-4d38-b7af-d3642beecfcd"
+    },
+    {
+      "parameters": {
+        "url": "=https://servicodados.ibge.gov.br/api/v1/localidades/estados/{{ $json['Estado (UF)'].trim().toUpperCase() }}/municipios",
+        "options": {}
+      },
+      "id": "70366782-f226-4dd1-ba85-33af83e9755e",
+      "name": "IBGE Municípios1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1184,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resolve o código IBGE da cidade\nconst form = $('Formulário Busca1').first().json;\nconst norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').trim();\nconst alvo = norm(form['Cidade']);\n\nconst municipios = $input.all().map(i => i.json);\nconst m = municipios.find(x => norm(x.nome) === alvo);\nif (!m) throw new Error(`Cidade \"${form['Cidade']}\" não encontrada em ${form['Estado (UF)']}`);\n\nconst maximo = Math.max(1, parseInt(form['Máximo de registros'], 10) || 100);\nconst cnaes = String(form['CNAE']).split(',').map(c => c.replace(/\\D/g, '')).filter(Boolean).join(',');\nif (!cnaes) throw new Error('CNAE inválido');\n\nreturn [{ json: {\n  cnae: cnaes,\n  uf: form['Estado (UF)'].trim().toUpperCase(),\n  cidade: form['Cidade'].trim(),\n  codigo_ibge: Number(m.id),\n  maximo\n} }];"
+      },
+      "id": "6fd5dd40-5287-4783-bd13-319d66de24a7",
+      "name": "Resolver Código IBGE1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/importacoes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fonte: 'cnpja', filtros: { cnae: $json.cnae, uf: $json.uf, cidade: $json.cidade, codigo_ibge: $json.codigo_ibge, maximo: $json.maximo } }) }}",
+        "options": {}
+      },
+      "id": "caeca3eb-1f8e-4ec8-a70f-9f3d45f4c52e",
+      "name": "Criar Importação1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1632,
+        656
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Monta a query da página atual (token é mutuamente exclusivo com filtros)\nconst st = $json.state;\nif (!st) throw new Error('Estado da paginação ausente');\nconst restante = st.maximo - st.acumulado;\nconst limit = Math.min(100, Math.max(1, restante));\n\nlet qs;\nif (st.token) {\n  qs = { token: st.token, limit };\n} else {\n  qs = {\n    'mainActivity.id.in': st.cnaes,\n    'status.id.in': 2,\n    'address.municipality.in': Number(st.codigo_ibge),\n    'phones.ex': true,\n    limit\n  };\n  if (st.list_id) qs['taxId.nin'] = st.list_id;\n}\nreturn [{ json: { qs, state: st } }];"
+      },
+      "id": "dab3c34f-b8d8-4ad3-908a-0b206ae799c5",
+      "name": "Preparar Página1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.cnpja.com/office",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={{ JSON.stringify($json.qs) }}",
+        "options": {}
+      },
+      "id": "45d1745c-c8e4-41ef-8b30-25c9f6429bd8",
+      "name": "CNPJá /office1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2576,
+        656
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m9QEkEpfXJ2A49ku",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mapeia a resposta do CNPJá em linhas de empresas+socios e\n// calcula o novo estado da paginação (anexado em __state a cada item)\nconst stAnterior = $('Preparar Página1').first().json.state;\nconst body = $input.first().json;\nconst recs = body.records || body.data || (Array.isArray(body) ? body : []);\n\nconst novoToken = body.next || body.token || null;\nconst state = {\n  ...stAnterior,\n  token: novoToken,\n  ultimo_token: novoToken || stAnterior.ultimo_token,\n  paginas: (stAnterior.paginas || 0) + 1,\n  acumulado: (stAnterior.acumulado || 0) + recs.length\n};\n\nconst slugify = s => String(s || '').toLowerCase()\n  .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');\nconst CONTAB = /contab|contad|assessoria|escritorio/i;\nconst cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;\n\n// Normaliza telefones: celular de 8 dígitos iniciando em 6/7/8/9\n// é formato antigo (pré-2016) e ganha o 9 na frente\nconst normTel = t => {\n  const num = String(t.number || '').replace(/\\D/g, '');\n  if (num.length === 9 && /^9/.test(num)) return { ...t, number: num, celular: true };\n  if (num.length === 8 && /^[6-9]/.test(num)) return { ...t, number: '9' + num, celular: true };\n  return { ...t, number: num, celular: false };\n};\n\nconst out = [];\nfor (const o of recs) {\n  const telsN = (o.phones || []).map(normTel);\n  const mails = o.emails || [];\n  const cel = telsN.find(t => t.celular);\n  const telPrincipal = cel || telsN[0] || null;\n  const mailBom = mails.find(m => !CONTAB.test(m.address || '') && String(m.ownership || '').toUpperCase() !== 'ACCOUNTING');\n  const mailEscolhido = mailBom || mails[0] || null;\n\n  const socios = (o.company?.members || []).map(mb => ({\n    person_id: mb.person?.id || null,\n    nome: mb.person?.name || null,\n    faixa_etaria: mb.person?.age || null,\n    identificador: mb.person?.type || null,\n    papel: mb.role?.text || null,\n    qualificacao: mb.role?.text || null,\n    qualificacao_codigo: mb.role?.id ?? null,\n    data_entrada: mb.since || null\n  }));\n\n  const socioPF = socios.find(s => String(s.identificador || '').toUpperCase() === 'NATURAL');\n  const primeiroNome = socioPF?.nome ? cap(socioPF.nome.split(' ')[0]) : null;\n  const nomeExib = o.alias || primeiroNome || o.company?.name || null;\n\n  out.push({ json: {\n    __state: state,\n    empresa: {\n      cnpj: o.taxId,\n      cnpj_raiz: String(o.taxId || '').slice(0, 8),\n      nome_fantasia: o.alias || null,\n      razao_social: o.company?.name || null,\n      nome_exibicao: nomeExib,\n      nome_socio: socioPF?.nome ? socioPF.nome.split(' ').slice(0, 2).map(cap).join(' ') : null,\n      slug: slugify(`${nomeExib}-${o.address?.city}-${String(o.taxId||'').slice(-4)}`),\n      matriz_filial: o.head ? 'MATRIZ' : 'FILIAL',\n      situacao_codigo: o.status?.id ?? null,\n      situacao: o.status?.text || null,\n      situacao_data: o.statusDate || null,\n      motivo_codigo: o.reason?.id ?? null,\n      situacao_motivo: o.reason?.text || null,\n      data_abertura: o.founded || null,\n      natureza_codigo: o.company?.nature?.id ?? null,\n      natureza_juridica: o.company?.nature?.text || null,\n      porte_codigo_num: o.company?.size?.id ?? null,\n      porte_descricao: o.company?.size?.text || null,\n      capital_social: o.company?.equity ?? null,\n      simples: o.company?.simples?.optant ?? null,\n      simples_desde: o.company?.simples?.since || null,\n      mei: o.company?.simei?.optant ?? null,\n      mei_desde: o.company?.simei?.since || null,\n      cnae_principal: String(o.mainActivity?.id ?? ''),\n      cnae_descricao: o.mainActivity?.text || null,\n      cnaes_secundarios: o.sideActivities || [],\n      cep: o.address?.zip || null,\n      logradouro: o.address?.street || null,\n      numero: o.address?.number || null,\n      complemento: o.address?.details || null,\n      bairro: o.address?.district || null,\n      municipio: o.address?.city || null,\n      uf: o.address?.state || null,\n      codigo_ibge: o.address?.municipality ?? null,\n      telefones_json: telsN,\n      emails_json: mails,\n      telefone_original: telPrincipal ? `(${telPrincipal.area}) ${telPrincipal.number}` : null,\n      whatsapp: cel ? `55${cel.area}${cel.number}` : null,\n      tem_celular: !!cel,\n      email: mailEscolhido?.address || null,\n      email_contab: !!mailEscolhido && (CONTAB.test(mailEscolhido.address || '') || String(mailEscolhido.ownership || '').toUpperCase() === 'ACCOUNTING'),\n      fonte_atualizado_em: o.updated || null,\n      origem: 'cnpja',\n      importacao_id: state.importacao_id,\n      status: 'novo'\n    },\n    socios\n  }});\n}\n\nif (out.length === 0) return [{ json: { __vazio: true, __state: state } }];\nreturn out;"
+      },
+      "id": "143658c0-213e-4d98-aee7-62455856e9b2",
+      "name": "Mapear Registros1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.empresa !== undefined }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "9160bef0-3b1b-437a-88e2-fc07f0ba4c59"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "268de75c-abb7-471a-9459-a8e4d20c3b19",
+      "name": "Tem registros?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3008,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?on_conflict=cnpj",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=ignore-duplicates,return=representation"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.empresa) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "1b0dd0dc-113c-45a9-a10e-90ddf3555962",
+      "name": "Upsert Empresas1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3232,
+        560
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Junta TODOS os sócios da página num único lote,\n// emparelhando com o id retornado do upsert (vazio = empresa já existia)\nconst upserts = $input.all();\nconst mapeados = $('Mapear Registros1').all().filter(i => i.json.empresa !== undefined);\nconst rows = [];\nfor (let i = 0; i < upserts.length; i++) {\n  const resp = upserts[i].json;\n  const criado = Array.isArray(resp) ? resp[0] : resp;\n  if (!criado || !criado.id) continue;\n  const socios = mapeados[i]?.json?.socios || [];\n  for (const s of socios) {\n    if (!s.nome) continue;\n    rows.push({\n      person_id: s.person_id,\n      nome: s.nome,\n      faixa_etaria: s.faixa_etaria,\n      identificador: s.identificador,\n      papel: s.papel,\n      qualificacao: s.qualificacao,\n      qualificacao_codigo: s.qualificacao_codigo,\n      data_entrada: s.data_entrada,\n      empresa_id: criado.id\n    });\n  }\n}\nreturn [{ json: { socios_lote: rows } }];"
+      },
+      "id": "7cb06db1-f084-4c00-a69a-9a97e7f61f55",
+      "name": "Preparar Sócios1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3456,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decide se busca a próxima página (estado vem do Mapear Registros)\nconst st = $('Mapear Registros1').first().json.__state;\nconst continuar = !!st.token && st.acumulado < st.maximo && st.paginas < 10;\nreturn [{ json: { continuar, state: st } }];"
+      },
+      "id": "38d22039-669e-4e47-b30f-ff6e7eb5b071",
+      "name": "Controle de Página1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3888,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.continuar }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "fca4e807-e3f9-4fd9-bd07-4e23e99b8a6f"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5c3cb7db-dd75-4b11-9510-182522c6f092",
+      "name": "Tem mais páginas?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4112,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resumo final da importação\nconst st = $json.state;\nreturn [{ json: {\n  importacao_id: st.importacao_id,\n  total_gravados: st.acumulado || 0,\n  paginas_lidas: st.paginas || 0,\n  creditos_custo: Math.ceil((st.acumulado || 0) / 10),\n  cursor_token: st.ultimo_token || null\n} }];"
+      },
+      "id": "f40315a7-c1f7-41d9-866c-488d1ebcf0fc",
+      "name": "Montar Resumo1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4336,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/importacoes?id=eq.{{ $json.importacao_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ total_gravados: $json.total_gravados, paginas_lidas: $json.paginas_lidas, creditos_custo: $json.creditos_custo, cursor_token: $json.cursor_token }) }}",
+        "options": {}
+      },
+      "id": "fbe01109-2c53-4f59-be9f-038f8091fce1",
+      "name": "Fechar Importação1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4560,
+        784
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "f714543f-5533-4514-b165-d6345cab9191",
+      "name": "Fim (encadear A1 Higienização aqui)1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4768,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/config?chave=eq.cnpja_list_id&select=valor",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "f14e7e08-8397-4859-be3a-0c58578982c1",
+      "name": "Buscar Config Lista",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2032,
+        144
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?select=cnpj&order=id&limit=50000",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "9f97f2ba-2c11-489c-90b2-ebb1bc97782e",
+      "name": "Buscar CNPJs Base",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        192
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Junta config + CNPJs da base e decide: criar ou atualizar a lista no CNPJá\nconst cfg = $('Buscar Config Lista').all().map(i => i.json).flat().filter(r => r && r.valor);\nconst listId = cfg[0]?.valor || null;\nconst cnpjs = $input.all().map(i => i.json).flat()\n  .filter(r => r && r.cnpj)\n  .map(r => String(r.cnpj).replace(/\\D/g, ''))\n  .filter(c => c.length === 14);\nreturn [{ json: { existe: !!listId, list_id: listId, cnpjs, total_cnpjs: cnpjs.length } }];"
+      },
+      "id": "3420ff48-458d-4744-a35f-df5c2c037bea",
+      "name": "Preparar Lista Exclusão",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2544,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.existe }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "c1a1e001-0000-4000-8000-00000000000a"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "30eca345-e3e7-4e34-9839-125f479b3494",
+      "name": "Lista já existe?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2768,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.cnpja.com/list/{{ $json.list_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ items: $json.cnpjs }) }}",
+        "options": {}
+      },
+      "id": "94f5bf32-c637-4d04-a716-bc324baec24e",
+      "name": "Atualizar Lista CNPJá",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3184,
+        64
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m9QEkEpfXJ2A49ku",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cnpja.com/list",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: 'Atitude - já importados', description: 'CNPJs já presentes no Supabase; usados em taxId.nin no A0 Busca.', items: $json.cnpjs }) }}",
+        "options": {}
+      },
+      "id": "4a0092c8-772e-41ec-b460-2a1a86b50e65",
+      "name": "Criar Lista CNPJá",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2992,
+        288
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m9QEkEpfXJ2A49ku",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/config?on_conflict=chave",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chave: 'cnpja_list_id', valor: $json.id }) }}",
+        "options": {}
+      },
+      "id": "c78126f9-a86e-4772-84bf-e1a8f6f7749b",
+      "name": "Gravar List ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3216,
+        288
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resolve o list_id independente do caminho (criada agora ou já existente)\nconst prep = $('Preparar Lista Exclusão').first().json;\nlet listId = prep.list_id;\nif (!listId) {\n  try {\n    const criada = $('Criar Lista CNPJá').first().json;\n    listId = (Array.isArray(criada) ? criada[0]?.id : criada.id) || null;\n  } catch (e) { listId = null; }\n}\nreturn [{ json: { list_id: listId, total_cnpjs_excluidos: prep.total_cnpjs } }];"
+      },
+      "id": "328ffc19-b0f3-4188-91f8-91eb9025efbb",
+      "name": "Consolidar Lista",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3440,
+        192
+      ]
+    }
+  ],
+  "connections": {
+    "Estado Inicial": {
+      "main": [
+        [
+          {
+            "node": "Preparar Página1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserir Sócios (lote)": {
+      "main": [
+        [
+          {
+            "node": "Controle de Página1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formulário Busca1": {
+      "main": [
+        [
+          {
+            "node": "IBGE Municípios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IBGE Municípios1": {
+      "main": [
+        [
+          {
+            "node": "Resolver Código IBGE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver Código IBGE1": {
+      "main": [
+        [
+          {
+            "node": "Criar Importação1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Importação1": {
+      "main": [
+        [
+          {
+            "node": "Buscar Config Lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Página1": {
+      "main": [
+        [
+          {
+            "node": "CNPJá /office1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CNPJá /office1": {
+      "main": [
+        [
+          {
+            "node": "Mapear Registros1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapear Registros1": {
+      "main": [
+        [
+          {
+            "node": "Tem registros?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem registros?1": {
+      "main": [
+        [
+          {
+            "node": "Upsert Empresas1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Controle de Página1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Empresas1": {
+      "main": [
+        [
+          {
+            "node": "Preparar Sócios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Sócios1": {
+      "main": [
+        [
+          {
+            "node": "Inserir Sócios (lote)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Controle de Página1": {
+      "main": [
+        [
+          {
+            "node": "Tem mais páginas?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem mais páginas?1": {
+      "main": [
+        [
+          {
+            "node": "Preparar Página1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar Resumo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Resumo1": {
+      "main": [
+        [
+          {
+            "node": "Fechar Importação1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fechar Importação1": {
+      "main": [
+        [
+          {
+            "node": "Fim (encadear A1 Higienização aqui)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Config Lista": {
+      "main": [
+        [
+          {
+            "node": "Buscar CNPJs Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar CNPJs Base": {
+      "main": [
+        [
+          {
+            "node": "Preparar Lista Exclusão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Lista Exclusão": {
+      "main": [
+        [
+          {
+            "node": "Lista já existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista já existe?": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Lista CNPJá",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Lista CNPJá",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Lista CNPJá": {
+      "main": [
+        [
+          {
+            "node": "Consolidar Lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Lista CNPJá": {
+      "main": [
+        [
+          {
+            "node": "Gravar List ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar List ID": {
+      "main": [
+        [
+          {
+            "node": "Consolidar Lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar Lista": {
+      "main": [
+        [
+          {
+            "node": "Estado Inicial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "f390904d-80eb-4bd2-ad0b-109ab0d28236",
+  "activeVersionId": null,
+  "versionCounter": 33,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-07-16T18:03:24.304Z",
+      "createdAt": "2026-07-16T18:03:24.304Z",
+      "role": "workflow:owner",
+      "workflowId": "NLAtaqdypvL2i8wD",
+      "projectId": "Qw2S8PfyrGHokeXF",
+      "project": {
+        "updatedAt": "2026-07-08T02:03:48.782Z",
+        "createdAt": "2026-07-08T01:51:47.911Z",
+        "id": "Qw2S8PfyrGHokeXF",
+        "name": "Atitude Soluções <atitudesolucoesinteligentes@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
