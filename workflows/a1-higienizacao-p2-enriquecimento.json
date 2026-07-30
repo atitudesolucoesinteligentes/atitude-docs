@@ -1,0 +1,540 @@
+{
+  "updatedAt": "2026-07-28T10:18:51.682Z",
+  "createdAt": "2026-07-16T19:13:28.447Z",
+  "id": "3Av5ajLwyr8EF1iJ",
+  "name": "A1 Higienização p2 - Enriquecimento",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## A1 parte 2 — Enriquecimento\n\nGBP (Places API, match por telefone) → site (download + diagnóstico) → classificação do perfil de oferta (Claude Haiku).\n\n**Credenciais (3):**\n1. Header Auth **Google Places** → Name: `X-Goog-Api-Key` / Value: sua chave do Google → nó \"Places Text Search\"\n2. Header Auth **Anthropic** → Name: `x-api-key` / Value: sua chave da Anthropic (a mesma do A2 Resposta) → nó \"Claude Classificar\"\n3. **Supabase API** → nós Supabase\n\nProcessa 10 leads por execução (controle de custo do Places).\nInstagram (Custom Search) será plugado depois no lugar do nó indicado.",
+        "height": 340,
+        "width": 420
+      },
+      "id": "e4990dca-506b-4139-8cee-17aaf5d08b65",
+      "name": "Instruções",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "d650331e-1f0b-4753-b4f1-076006944b72",
+      "name": "Executar Enriquecimento",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?select=id,slug,nome_exibicao,nome_socio,municipio,uf,bairro,whatsapp,telefones_json,data_abertura,segmento,cnae_descricao,obs&status=eq.novo&whatsapp_valido=eq.true&enriquecido_em=is.null&order=id&limit=25",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "8fa6fd9e-bad1-4d50-a2f4-2a13edd075ab",
+      "name": "Buscar Leads Validados",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        384
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://places.googleapis.com/v1/places:searchText",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Goog-FieldMask",
+              "value": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.rating,places.userRatingCount,places.websiteUri,places.googleMapsUri,places.reviews,places.businessStatus"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ textQuery: ($json.nome_exibicao + ' ' + $json.municipio + ' ' + $json.uf), languageCode: 'pt-BR', regionCode: 'BR', maxResultCount: 5 }) }}",
+        "options": {}
+      },
+      "id": "899de2ae-aebf-4c1f-ae81-e18939950fd5",
+      "name": "Places Text Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        384
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "37mTlgT8sS2cnvA6",
+          "name": "Google API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Match do GBP pelo TELEFONE (últimos 8 dígitos) — nome de MEI raramente bate\nconst lead = $('Buscar Leads Validados').item.json;\nconst places = ($json.places || []);\n\nconst dig = s => String(s || '').replace(/\\D/g, '');\nconst fim8 = s => dig(s).slice(-8);\n\nconst candidatos = new Set();\nif (lead.whatsapp) candidatos.add(fim8(lead.whatsapp));\nfor (const t of (lead.telefones_json || [])) {\n  if (t && t.number) candidatos.add(fim8(`${t.area || ''}${t.number}`));\n}\n\nlet gbp = null;\nlet confianca = null;\nfor (const p of places) {\n  const fones = [p.nationalPhoneNumber, p.internationalPhoneNumber].map(fim8).filter(Boolean);\n  if (fones.some(f => candidatos.has(f))) { gbp = p; confianca = 'telefone'; break; }\n}\nif (!gbp && places[0]) {\n  const p = places[0];\n  const mesmaCidade = String(p.formattedAddress || '').toLowerCase().includes(String(lead.municipio || '').toLowerCase());\n  const nomeBate = String(p.displayName?.text || '').toLowerCase().includes(String(lead.nome_exibicao || '').toLowerCase().split(' ')[0]);\n  if (mesmaCidade && nomeBate) { gbp = p; confianca = 'nome_endereco'; }\n}\n\nconst reviews = (gbp?.reviews || []).slice(0, 3).map(r => ({\n  texto: String(r.text?.text || '').slice(0, 200),\n  nota: r.rating,\n  autor: r.authorAttribution?.displayName || null\n}));\n\nreturn { json: {\n  lead,\n  tem_gbp: !!gbp,\n  gbp: gbp ? {\n    gbp_place_id: gbp.id,\n    gbp_business_status: gbp.businessStatus ?? null,\n    gbp_rating: gbp.rating ?? null,\n    gbp_avaliacoes: gbp.userRatingCount ?? null,\n    gbp_url: gbp.googleMapsUri || null,\n    gbp_reviews: reviews,\n    gbp_match_confianca: confianca\n  } : null,\n  site_url: gbp?.websiteUri || null\n} };"
+      },
+      "id": "3afafbed-667a-417e-b5f3-4c2ddfa7ea31",
+      "name": "Match GBP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.site_url ? $json.site_url : 'https://sem-site.invalido' }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "html"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "e844dba3-2510-44be-8ace-271f6006ce52",
+      "name": "Baixar Site",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        384
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Pré-diagnóstico do site e preparação do pedido de análise\nconst base = $('Match GBP').item.json;\nconst lead = base.lead;\nconst siteUrl = base.site_url;\n\nconst TERCEIROS = /instagram\\.com|facebook\\.com|linktr\\.ee|wa\\.me|api\\.whatsapp|doctoralia|ifood|tripadvisor|google\\.com/i;\n\nlet site_status = null;\nlet html_trecho = null;\n\nif (!siteUrl) {\n  site_status = 'sem_site';\n} else if (TERCEIROS.test(siteUrl)) {\n  site_status = 'terceiros';\n} else if ($json.error || typeof $json.html !== 'string') {\n  site_status = 'fora_do_ar';\n} else {\n  site_status = 'ok_analisar';\n  html_trecho = String($json.html)\n    .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n    .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n    .replace(/\\s+/g, ' ')\n    .slice(0, 12000);\n}\n\nconst idade_dias = lead.data_abertura ? Math.floor((Date.now() - new Date(lead.data_abertura).getTime()) / 86400000) : null;\n\nreturn { json: {\n  lead, tem_gbp: base.tem_gbp, gbp: base.gbp, site_url: siteUrl,\n  site_status_previo: site_status, html_trecho, idade_dias\n} };"
+      },
+      "id": "36119c61-bf68-41ba-8690-ede003bfd039",
+      "name": "Preparar Análise",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 700, system: 'Você é o classificador de leads da Atitude Soluções (agência que vende criação de sites, redesign e configuração de Google Business Profile para negócios locais). Responda SOMENTE com JSON válido, sem markdown, sem texto extra, no formato: {\"site_status\":\"ok|fraco|fora_do_ar|terceiros|sem_site\",\"site_sinais\":[\"...\"],\"site_diagnostico\":\"1 frase concreta e verificável sobre o principal problema do site, ou null\",\"perfil_oferta\":\"redesign|criacao_zero|site_para_gbp|sem_gbp|recem_aberta|descartado_site_bom\",\"dor_resumida\":\"1 frase curta, em português, descrevendo a dor do negócio para usar na abordagem\",\"score\":0-100}. Regras: (1) se site_status_previo = ok_analisar, avalie o html_trecho procurando sinais fracos: sem meta viewport/não responsivo, placeholders (Lorem ipsum, Nome da pessoa, Só mais um site WordPress), copyright antigo (2 anos ou mais), seções vazias, sem CTA claro, links quebrados, keyword stuffing, template genérico não customizado; 2 ou mais sinais = fraco, senão ok. (2) se site_status_previo != ok_analisar, repita-o em site_status e site_sinais=[]. (3) perfil_oferta: idade_dias < 90 => recem_aberta; senão tem_gbp e site fraco/fora_do_ar/terceiros => redesign; tem_gbp e sem_site => site_para_gbp; sem gbp e site (ok ou fraco) => sem_gbp; sem gbp e sem site => criacao_zero; site ok E tem_gbp com boa nota => descartado_site_bom. (4) score 0-100: reputação (rating x avaliações), força da dor e facilidade de abordagem; recem_aberta e redesign com nota alta pontuam mais. (5) dor_resumida nunca cita CNPJ, capital social ou dados cadastrais.', messages: [{ role: 'user', content: JSON.stringify({ nome: $json.lead.nome_exibicao, segmento: $json.lead.segmento || $json.lead.cnae_descricao, municipio: $json.lead.municipio, bairro: $json.lead.bairro, idade_dias: $json.idade_dias, tem_gbp: $json.tem_gbp, gbp: $json.gbp, site_url: $json.site_url, site_status_previo: $json.site_status_previo, html_trecho: $json.html_trecho }) }] }) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "2d24f47c-d887-40cb-b11b-fe61fad3db59",
+      "name": "Claude Classificar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1328,
+        384
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bpESiJdh8gzn8U1F",
+          "name": "Claude API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Interpreta a resposta do Claude e monta o PATCH final da empresa\nconst prep = $('Preparar Análise').item.json;\nconst lead = prep.lead;\nlet c = null;\ntry {\n  const texto = ($json.content || []).filter(b => b.type === 'text').map(b => b.text).join('');\n  c = JSON.parse(texto.replace(/```json|```/g, '').trim());\n} catch (e) { c = null; }\nconst agora = new Date().toISOString();\nconst patch = {\n  tem_gbp: prep.tem_gbp,\n  tem_site: prep.site_status_previo === 'ok_analisar' || prep.site_status_previo === 'fora_do_ar',\n  site_url: prep.site_url,\n  enriquecido_em: agora\n};\nif (prep.gbp) Object.assign(patch, prep.gbp);\nif (c) {\n  patch.site_status = c.site_status || prep.site_status_previo;\n  patch.site_sinais = c.site_sinais || [];\n  patch.site_diagnostico = c.site_diagnostico || null;\n  //patch.score = typeof c.score === 'number' ? c.score : null;\n  // Trava de segurança: recalcula o perfil pela regra determinística,\n  // não confia cegamente no que o Claude decidiu\n  const temGbp = !!prep.tem_gbp;\n  const siteRuim = ['fraco', 'fora_do_ar', 'terceiros'].includes(patch.site_status);\n  const temSite = patch.site_status === 'ok' || siteRuim;\n  let perfil;\n  if (prep.idade_dias !== null && prep.idade_dias < 90) perfil = 'recem_aberta';\n  else if (temGbp && siteRuim) perfil = 'redesign';\n  else if (temGbp && !temSite) perfil = 'site_para_gbp';\n  else if (!temGbp && temSite) perfil = 'sem_gbp';\n  else if (!temGbp && !temSite) perfil = 'criacao_zero';\n  else perfil = (temGbp && patch.site_status === 'ok') ? 'descartado_site_bom' : (c.perfil_oferta || 'criacao_zero');\n  patch.perfil_oferta = perfil;\n  patch.dor_resumida = c.dor_resumida || null;\n  patch.status = perfil.startsWith('descartado') ? 'descartado' : 'fila';\n  if (perfil.startsWith('descartado')) patch.motivo_descarte = 'site_bom';\n} else {\n  patch.site_status = prep.site_status_previo === 'ok_analisar' ? null : prep.site_status_previo;\n  patch.enriquecido_em = null;\n  patch.obs = ((lead.obs || '') + ' | Classificação falhou em ' + agora).trim();\n}\n// patch-09: Google marca o negócio como fechado permanentemente → descarta sempre\nif (patch.gbp_business_status === 'CLOSED_PERMANENTLY') {\n  patch.status = 'descartado';\n  patch.motivo_descarte = 'fechada_google';\n}\nreturn { json: { id: lead.id, slug: lead.slug, patch, perfil: patch.perfil_oferta || 'falha' } };"
+      },
+      "id": "d7e161e8-4a1c-482e-a20e-e2651e7a5cfd",
+      "name": "Aplicar Classificação",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.patch) }}",
+        "options": {}
+      },
+      "id": "493f69ad-2513-4b15-a448-4ca8a9bb7979",
+      "name": "Gravar Enriquecimento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2176,
+        384
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resumo por perfil de oferta\nconst itens = $('Aplicar Classificação').all().map(i => i.json);\nconst porPerfil = {};\nfor (const i of itens) porPerfil[i.perfil] = (porPerfil[i.perfil] || 0) + 1;\nreturn [{ json: { processados: itens.length, por_perfil: porPerfil } }];"
+      },
+      "id": "adda3d69-6a97-4688-bfcb-9800bfe927fe",
+      "name": "Resumo do Enriquecimento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2608,
+        384
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "089790d7-3ce2-43fc-81bc-15ac52915a1e",
+      "name": "Instagram via Custom Search (plugar depois)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2608,
+        560
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "b0a361b7-6bcf-4e50-a28d-d50bf358249b",
+      "name": "Fim (fila pronta para o A2)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2832,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/rpc/fn_calcular_score",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_empresa_id: $('Aplicar Classificação').item.json.id }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2384,
+        384
+      ],
+      "id": "14228c25-acf6-4cf8-8359-de51eae551ec",
+      "name": "Calcular Score",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?select=id&gbp_place_id=eq.{{ encodeURIComponent($json.patch.gbp_place_id || '') }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1760,
+        384
+      ],
+      "id": "c7b5d480-0c32-4892-a6b4-412aadabbf57",
+      "name": "Checar Place Duplicado",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $('Aplicar Classificação').item.json;\nconst patch = { ...item.patch };\n\nlet existentes = [];\ntry { existentes = $json.map ? $json : [$json]; } catch (e) { existentes = []; }\n// filtra vazio do Always Output Data e o próprio registro (caso já tenha algo salvo)\nconst conflito = existentes.some(e => e && e.id && e.id !== item.id);\n\nif (patch.gbp_place_id && conflito) {\n  // Remove o vínculo de GBP para não colidir com outra empresa já dona desse place\n  delete patch.gbp_place_id;\n  delete patch.gbp_business_status;\n  delete patch.gbp_rating;\n  delete patch.gbp_avaliacoes;\n  delete patch.gbp_url;\n  delete patch.gbp_reviews;\n  delete patch.gbp_match_confianca;\n  patch.tem_gbp = false;\n  patch.obs = ((item.patch.obs || '') + ' | gbp_place_id conflitante removido (' + new Date().toISOString() + ')').trim();\n\n  // Recalcula perfil_oferta considerando que agora tem_gbp = false\n  const siteRuim = ['fraco', 'fora_do_ar', 'terceiros'].includes(patch.site_status);\n  const temSite = patch.site_status === 'ok' || siteRuim;\n  if (patch.perfil_oferta !== 'recem_aberta') {\n    patch.perfil_oferta = temSite ? 'sem_gbp' : 'criacao_zero';\n    patch.status = 'fila';\n  }\n}\n\nreturn { json: { id: item.id, slug: item.slug, patch, perfil: patch.perfil_oferta } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        384
+      ],
+      "id": "ac6ddec6-e427-4030-8b4c-e134a7023979",
+      "name": "Resolver Conflito de Place"
+    }
+  ],
+  "connections": {
+    "Executar Enriquecimento": {
+      "main": [
+        [
+          {
+            "node": "Buscar Leads Validados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Leads Validados": {
+      "main": [
+        [
+          {
+            "node": "Places Text Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Places Text Search": {
+      "main": [
+        [
+          {
+            "node": "Match GBP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match GBP": {
+      "main": [
+        [
+          {
+            "node": "Baixar Site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar Site": {
+      "main": [
+        [
+          {
+            "node": "Preparar Análise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Análise": {
+      "main": [
+        [
+          {
+            "node": "Claude Classificar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Classificar": {
+      "main": [
+        [
+          {
+            "node": "Aplicar Classificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar Classificação": {
+      "main": [
+        [
+          {
+            "node": "Checar Place Duplicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar Enriquecimento": {
+      "main": [
+        [
+          {
+            "node": "Calcular Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumo do Enriquecimento": {
+      "main": [
+        [
+          {
+            "node": "Fim (fila pronta para o A2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Score": {
+      "main": [
+        [
+          {
+            "node": "Resumo do Enriquecimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Checar Place Duplicado": {
+      "main": [
+        [
+          {
+            "node": "Resolver Conflito de Place",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver Conflito de Place": {
+      "main": [
+        [
+          {
+            "node": "Gravar Enriquecimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "f537df14-7d93-442d-af15-063b129d4174",
+  "activeVersionId": null,
+  "versionCounter": 53,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-07-16T19:13:28.447Z",
+      "createdAt": "2026-07-16T19:13:28.447Z",
+      "role": "workflow:owner",
+      "workflowId": "3Av5ajLwyr8EF1iJ",
+      "projectId": "Qw2S8PfyrGHokeXF",
+      "project": {
+        "updatedAt": "2026-07-08T02:03:48.782Z",
+        "createdAt": "2026-07-08T01:51:47.911Z",
+        "id": "Qw2S8PfyrGHokeXF",
+        "name": "Atitude Soluções <atitudesolucoesinteligentes@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
