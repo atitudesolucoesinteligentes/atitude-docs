@@ -1,0 +1,533 @@
+{
+  "updatedAt": "2026-07-09T00:42:43.883Z",
+  "createdAt": "2026-07-09T00:01:09.049Z",
+  "id": "vn2sFcdJt4AZiUdZ",
+  "name": "Raio X — Captura de Leads",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "raiox-lead-a7x392",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "5e8294e3-f2e7-4440-b7f7-b74cb4b56fc2",
+      "name": "Webhook Raio X",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        112
+      ],
+      "webhookId": "raiox-lead-a7x392"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normaliza o lead e calcula a recomendação (mesma régua do quiz)\nconst b = $input.first().json.body || $input.first().json;\n\nconst nome = String(b.nome || '').trim().slice(0, 120);\nconst whatsapp = String(b.whatsapp || '').replace(/\\D/g, '');\nconst scores = Array.isArray(b.scores) ? b.scores.map(n => Number(n) || 0) : [];\nconst total = Number(b.total) || scores.reduce((s, n) => s + n, 0);\nconst etapaFraca = String(b.etapaFraca || '');\n\nif (!nome || whatsapp.length < 10) {\n  return [{ json: { valido: false, motivo: 'nome ou whatsapp inválido' } }];\n}\n\n// Régua oficial: <=14 Kit | 15-28 Painel ou Kit | >=29 Gestão Assistida\nlet recomendacao;\nif (total <= 14) recomendacao = 'Kit Gestão na Prática (R$ 97)';\nelse if (total <= 28) recomendacao = 'Painel do Dono (R$ 197/mês)';\nelse recomendacao = 'Gestão Assistida (R$ 1.997/mês)';\n\n// Prioridade travada: Dinheiro abaixo de 3 é sempre prioridade nº 1\nconst etapas = ['Alicerce','Termômetro','Identidade','Trajetória','Unidade de medida','Dinheiro','Engrenagem'];\nconst dinheiroBaixo = scores.length === 7 && scores[5] < 3;\n\n// Link wa.me do lead (assume Brasil se vier sem DDI)\nconst waLead = whatsapp.startsWith('55') ? whatsapp : '55' + whatsapp;\n\nreturn [{\n  json: {\n    valido: true,\n    nome,\n    whatsapp,\n    wa_link: 'https://wa.me/' + waLead,\n    total,\n    scores,\n    etapa_fraca: etapaFraca,\n    dinheiro_alerta: dinheiroBaixo,\n    recomendacao,\n    origem: String(b.origem || 'raiox'),\n    pagina: String(b.pagina || 'diagnostico'),\n    ts: b.ts || new Date().toISOString()\n  }\n}];"
+      },
+      "id": "1e95b3f2-bb0d-4980-8301-a733d0c83b4d",
+      "name": "Normalizar + Classificar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valido }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bf8aba3f-9611-40b9-a384-ceb8e41a6912",
+      "name": "Lead válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/leads?on_conflict=whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ whatsapp: ($json.whatsapp.startsWith('55') ? $json.whatsapp : '55' + $json.whatsapp), nome: $json.nome, status: 'raiox_concluido', origem: 'raiox', total: $json.total, scores: $json.scores, etapa_fraca: $json.etapa_fraca, dinheiro_alerta: $json.dinheiro_alerta, recomendacao: $json.recomendacao, updated_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "2d963ac5-8aa0-45c6-8793-3c93cbd13e2a",
+      "name": "Gravar no Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "A4E5728D-2F9F-449D-840A-416F48C4A4E2"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: '5562981394546', text: '🎯 *Novo lead do Raio X!*\\n\\n👤 *Nome:* ' + $json.nome + '\\n📱 *WhatsApp:* https://wa.me/' + ($json.whatsapp.startsWith('55') ? $json.whatsapp : '55' + $json.whatsapp) + '\\n\\n📊 *Nota:* ' + $json.total + '/35\\n📉 *Etapa mais fraca:* ' + $json.etapa_fraca + ($json.dinheiro_alerta ? '\\n🚨 *DINHEIRO abaixo de 3 — prioridade nº 1!*' : '') + '\\n\\n💡 *Recomendação:* ' + $json.recomendacao }) }}",
+        "options": {}
+      },
+      "id": "9ea47c58-08f8-4a99-abfd-200af6f26926",
+      "name": "Avisar no WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {}
+      },
+      "id": "b0963e64-2d68-4810-8b3c-96b072c63c3e",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "266e21d7-b0a4-4e8f-87ec-69b780aa5ece",
+      "name": "Responder inválido",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Raio X": {
+      "main": [
+        [
+          {
+            "node": "Normalizar + Classificar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar + Classificar": {
+      "main": [
+        [
+          {
+            "node": "Lead válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead válido?": {
+      "main": [
+        [
+          {
+            "node": "Gravar no Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder inválido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar no Supabase": {
+      "main": [
+        [
+          {
+            "node": "Avisar no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "234c03ab-0803-4afd-af1a-1123495de6df",
+  "activeVersionId": "234c03ab-0803-4afd-af1a-1123495de6df",
+  "versionCounter": 20,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-07-09T00:01:09.049Z",
+      "createdAt": "2026-07-09T00:01:09.049Z",
+      "role": "workflow:owner",
+      "workflowId": "vn2sFcdJt4AZiUdZ",
+      "projectId": "Qw2S8PfyrGHokeXF",
+      "project": {
+        "updatedAt": "2026-07-08T02:03:48.782Z",
+        "createdAt": "2026-07-08T01:51:47.911Z",
+        "id": "Qw2S8PfyrGHokeXF",
+        "name": "Atitude Soluções <atitudesolucoesinteligentes@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-07-09T00:44:30.885Z",
+    "createdAt": "2026-07-09T00:42:43.885Z",
+    "versionId": "234c03ab-0803-4afd-af1a-1123495de6df",
+    "workflowId": "vn2sFcdJt4AZiUdZ",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "raiox-lead-a7x392",
+          "responseMode": "responseNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "id": "5e8294e3-f2e7-4440-b7f7-b74cb4b56fc2",
+        "name": "Webhook Raio X",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -656,
+          112
+        ],
+        "webhookId": "raiox-lead-a7x392"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Normaliza o lead e calcula a recomendação (mesma régua do quiz)\nconst b = $input.first().json.body || $input.first().json;\n\nconst nome = String(b.nome || '').trim().slice(0, 120);\nconst whatsapp = String(b.whatsapp || '').replace(/\\D/g, '');\nconst scores = Array.isArray(b.scores) ? b.scores.map(n => Number(n) || 0) : [];\nconst total = Number(b.total) || scores.reduce((s, n) => s + n, 0);\nconst etapaFraca = String(b.etapaFraca || '');\n\nif (!nome || whatsapp.length < 10) {\n  return [{ json: { valido: false, motivo: 'nome ou whatsapp inválido' } }];\n}\n\n// Régua oficial: <=14 Kit | 15-28 Painel ou Kit | >=29 Gestão Assistida\nlet recomendacao;\nif (total <= 14) recomendacao = 'Kit Gestão na Prática (R$ 97)';\nelse if (total <= 28) recomendacao = 'Painel do Dono (R$ 197/mês)';\nelse recomendacao = 'Gestão Assistida (R$ 1.997/mês)';\n\n// Prioridade travada: Dinheiro abaixo de 3 é sempre prioridade nº 1\nconst etapas = ['Alicerce','Termômetro','Identidade','Trajetória','Unidade de medida','Dinheiro','Engrenagem'];\nconst dinheiroBaixo = scores.length === 7 && scores[5] < 3;\n\n// Link wa.me do lead (assume Brasil se vier sem DDI)\nconst waLead = whatsapp.startsWith('55') ? whatsapp : '55' + whatsapp;\n\nreturn [{\n  json: {\n    valido: true,\n    nome,\n    whatsapp,\n    wa_link: 'https://wa.me/' + waLead,\n    total,\n    scores,\n    etapa_fraca: etapaFraca,\n    dinheiro_alerta: dinheiroBaixo,\n    recomendacao,\n    origem: String(b.origem || 'raiox'),\n    pagina: String(b.pagina || 'diagnostico'),\n    ts: b.ts || new Date().toISOString()\n  }\n}];"
+        },
+        "id": "1e95b3f2-bb0d-4980-8301-a733d0c83b4d",
+        "name": "Normalizar + Classificar",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -448,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.valido }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "bf8aba3f-9611-40b9-a384-ceb8e41a6912",
+        "name": "Lead válido?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -224,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/leads?on_conflict=whatsapp",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "resolution=merge-duplicates,return=representation"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ whatsapp: ($json.whatsapp.startsWith('55') ? $json.whatsapp : '55' + $json.whatsapp), nome: $json.nome, status: 'raiox_concluido', origem: 'raiox', total: $json.total, scores: $json.scores, etapa_fraca: $json.etapa_fraca, dinheiro_alerta: $json.dinheiro_alerta, recomendacao: $json.recomendacao, updated_at: new Date().toISOString() }) }}",
+          "options": {}
+        },
+        "id": "2d963ac5-8aa0-45c6-8793-3c93cbd13e2a",
+        "name": "Gravar no Supabase",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://whatsapp.atitudesolucoes.com.br/message/sendText/atitude-principal",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "A4E5728D-2F9F-449D-840A-416F48C4A4E2"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ number: '5562981394546', text: '🎯 *Novo lead do Raio X!*\\n\\n👤 *Nome:* ' + $json.nome + '\\n📱 *WhatsApp:* https://wa.me/' + ($json.whatsapp.startsWith('55') ? $json.whatsapp : '55' + $json.whatsapp) + '\\n\\n📊 *Nota:* ' + $json.total + '/35\\n📉 *Etapa mais fraca:* ' + $json.etapa_fraca + ($json.dinheiro_alerta ? '\\n🚨 *DINHEIRO abaixo de 3 — prioridade nº 1!*' : '') + '\\n\\n💡 *Recomendação:* ' + $json.recomendacao }) }}",
+          "options": {}
+        },
+        "id": "9ea47c58-08f8-4a99-abfd-200af6f26926",
+        "name": "Avisar no WhatsApp",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          224,
+          0
+        ],
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+          "options": {}
+        },
+        "id": "b0963e64-2d68-4810-8b3c-96b072c63c3e",
+        "name": "Responder OK",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          448,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ ok: false }) }}",
+          "options": {
+            "responseCode": 400
+          }
+        },
+        "id": "266e21d7-b0a4-4e8f-87ec-69b780aa5ece",
+        "name": "Responder inválido",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          240
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook Raio X": {
+        "main": [
+          [
+            {
+              "node": "Normalizar + Classificar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalizar + Classificar": {
+        "main": [
+          [
+            {
+              "node": "Lead válido?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Lead válido?": {
+        "main": [
+          [
+            {
+              "node": "Gravar no Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Responder inválido",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gravar no Supabase": {
+        "main": [
+          [
+            {
+              "node": "Avisar no WhatsApp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Avisar no WhatsApp": {
+        "main": [
+          [
+            {
+              "node": "Responder OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Atitude Soluções",
+    "name": "Version 234c03ab",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-07-09T00:44:30.883Z",
+        "id": 10,
+        "workflowId": "vn2sFcdJt4AZiUdZ",
+        "versionId": "234c03ab-0803-4afd-af1a-1123495de6df",
+        "event": "activated",
+        "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    ]
+  }
+}
