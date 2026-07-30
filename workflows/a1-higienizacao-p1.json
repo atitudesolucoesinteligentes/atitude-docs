@@ -1,0 +1,397 @@
+{
+  "updatedAt": "2026-07-23T16:25:53.167Z",
+  "createdAt": "2026-07-16T18:54:51.316Z",
+  "id": "NNZqfMGl15XqIizu",
+  "name": "A1 Higienização p1",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## A1 Higienização — parte 1\n\nEtapa 0 (higiene cadastral via RPC no banco) + Etapa 1 (validação WhatsApp em lote na Evolution, instância atitude-principal).\n\n**Antes de executar:**\n1. Rodar o patch-04-higiene-cadastral.sql no Supabase\n2. Selecionar a credencial Supabase API nos nós Supabase\n3. Criar credencial Header Auth da Evolution (nome: apikey / valor: sua API key global) e selecionar no nó \"Evolution Validar Números\"\n\nA validação NÃO envia mensagem — só consulta se o número tem WhatsApp.",
+        "height": 300,
+        "width": 400
+      },
+      "id": "352e9e9e-ada7-49b3-a87a-50549a55217c",
+      "name": "Instruções",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "644a2832-4faf-4476-b1f5-2b39a979405c",
+      "name": "Executar Higienização",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/rpc/fn_higiene_cadastral",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}",
+        "options": {}
+      },
+      "id": "d4e0c4e6-481d-4400-9f79-8c338c2da8ac",
+      "name": "Etapa 0 - Higiene Cadastral (RPC)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        320
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?select=id,slug,whatsapp,telefones_json&status=eq.novo&tem_celular=eq.true&whatsapp_verificado_em=is.null&order=id&limit=100",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "620d66b7-4ce6-4f9c-a557-7c5075d44a6f",
+      "name": "Buscar Leads p/ Validar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        320
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Monta UM lote com todos os candidatos a WhatsApp de todos os leads.\n// Cada lead pode ter mais de um celular em telefones_json — validamos\n// todos de uma vez e depois escolhemos o primeiro que existir.\nconst leads = $input.all().map(i => i.json).flat().filter(l => l && l.id);\nif (leads.length === 0) return [{ json: { __vazio: true } }];\n\nconst mapa = [];\nconst todos = new Set();\nfor (const l of leads) {\n  const candidatos = [];\n  // 1º candidato: o whatsapp já escolhido no A0\n  if (l.whatsapp) candidatos.push(String(l.whatsapp));\n  // demais celulares do telefones_json\n  for (const t of (l.telefones_json || [])) {\n    if (t && t.celular && t.area && t.number) {\n      const n = `55${t.area}${t.number}`;\n      if (!candidatos.includes(n)) candidatos.push(n);\n    }\n  }\n  if (candidatos.length === 0) continue;\n  mapa.push({ id: l.id, slug: l.slug, candidatos });\n  candidatos.forEach(c => todos.add(c));\n}\n\nif (todos.size === 0) return [{ json: { __vazio: true } }];\nreturn [{ json: { numbers: Array.from(todos), mapa } }];"
+      },
+      "id": "0a0deb12-5ae5-41e9-a128-5a33429fda22",
+      "name": "Montar Lote de Números",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.__vazio !== true }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "c772ac50-3ed8-4334-b377-5fccbf399d1b"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fca67645-0e40-4404-9b6a-978ad47ffdde",
+      "name": "Tem números?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://whatsapp.atitudesolucoes.com.br/chat/whatsappNumbers/atitude-principal",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ numbers: $json.numbers }) }}",
+        "options": {}
+      },
+      "id": "b42a6022-b9c7-417d-82c7-5dffffb37aa7",
+      "name": "Evolution Validar Números",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1104,
+        224
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lGhduTvTTMaZoDWT",
+          "name": "Evolution apikey"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cruza o resultado da Evolution com os candidatos de cada lead:\n// o primeiro candidato com exists=true vira o whatsapp oficial.\n// Sem nenhum candidato válido => lead sai do funil (status: sem_whatsapp).\nconst resp = $input.all().map(i => i.json).flat();\nconst existe = new Map();\nfor (const r of resp) {\n  if (!r) continue;\n  const num = String(r.number || r.jid || '').replace(/\\D/g, '');\n  existe.set(num, !!r.exists);\n  // Evolution pode devolver o jid com 8 dígitos (sem o nono) — indexa também\n  if (r.jid) existe.set(String(r.jid).split('@')[0].replace(/\\D/g, ''), !!r.exists);\n}\nconst mapa = $('Montar Lote de Números').first().json.mapa || [];\nconst agora = new Date().toISOString();\nconst out = [];\nfor (const m of mapa) {\n  const valido = m.candidatos.find(c => existe.get(String(c).replace(/\\D/g, '')) === true);\n  out.push({ json: {\n    id: m.id,\n    slug: m.slug,\n    body: valido\n      ? { whatsapp: valido, whatsapp_valido: true,  whatsapp_verificado_em: agora }\n      : {                    whatsapp_valido: false, whatsapp_verificado_em: agora, status: 'sem_whatsapp' }\n  }});\n}\nif (out.length === 0) return [{ json: { __vazio: true } }];\nreturn out;"
+      },
+      "id": "dda6f05a-4d0d-47a7-bd7b-4cd726c4c04d",
+      "name": "Aplicar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "id": "92ca1173-bbe0-4d24-aee1-bf8c922326f1",
+      "name": "Atualizar Empresas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1552,
+        224
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resumo da rodada\nconst aplicados = $('Aplicar Resultado').all().map(i => i.json).filter(j => j.id);\nconst validos = aplicados.filter(a => a.body.whatsapp_valido === true).length;\nconst invalidos = aplicados.length - validos;\nconst higiene = $('Etapa 0 - Higiene Cadastral (RPC)').first()?.json || {};\nreturn [{ json: {\n  processados: aplicados.length,\n  whatsapp_validos: validos,\n  whatsapp_invalidos: invalidos,\n  higiene_cadastral: higiene\n} }];"
+      },
+      "id": "dcf62228-eecf-479f-9a3d-f0f79aa116e2",
+      "name": "Resumo da Rodada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        320
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a9d91bba-1aeb-4ef0-b86d-896cebc7a1a4",
+      "name": "Fim (encadear A1 parte 2 aqui)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1984,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Executar Higienização": {
+      "main": [
+        [
+          {
+            "node": "Etapa 0 - Higiene Cadastral (RPC)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Etapa 0 - Higiene Cadastral (RPC)": {
+      "main": [
+        [
+          {
+            "node": "Buscar Leads p/ Validar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Leads p/ Validar": {
+      "main": [
+        [
+          {
+            "node": "Montar Lote de Números",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Lote de Números": {
+      "main": [
+        [
+          {
+            "node": "Tem números?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem números?": {
+      "main": [
+        [
+          {
+            "node": "Evolution Validar Números",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo da Rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution Validar Números": {
+      "main": [
+        [
+          {
+            "node": "Aplicar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar Resultado": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Empresas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Empresas": {
+      "main": [
+        [
+          {
+            "node": "Resumo da Rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumo da Rodada": {
+      "main": [
+        [
+          {
+            "node": "Fim (encadear A1 parte 2 aqui)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "63e40252-7668-48b7-979b-d81a35445006",
+  "activeVersionId": null,
+  "versionCounter": 8,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-07-16T18:54:51.316Z",
+      "createdAt": "2026-07-16T18:54:51.316Z",
+      "role": "workflow:owner",
+      "workflowId": "NNZqfMGl15XqIizu",
+      "projectId": "Qw2S8PfyrGHokeXF",
+      "project": {
+        "updatedAt": "2026-07-08T02:03:48.782Z",
+        "createdAt": "2026-07-08T01:51:47.911Z",
+        "id": "Qw2S8PfyrGHokeXF",
+        "name": "Atitude Soluções <atitudesolucoesinteligentes@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
