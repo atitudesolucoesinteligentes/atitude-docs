@@ -120,7 +120,7 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "A4E5728D-2F9F-449D-840A-416F48C4A4E2"
+              "value": "{{REDACTED_EVOLUTION_KEY}}"
             },
             {
               "name": "Content-Type",
@@ -394,7 +394,7 @@
             "parameters": [
               {
                 "name": "apikey",
-                "value": "A4E5728D-2F9F-449D-840A-416F48C4A4E2"
+                "value": "{{REDACTED_EVOLUTION_KEY}}"
               },
               {
                 "name": "Content-Type",
