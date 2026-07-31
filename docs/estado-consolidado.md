@@ -1,5 +1,5 @@
 # Somos Atitude — Estado do Projeto (consolidado)
-**Última consolidação: 30/07/2026 (v2 — revisão de catálogo, troca do e-book e suspensão do Zaia) · Este arquivo substitui os documentos individuais de cada sessão anterior**
+**Última consolidação: 31/07/2026 (v3 — enriquecimento v2 + msg1 com gancho)**
 
 > Sempre que possível, cheque `FONTES.md` para a versão viva do schema, workflows e site (atualizados automaticamente via GitHub). Este arquivo é o histórico narrativo de decisões e a referência de regras de negócio — o `FONTES.md` é a referência técnica de dados.
 
@@ -389,6 +389,100 @@ Sessão de conferência de valores durante a unificação dos documentos do proj
 **c) Suspensão da migração para o Zaia** — detalhes completos em §1.3. `a2-resposta-v3` permanece como o motor de inbound. Verificação feita no workflow vivo: o classificador v2 desenhado no pilot nunca chegou ao n8n (produção roda v1) — portá-lo virou a pendência #1 do §1.4.
 
 ---
+# Sessão 31/07/2026 — Enriquecimento v2 + msg1 com gancho (A1 p2 + A2 Disparo)
+
+## Objetivo
+Deixar a msg1 mais específica e assertiva: enriquecer o lead com dados que já pagamos
+(Places tier Enterprise) ou que custam zero (regex no HTML), e dar ao gerador dois
+ângulos de abordagem — gancho positivo verificável + dor — em vez de só a dor.
+
+## O que foi entregue
+
+### Banco (patch-10-enriquecimento-extra.sql)
+- Colunas novas em `empresas`: `gancho_abordagem` (text) e `enriquecimento_extra` (jsonb:
+  instagram_handle, site_titulo, site_meta_description, site_tem_whatsapp, site_https,
+  gbp_fotos_qtd, gbp_tem_horario, gbp_tipo_google, gbp_editorial,
+  review_mais_recente_dias, review_destaque {texto, nota, autor})
+- `vw_fila_disparo` recriada com as 2 colunas apendadas no fim (vw_fila_priorizada intacta)
+- Reset da fila: 73 leads de `fila` → `novo` para re-enriquecimento no modelo novo
+  (protegido por NOT EXISTS em interacoes msg1/msg2; disparador estava pausado)
+
+### A1 p2 — Enriquecimento v2 (6 nós alterados)
+1. **Places Text Search**: FieldMask + photos, regularOpeningHours, editorialSummary,
+   primaryTypeDisplayName (mesmo tier de custo do reviews); maxResultCount 5 → 10
+   (custo por request, não por resultado)
+2. **Match GBP v5**: reviews 3 → 5 com publishTime; cálculo de review_mais_recente_dias;
+   extração de gbp_extra (fotos, horário, tipo, editorial). Fallback nome+cidade
+   reescrito: varre TODOS os candidatos (não só places[0]), normaliza acentos,
+   exige 2+ palavras significativas OU 1 palavra + bairro conferindo (stopwords
+   filtradas), e desempata pelo candidato mais completo em dados (telefone > rating
+   > fotos > horário)
+3. **Preparar Análise**: extração determinística via regex do HTML bruto —
+   instagram_handle (com exclusão de paths de post), title, meta description,
+   presença de wa.me, https
+4. **Claude Classificar (prompt v3)**: campos novos gancho_abordagem e review_destaque;
+   regra 6 com allowlist fechada de fontes (rating>=4.5 + avaliações | review real |
+   editorial) e denylist explícita (idade, horário, tipo); max_tokens 700 → 900
+5. **Aplicar Classificação**: monta enriquecimento_extra (parte determinística grava
+   mesmo se o Claude falhar); **TRAVA DETERMINÍSTICA DO GANCHO** — gancho só é aceito
+   se houver fonte real nos dados (rating>=4.5 c/ avaliações, review_destaque válido,
+   ou editorial); senão null independente do LLM. Princípio: LLM sugere, código decide.
+6. **Resolver Conflito de Place**: limpa também gbp_extra/review_destaque/gancho do
+   enriquecimento_extra ao desvincular um place conflitante
+
+### Bug crítico corrigido — colapso de itens em lote (A1 p2)
+Os nós "Checar Place Duplicado" / "Resolver Conflito de Place" (adicionados em
+28/07 10:18, APÓS o último lote de 25 — nunca haviam rodado com lote real) perdiam
+itens: leads sem gbp_place_id não emitiam output no Checar, e o Resolver rodava em
+modo run-once retornando 1 item. Num lote de 10, só 1 lead era gravado.
+Correção (determinística, arquitetura batelada):
+- Checar Place Duplicado: **Execute Once** + consulta única `gbp_place_id=in.(...)`
+  com todos os places do lote (fallback "__nenhum__" para lote sem places)
+- Resolver Conflito: reconstrói o lote inteiro de `$('Aplicar Classificação').all()`
+  e retorna N itens — N entram, N saem, por construção
+- Gravar Enriquecimento: `Prefer: return=representation` (era minimal — output vazio
+  colapsava o pareamento downstream)
+- Calcular Score: usa `$json.id` da linha retornada pelo Gravar
+
+### A2 Disparo v3.2 (2 nós alterados)
+- **Buscar 1 Lead da Fila**: select + gancho_abordagem, enriquecimento_extra
+- **Claude Gerar Mensagem (prompt v2)**: regra 10 nova — abre pelo GANCHO quando
+  existir, dor como transição; review_destaque com nome de pessoa/serviço pode ser
+  citado entre aspas simples; máximo 2 dados por mensagem; proibido inventar números.
+  Payload troca gbp_reviews[0] cru pelo review_destaque curado + gancho + instagram.
+  Validador e fallback inalterados.
+
+## Testes executados
+| Teste | Resultado |
+|---|---|
+| T-E1 (lead sem GBP/site) | ✅ enriquecimento_extra grava parte determinística; gancho null |
+| T-E1b (lead com GBP via fallback) | ✅ Autêntica Brand: place correto escolhido por completude |
+| Trava do gancho | ✅ Haiku violou a regra 6 v3 (lead 84) → trava em código bloqueou; query de auditoria = 0 ganchos sem fonte |
+| Lote de 10 | ✅ 10 entram → 10 gravados após fix do colapso |
+| Fila completa | ✅ 71 na fila, 19 com GBP (26,8% vs 17,6% do modelo antigo), 13 com gancho |
+| T-D2 (msg1 real) | ✅ Lead 239 (Revitalize/Leticia): mensagem abre pelo gancho, ignora review vazio, 2 dados, termina em pergunta — enviada como 1º disparo real do modelo novo |
+
+## Decisões
+- Disparos de hoje (31/07): execução MANUAL, uma a uma, para conferência das mensagens
+  antes do envio. Schedule do A2 Disparo permanece desligado até validação do dia.
+- limite_diario no config está em 7 (conferir se intencional antes de religar o cron)
+- Leads franquia (Espaçolaser) sem match: comportamento aceito — telefone corporativo
+  difere do PDV; melhor tem_gbp=false honesto que citar unidade errada
+
+## Backlog (registrado, fora desta entrega)
+1. **A0 + geocoding**: adicionar `geocoding=true` na consulta CNPJá e mapear
+   latitude/longitude no nó "Mapear Registros1" (campos lat/lng existem na tabela e
+   estão 100% vazios — confirmado que o CNPJá fornece, nunca foi pedido). Depois,
+   plugar `locationBias` no Places Text Search do A1 p2 para leads futuros.
+   Verificar custo de crédito do geocoding antes.
+2. **Qualidade do review_destaque**: exigir texto real com mínimo ~30 caracteres no
+   classificador (caso observado: "Avaliação 5 estrelas" de review sem texto —
+   inofensivo porque o gerador ignora, mas polui o dado).
+3. **Roteiros msg1**: atualizar exemplos na tabela `roteiros` para refletir o padrão
+   gancho→dor (hoje o guia/exemplo é anterior ao gancho).
+4. **Re-enriquecimento periódico**: leads antigos fora do reset (abordados/respondeu)
+   seguem com dados do modelo antigo; avaliar re-enriquecer antes de follow-ups
+   relevantes.
 
 # PARTE 3 — GLOSSÁRIO DE REFERÊNCIA RÁPIDA
 
