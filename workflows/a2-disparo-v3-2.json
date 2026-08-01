@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-23T12:17:36.976Z",
+  "updatedAt": "2026-07-31T12:11:47.152Z",
   "createdAt": "2026-07-23T11:54:59.802Z",
   "id": "PGxUrAok89DfXs9u",
   "name": "A2 Disparo v3.2",
@@ -183,7 +183,7 @@
     },
     {
       "parameters": {
-        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/vw_fila_disparo?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score&limit=1",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/vw_fila_disparo?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gancho_abordagem,enriquecimento_extra,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score&limit=1",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "options": {}
@@ -392,7 +392,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 700, system: 'Voce escreve a primeira mensagem de WhatsApp da Atitude Solucoes para prospeccao B2B local. REGRAS RIGIDAS: (1) 3 a 5 linhas curtas, tom humano e caloroso, nunca robotico. (2) A primeira frase cita o nome da pessoa e um dado real e especifico do negocio (nunca generico). (3) PROIBIDO incluir qualquer link ou URL. (4) PROIBIDO citar preco, CNPJ, capital social ou qualquer dado cadastral. (5) PROIBIDO usar as palavras: gratis, promocao, imperdivel, desconto, urgente, oportunidade unica. (6) PROIBIDO emoji em sequencia (no maximo 1, opcional). (7) Termine com um pedido de permissao curto (uma pergunta), nunca com uma afirmacao. (8) Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem explicacao. (9) A mensagem deve ser um UNICO bloco de texto corrido, sem linha em branco no meio, sem quebra de paragrafo -- nunca use duas quebras de linha seguidas.', messages: [{ role: 'user', content: 'GUIA DE TOM PARA ESTE PERFIL:\\n' + ($json.roteiro?.guia || 'Seja natural e especifico.') + '\\n\\nEXEMPLO DE REFERENCIA (nao copie, apenas o estilo):\\n' + ($json.roteiro?.exemplo || '') + '\\n\\nDADOS REAIS DESTE LEAD (use apenas o que fizer sentido, nao force todos):\\n' + JSON.stringify({ nome_socio: $json.lead.nome_socio, nome_negocio: $json.lead.nome_exibicao, municipio: $json.lead.municipio, bairro: $json.lead.bairro, segmento: $json.lead.segmento || $json.lead.cnae_descricao, dor: $json.lead.dor_resumida, gbp_rating: $json.lead.gbp_rating, gbp_avaliacoes: $json.lead.gbp_avaliacoes, review_em_destaque: $json.lead.gbp_reviews?.[0]?.texto || null }) + '\\n\\nEscreva a mensagem agora.' }] }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 700, system: 'Voce escreve a primeira mensagem de WhatsApp da Atitude Solucoes para prospeccao B2B local. REGRAS RIGIDAS: (1) 3 a 5 linhas curtas, tom humano e caloroso, nunca robotico. (2) A primeira frase cita o nome da pessoa e um dado real e especifico do negocio (nunca generico). (3) PROIBIDO incluir qualquer link ou URL. (4) PROIBIDO citar preco, CNPJ, capital social ou qualquer dado cadastral. (5) PROIBIDO usar as palavras: gratis, promocao, imperdivel, desconto, urgente, oportunidade unica. (6) PROIBIDO emoji em sequencia (no maximo 1, opcional). (7) Termine com um pedido de permissao curto (uma pergunta), nunca com uma afirmacao. (8) Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem explicacao. (9) A mensagem deve ser um UNICO bloco de texto corrido, sem linha em branco no meio, sem quebra de paragrafo -- nunca use duas quebras de linha seguidas. (10) USO DOS DADOS: se houver GANCHO, abra por ele (elogio especifico e verificavel) e use a DOR como transicao para a pergunta final; se houver REVIEW_DESTAQUE com nome de pessoa ou servico, pode citar um trecho curto entre aspas simples; sem gancho, abra pela dor de forma respeitosa. Use no maximo 2 dados do lead na mensagem inteira -- especificidade vem de profundidade, nao de quantidade. NUNCA invente numeros, percentuais ou resultados.', messages: [{ role: 'user', content: 'GUIA DE TOM PARA ESTE PERFIL:\\n' + ($json.roteiro?.guia || 'Seja natural e especifico.') + '\\n\\nEXEMPLO DE REFERENCIA (nao copie, apenas o estilo):\\n' + ($json.roteiro?.exemplo || '') + '\\n\\nDADOS REAIS DESTE LEAD (use apenas o que fizer sentido, nao force todos):\\n' + JSON.stringify({ nome_socio: $json.lead.nome_socio, nome_negocio: $json.lead.nome_exibicao, municipio: $json.lead.municipio, bairro: $json.lead.bairro, segmento: $json.lead.segmento || $json.lead.cnae_descricao, gancho: $json.lead.gancho_abordagem, dor: $json.lead.dor_resumida, gbp_rating: $json.lead.gbp_rating, gbp_avaliacoes: $json.lead.gbp_avaliacoes, review_destaque: $json.lead.enriquecimento_extra?.review_destaque || null, instagram: $json.lead.enriquecimento_extra?.instagram_handle || null }) + '\\n\\nEscreva a mensagem agora.' }] }) }}",
         "options": {
           "timeout": 60000
         }
@@ -966,9 +966,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "1a625d6b-675b-4f9d-9c80-48ee41c02ef6",
-  "activeVersionId": "1a625d6b-675b-4f9d-9c80-48ee41c02ef6",
-  "versionCounter": 7,
+  "versionId": "6d39d4b2-b19a-48d2-b85c-4e52f3040ff6",
+  "activeVersionId": "6d39d4b2-b19a-48d2-b85c-4e52f3040ff6",
+  "versionCounter": 9,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "shared": [
@@ -993,9 +993,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-07-23T12:20:45.844Z",
-    "createdAt": "2026-07-23T12:17:36.977Z",
-    "versionId": "1a625d6b-675b-4f9d-9c80-48ee41c02ef6",
+    "updatedAt": "2026-07-31T17:45:02.805Z",
+    "createdAt": "2026-07-31T12:11:47.154Z",
+    "versionId": "6d39d4b2-b19a-48d2-b85c-4e52f3040ff6",
     "workflowId": "PGxUrAok89DfXs9u",
     "nodes": [
       {
@@ -1174,7 +1174,7 @@
       },
       {
         "parameters": {
-          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/vw_fila_disparo?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score&limit=1",
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/vw_fila_disparo?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gancho_abordagem,enriquecimento_extra,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score&limit=1",
           "authentication": "predefinedCredentialType",
           "nodeCredentialType": "supabaseApi",
           "options": {}
@@ -1383,7 +1383,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 700, system: 'Voce escreve a primeira mensagem de WhatsApp da Atitude Solucoes para prospeccao B2B local. REGRAS RIGIDAS: (1) 3 a 5 linhas curtas, tom humano e caloroso, nunca robotico. (2) A primeira frase cita o nome da pessoa e um dado real e especifico do negocio (nunca generico). (3) PROIBIDO incluir qualquer link ou URL. (4) PROIBIDO citar preco, CNPJ, capital social ou qualquer dado cadastral. (5) PROIBIDO usar as palavras: gratis, promocao, imperdivel, desconto, urgente, oportunidade unica. (6) PROIBIDO emoji em sequencia (no maximo 1, opcional). (7) Termine com um pedido de permissao curto (uma pergunta), nunca com uma afirmacao. (8) Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem explicacao. (9) A mensagem deve ser um UNICO bloco de texto corrido, sem linha em branco no meio, sem quebra de paragrafo -- nunca use duas quebras de linha seguidas.', messages: [{ role: 'user', content: 'GUIA DE TOM PARA ESTE PERFIL:\\n' + ($json.roteiro?.guia || 'Seja natural e especifico.') + '\\n\\nEXEMPLO DE REFERENCIA (nao copie, apenas o estilo):\\n' + ($json.roteiro?.exemplo || '') + '\\n\\nDADOS REAIS DESTE LEAD (use apenas o que fizer sentido, nao force todos):\\n' + JSON.stringify({ nome_socio: $json.lead.nome_socio, nome_negocio: $json.lead.nome_exibicao, municipio: $json.lead.municipio, bairro: $json.lead.bairro, segmento: $json.lead.segmento || $json.lead.cnae_descricao, dor: $json.lead.dor_resumida, gbp_rating: $json.lead.gbp_rating, gbp_avaliacoes: $json.lead.gbp_avaliacoes, review_em_destaque: $json.lead.gbp_reviews?.[0]?.texto || null }) + '\\n\\nEscreva a mensagem agora.' }] }) }}",
+          "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 700, system: 'Voce escreve a primeira mensagem de WhatsApp da Atitude Solucoes para prospeccao B2B local. REGRAS RIGIDAS: (1) 3 a 5 linhas curtas, tom humano e caloroso, nunca robotico. (2) A primeira frase cita o nome da pessoa e um dado real e especifico do negocio (nunca generico). (3) PROIBIDO incluir qualquer link ou URL. (4) PROIBIDO citar preco, CNPJ, capital social ou qualquer dado cadastral. (5) PROIBIDO usar as palavras: gratis, promocao, imperdivel, desconto, urgente, oportunidade unica. (6) PROIBIDO emoji em sequencia (no maximo 1, opcional). (7) Termine com um pedido de permissao curto (uma pergunta), nunca com uma afirmacao. (8) Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem explicacao. (9) A mensagem deve ser um UNICO bloco de texto corrido, sem linha em branco no meio, sem quebra de paragrafo -- nunca use duas quebras de linha seguidas. (10) USO DOS DADOS: se houver GANCHO, abra por ele (elogio especifico e verificavel) e use a DOR como transicao para a pergunta final; se houver REVIEW_DESTAQUE com nome de pessoa ou servico, pode citar um trecho curto entre aspas simples; sem gancho, abra pela dor de forma respeitosa. Use no maximo 2 dados do lead na mensagem inteira -- especificidade vem de profundidade, nao de quantidade. NUNCA invente numeros, percentuais ou resultados.', messages: [{ role: 'user', content: 'GUIA DE TOM PARA ESTE PERFIL:\\n' + ($json.roteiro?.guia || 'Seja natural e especifico.') + '\\n\\nEXEMPLO DE REFERENCIA (nao copie, apenas o estilo):\\n' + ($json.roteiro?.exemplo || '') + '\\n\\nDADOS REAIS DESTE LEAD (use apenas o que fizer sentido, nao force todos):\\n' + JSON.stringify({ nome_socio: $json.lead.nome_socio, nome_negocio: $json.lead.nome_exibicao, municipio: $json.lead.municipio, bairro: $json.lead.bairro, segmento: $json.lead.segmento || $json.lead.cnae_descricao, gancho: $json.lead.gancho_abordagem, dor: $json.lead.dor_resumida, gbp_rating: $json.lead.gbp_rating, gbp_avaliacoes: $json.lead.gbp_avaliacoes, review_destaque: $json.lead.enriquecimento_extra?.review_destaque || null, instagram: $json.lead.enriquecimento_extra?.instagram_handle || null }) + '\\n\\nEscreva a mensagem agora.' }] }) }}",
           "options": {
             "timeout": 60000
           }
@@ -1941,15 +1941,15 @@
     },
     "nodeGroups": [],
     "authors": "Atitude Soluções",
-    "name": "Version 1a625d6b",
+    "name": "Version 6d39d4b2",
     "description": "",
     "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-07-23T12:20:45.841Z",
-        "id": 75,
+        "createdAt": "2026-07-31T17:45:02.799Z",
+        "id": 112,
         "workflowId": "PGxUrAok89DfXs9u",
-        "versionId": "1a625d6b-675b-4f9d-9c80-48ee41c02ef6",
+        "versionId": "6d39d4b2-b19a-48d2-b85c-4e52f3040ff6",
         "event": "activated",
         "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
       }
