@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-07-31)
+# Schema — Somos Atitude (gerado em 2026-08-01)
 
 # TABELAS
 
@@ -177,6 +177,8 @@
 - `email_status` text DEFAULT 'sem_email'::text
 - `raiox_achados` jsonb
 - `raiox_em` timestamp with time zone
+- `gancho_abordagem` text
+- `enriquecimento_extra` jsonb
 
 ## Tabela: followups_agendados
 - `id` bigint NOT NULL
@@ -557,7 +559,9 @@
     nome_socio,
     flag_filial_repetida,
     flag_rede,
-    flag_tel_repetido
+    flag_tel_repetido,
+    gancho_abordagem,
+    enriquecimento_extra
    FROM empresas e
   WHERE ((status = 'fila'::text) AND (opt_out = false) AND (tem_celular = true) AND (whatsapp_valido = true) AND (flag_filial_repetida = false) AND (flag_tel_repetido = false) AND (COALESCE(perfil_oferta, ''::text) !~~ 'descartado%'::text) AND (tentativas = 0))
   ORDER BY score DESC NULLS LAST, criado_em;
@@ -741,7 +745,7 @@
                   ORDER BY i.criado_em DESC
                  LIMIT 1) ultima ON (true))
              CROSS JOIN cfg)
-          WHERE ((COALESCE(e.origem, ''::text) = ANY (ARRAY['anuncio'::text, 'site'::text])) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (COALESCE(e.bot_suspeito, false) = false) AND (ultima.direcao = 'saida'::text) AND (ultima.etapa = 'resposta_agente'::text) AND (ultima.criado_em <= (now() - ((((cfg.valor ->> 'conversa_parada_dias'::text))::integer || ' days'::text))::interval)) AND (NOT (EXISTS ( SELECT 1
+          WHERE ((COALESCE(e.origem, ''::text) = ANY (ARRAY['anuncio'::text, 'site'::text])) AND (e.status <> ALL (ARRAY['cliente'::text, 'pos_venda'::text, 'perdido'::text, 'descartado'::text, 'invalido'::text, 'opt_out'::text, 'perdido_silencio'::text])) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (COALESCE(e.bot_suspeito, false) = false) AND (ultima.direcao = 'saida'::text) AND (ultima.etapa = 'resposta_agente'::text) AND (ultima.criado_em <= (now() - ((((cfg.valor ->> 'conversa_parada_dias'::text))::integer || ' days'::text))::interval)) AND (NOT (EXISTS ( SELECT 1
                    FROM followups_agendados f
                   WHERE ((f.empresa_id = e.id) AND (f.tipo = 'conversa_parada_auto'::text))))))
         )
@@ -804,7 +808,7 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = 'conversa_parada'::text) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL))
+  WHERE ((fa.tipo = 'conversa_parada'::text) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND (e.status <> ALL (ARRAY['cliente'::text, 'pos_venda'::text, 'perdido'::text, 'descartado'::text, 'invalido'::text, 'opt_out'::text, 'perdido_silencio'::text])))
 UNION ALL
  SELECT n.empresa_id,
     e.slug,
@@ -826,7 +830,7 @@ UNION ALL
    FROM ((negocios n
      CROSS JOIN cfg)
      JOIN empresas e ON ((e.id = n.empresa_id)))
-  WHERE ((n.status = 'checkout_enviado'::text) AND (n.pago IS NULL) AND (NOT e.opt_out));
+  WHERE ((n.status = 'checkout_enviado'::text) AND (n.pago IS NULL) AND (NOT e.opt_out) AND (e.status <> ALL (ARRAY['cliente'::text, 'pos_venda'::text, 'perdido'::text, 'descartado'::text, 'invalido'::text, 'opt_out'::text, 'perdido_silencio'::text])));
 ```
 
 ## View: vw_metricas_diarias
