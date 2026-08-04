@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-28T20:03:26.985Z",
+  "updatedAt": "2026-08-03T13:08:37.942Z",
   "createdAt": "2026-07-28T19:40:23.998Z",
   "id": "sHEZd1huhrUMWoE0",
   "name": "Raio-X Registrar + Devolução (avaliacao-presenca)",
@@ -284,7 +284,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ empresa_id: $('Validar Payload').first().json.empresa_id, tipo: 'avaliacao_sem_resposta', devido_em: $now.plus({ days: $('Validar Payload').first().json.followup_dias }).toISO(), contexto: 'Verificar se o lead visualizou o raio-x de presença digital e se quer avançar. Gargalo: ' + ($('Validar Payload').first().json.achados.gargalo_principal || 'ver raiox_achados') }) }}",
+        "jsonBody": "=={{ JSON.stringify({ empresa_id: $('Validar Payload').first().json.empresa_id, tipo: 'conversa_parada', devido_em: $now.plus({ days: $('Validar Payload').first().json.followup_dias }).toISO(), contexto: 'Verificar se o lead visualizou o raio-x de presença digital e se quer avançar. Gargalo: ' + ($('Validar Payload').first().json.achados.gargalo_principal || 'ver raiox_achados') }) }}",
         "options": {}
       },
       "id": "cc5061dd-7fa4-4343-bbe6-b00f0b478700",
@@ -489,9 +489,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "9057aad8-85f8-4bcc-afde-9d0530bd74d3",
-  "activeVersionId": "9057aad8-85f8-4bcc-afde-9d0530bd74d3",
-  "versionCounter": 2,
+  "versionId": "e4019fc2-12f4-4faa-b74b-1374c76f5f09",
+  "activeVersionId": "e4019fc2-12f4-4faa-b74b-1374c76f5f09",
+  "versionCounter": 5,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "shared": [
@@ -516,9 +516,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-07-28T20:05:04.565Z",
-    "createdAt": "2026-07-28T20:03:26.987Z",
-    "versionId": "9057aad8-85f8-4bcc-afde-9d0530bd74d3",
+    "updatedAt": "2026-08-03T13:08:47.712Z",
+    "createdAt": "2026-08-03T13:08:37.943Z",
+    "versionId": "e4019fc2-12f4-4faa-b74b-1374c76f5f09",
     "workflowId": "sHEZd1huhrUMWoE0",
     "nodes": [
       {
@@ -798,7 +798,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ empresa_id: $('Validar Payload').first().json.empresa_id, tipo: 'avaliacao_sem_resposta', devido_em: $now.plus({ days: $('Validar Payload').first().json.followup_dias }).toISO(), contexto: 'Verificar se o lead visualizou o raio-x de presença digital e se quer avançar. Gargalo: ' + ($('Validar Payload').first().json.achados.gargalo_principal || 'ver raiox_achados') }) }}",
+          "jsonBody": "=={{ JSON.stringify({ empresa_id: $('Validar Payload').first().json.empresa_id, tipo: 'conversa_parada', devido_em: $now.plus({ days: $('Validar Payload').first().json.followup_dias }).toISO(), contexto: 'Verificar se o lead visualizou o raio-x de presença digital e se quer avançar. Gargalo: ' + ($('Validar Payload').first().json.achados.gargalo_principal || 'ver raiox_achados') }) }}",
           "options": {}
         },
         "id": "cc5061dd-7fa4-4343-bbe6-b00f0b478700",
@@ -996,15 +996,15 @@
     },
     "nodeGroups": [],
     "authors": "Atitude Soluções",
-    "name": "Version 9057aad8",
+    "name": "Version e4019fc2",
     "description": "",
     "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-07-28T20:05:04.563Z",
-        "id": 94,
+        "createdAt": "2026-08-03T13:08:47.710Z",
+        "id": 120,
         "workflowId": "sHEZd1huhrUMWoE0",
-        "versionId": "9057aad8-85f8-4bcc-afde-9d0530bd74d3",
+        "versionId": "e4019fc2-12f4-4faa-b74b-1374c76f5f09",
         "event": "activated",
         "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
       }
