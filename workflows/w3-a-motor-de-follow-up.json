@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-31T13:06:53.409Z",
+  "updatedAt": "2026-08-03T13:28:08.841Z",
   "createdAt": "2026-07-24T18:02:19.923Z",
   "id": "NhwhxXXpwikIwX04",
   "name": "W3-A — Motor de Follow-up",
@@ -24,7 +24,7 @@
       "typeVersion": 1.2,
       "position": [
         -976,
-        0
+        96
       ]
     },
     {
@@ -40,7 +40,7 @@
       "typeVersion": 4.2,
       "position": [
         -752,
-        0
+        96
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -63,7 +63,7 @@
       "typeVersion": 4.2,
       "position": [
         -528,
-        0
+        96
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -75,7 +75,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const fila = $('Buscar Fila').all().map(i => i.json).filter(x => x && x.tipo);\nconst cfg = ($json && $json.valor) ? $json.valor : {};\nconst teto = cfg.teto_email_dia ?? 20;\n\nconst enc = fila.filter(x => x.tipo === 'encerrar_silencio');\nconst cp  = fila.filter(x => x.tipo === 'conversa_parada_auto')\n  .sort((a,b) => new Date(a.devido_em) - new Date(b.devido_em));\nconst f2  = fila.filter(x => x.tipo === 'f2_breakup')\n  .sort((a,b) => new Date(a.devido_em) - new Date(b.devido_em));\nconst f1  = fila.filter(x => x.tipo === 'f1_email')\n  .sort((a,b) => new Date(a.devido_em) - new Date(b.devido_em))\n  .slice(0, teto);\n\n// conversa_parada (manual) e pos_checkout são do W2 — o W3 ignora\nreturn [...enc, ...cp, ...f2, ...f1].map(json => ({ json }));"
+        "jsCode": "const fila = $('Buscar Fila').all().map(i => i.json).filter(x => x && x.tipo);\nconst cfg = ($json && $json.valor) ? $json.valor : {};\nconst teto = cfg.teto_email_dia ?? 20;\n\nconst enc = fila.filter(x => x.tipo === 'encerrar_silencio');\nconst cp  = fila.filter(x => x.tipo === 'conversa_parada_auto')\n  .sort((a,b) => new Date(a.devido_em) - new Date(b.devido_em));\n// conversa_parada (agendado pelo agente A2 ou manual): o ramo da view devolve\n// TODOS os pendentes, inclusive futuros — filtrar por vencimento aqui\nconst cpm = fila.filter(x => x.tipo === 'conversa_parada'\n    && new Date(x.devido_em) <= new Date())\n  .sort((a,b) => new Date(a.devido_em) - new Date(b.devido_em));\nconst f2  = fila.filter(x => x.tipo === 'f2_breakup')\n  .sort((a,b) => new Date(a.devido_em) - new Date(b.devido_em));\nconst f1  = fila.filter(x => x.tipo === 'f1_email')\n  .sort((a,b) => new Date(a.devido_em) - new Date(b.devido_em))\n  .slice(0, teto);\n\n// pos_checkout segue fora do W3 (sem consumidor por enquanto)\nreturn [...enc, ...cp, ...cpm, ...f2, ...f1].map(json => ({ json }));"
       },
       "id": "1dfd2222-6cb5-443d-9bab-6efb2a67923f",
       "name": "Priorizar e Cortar",
@@ -83,7 +83,7 @@
       "typeVersion": 2,
       "position": [
         -304,
-        0
+        96
       ]
     },
     {
@@ -96,7 +96,7 @@
       "typeVersion": 3,
       "position": [
         -80,
-        0
+        96
       ]
     },
     {
@@ -128,7 +128,7 @@
       "typeVersion": 2,
       "position": [
         144,
-        -192
+        -224
       ]
     },
     {
@@ -157,7 +157,7 @@
       "typeVersion": 4.2,
       "position": [
         368,
-        -192
+        -224
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -180,7 +180,7 @@
       "typeVersion": 4.2,
       "position": [
         368,
-        0
+        -32
       ],
       "credentials": {
         "supabaseApi": {
@@ -191,7 +191,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $('Loop').item.json;   // item da fila (tipo, slug, devido_em, email...)\nconst emp = $json;                    // dossiê (HTTP desembrulha item único)\nconst inter = Array.isArray(emp.interacoes) ? emp.interacoes : [];\n\nconst msg1 = inter\n  .filter(i => i.etapa === 'msg1' && i.direcao === 'saida')\n  .sort((a,b) => new Date(a.criado_em) - new Date(b.criado_em))[0];\nconst f1ant = inter.filter(i => i.etapa === 'f1_email')[0];\nconst ultimaResposta = inter\n  .filter(i => i.etapa === 'resposta_agente' && i.direcao === 'saida')\n  .sort((a,b) => new Date(b.criado_em) - new Date(a.criado_em))[0];\n\nconst nome = emp.nome_fantasia || emp.nome || emp.razao_social || item.slug;\nconst cidade = emp.cidade || emp.municipio || '';\nconst perfil = emp.perfil_oferta || emp.classificacao_oferta || '';\n\n// AJUSTE SE NECESSÁRIO: coluna do número validado usada pelo A2 Disparo\nconst numeroWhats = emp.whatsapp || emp.celular_whatsapp || emp.celular || emp.telefone || null;\n\nlet system, prompt;\n\nif (item.tipo === 'f1_email') {\n  system = `Você é Thyago, fundador da Somos Atitude (agência digital de Goiânia que cria sites e presença no Google para clínicas e profissionais de saúde/estética). Você escreve e-mails de follow-up curtos, pessoais e consultivos — nunca com cara de mala direta.\\n\\nRETORNE SOMENTE JSON válido, sem markdown, no formato: {\\\"assunto\\\": \\\"...\\\", \\\"corpo\\\": \\\"...\\\"}\\n\\nREGRAS INVIOLÁVEIS:\\n- assunto: máx. 60 caracteres, específico ao negócio, sem CAPS, sem exclamações duplas, sem palavras como grátis, promoção, imperdível, oferta\\n- corpo: texto puro, UM parágrafo principal de valor + fecho curto. Abre referenciando a mensagem de WhatsApp já enviada (\\\"te mandei uma mensagem no WhatsApp essa semana sobre...\\\"). Traz UM diagnóstico consultivo real do negócio (presença no Google, site, busca local) — espelho, não pitch. NUNCA repete o argumento da msg1: usa um ângulo novo.\\n- SEM nenhum link ou URL no corpo. CTA em texto puro: \\\"é só me chamar no WhatsApp (62) 98195-0604\\\" — e responder este e-mail também funciona\\n- Assinatura ao final, em linhas separadas: \\\"Thyago — Somos Atitude\\\" e \\\"somosatitude.com.br\\\"\\n- Sem preço, sem cupom, sem anexo, sem emoji\\n- Tom: brasileiro natural, direto, respeitoso do tempo da pessoa`;\n  const aviso = item.email_contab ? '\\nATENÇÃO: este e-mail pode ser do contador da empresa. Abra o corpo com: se você cuida da ' + nome + ' ou puder encaminhar ao responsável, agradeço.' : '';\n  prompt = `Empresa: ${nome}${cidade ? ' — ' + cidade : ''}\\nPerfil de oferta: ${perfil || 'não classificado'}\\n\\nMensagem 1 enviada no WhatsApp (para referenciar SEM repetir o argumento):\\n\\\"${msg1 ? msg1.mensagem : '(não localizada — referencie genericamente uma mensagem enviada no WhatsApp essa semana)'}\\\"${aviso}\\n\\nGere o e-mail F1 agora.`;\n\n} else if (item.tipo === 'conversa_parada_auto') {\n  system = `Você é Thyago, da Somos Atitude. O lead veio de um anúncio, você respondeu no WhatsApp, e ele não retornou. Escreva um lembrete curto pra retomar EXATAMENTE de onde parou — leia a sua última mensagem com atenção e identifique o que ficou pendente (pode ser uma venda com CTA, ou uma coleta de dados como nome/cidade do negócio).\\n\\nRETORNE SOMENTE JSON válido, sem markdown: {\\\"mensagem\\\": \\\"...\\\"}\\n\\nREGRAS:\\n- Curta: 1 a 3 frases, entre 60 e 250 caracteres\\n- Se a última mensagem pedia uma AÇÃO do lead (confirmar compra, responder uma pergunta, mandar um dado) — retome exatamente essa ação pendente, sem reexplicar tudo de novo\\n- Tom leve, direto, sem pressão — como quem só está checando se a pessoa viu a mensagem\\n- NUNCA invente uma oferta ou informação que não estava na mensagem original\\n- Sem link, sem emoji ou no máximo um`;\n  prompt = `Lead (via anúncio): ${nome}\\n\\nSua última mensagem enviada (que ficou sem resposta):\\n\\\"${ultimaResposta ? ultimaResposta.mensagem : 'n/d'}\\\"\\n\\nGere o lembrete de retomada agora, identificando e reabrindo o que ficou pendente nessa mensagem.`;\n\n} else {\n  system = `Você é Thyago, da Somos Atitude. Escreva a ÚLTIMA mensagem de WhatsApp para um lead que não respondeu (break-up message).\\n\\nRETORNE SOMENTE JSON válido, sem markdown: {\\\"mensagem\\\": \\\"...\\\"}\\n\\nREGRAS:\\n- Curta: 2 a 4 frases, entre 100 e 350 caracteres\\n- Ângulo de saída elegante: comunica que você não vai insistir mais e deixa a porta aberta pro futuro\\n- Tom: profissional e caloroso, como um consultor que respeita o tempo do cliente — NUNCA informal a ponto de soar brincalhão ou gozador\\n- PROIBIDO usar gírias ou expressões de brincadeira como \\\"cutucar\\\", \\\"incomodar\\\", \\\"chatear\\\", ou qualquer termo que sugira que as mensagens anteriores foram um incômodo\\n- NUNCA repete o argumento da msg1 nem do e-mail F1\\n- Sem link, sem preço, sem cupom, sem pressão, sem emoji ou no máximo um, usado com moderação\\n- Trate o negócio da pessoa (ex: nome da clínica/spa) com o mesmo respeito profissional das mensagens anteriores\\n\\nEXEMPLO DE TOM CORRETO (use como referência de registro, não copie literalmente):\\n\\\"Oi [Nome]! Não vou insistir mais por aqui — mas se em algum momento fizer sentido conversar sobre a presença digital do [Negócio], é só me chamar. Tudo de bom pra vocês!\\\"`;\n  prompt = `Empresa: ${nome}${cidade ? ' — ' + cidade : ''}\\n\\nMsg1 (WhatsApp): \\\"${msg1 ? msg1.mensagem : 'n/d'}\\\"\\nF1 (e-mail já enviado): \\\"${f1ant ? f1ant.mensagem : 'não houve — lead sem e-mail'}\\\"\\n\\nGere o break-up F2 agora.`;\n}\n\nreturn [{ json: {\n  tipo: item.tipo,\n  slug: item.slug,\n  empresa_id: item.empresa_id,\n  devido_em: item.devido_em,\n  email_followup: item.email_followup || null,\n  email_contab: !!item.email_contab,\n  numero_whats: numeroWhats,\n  system, prompt\n} }];"
+        "jsCode": "const item = $('Loop').item.json;   // item da fila (tipo, slug, devido_em, email...)\nconst emp = $json;                    // dossiê (HTTP desembrulha item único)\nconst inter = Array.isArray(emp.interacoes) ? emp.interacoes : [];\n\nconst msg1 = inter\n  .filter(i => i.etapa === 'msg1' && i.direcao === 'saida')\n  .sort((a,b) => new Date(a.criado_em) - new Date(b.criado_em))[0];\nconst f1ant = inter.filter(i => i.etapa === 'f1_email')[0];\nconst ultimaResposta = inter\n  .filter(i => i.etapa === 'resposta_agente' && i.direcao === 'saida')\n  .sort((a,b) => new Date(b.criado_em) - new Date(a.criado_em))[0];\nconst ultimaEntrada = inter\n  .filter(i => i.direcao === 'entrada')\n  .sort((a,b) => new Date(b.criado_em) - new Date(a.criado_em))[0];\n\nconst nome = emp.nome_fantasia || emp.nome || emp.razao_social || item.slug;\nconst cidade = emp.cidade || emp.municipio || '';\nconst perfil = emp.perfil_oferta || emp.classificacao_oferta || '';\n\n// AJUSTE SE NECESSÁRIO: coluna do número validado usada pelo A2 Disparo\nconst numeroWhats = emp.whatsapp || emp.celular_whatsapp || emp.celular || emp.telefone || null;\n\nlet system, prompt;\n\nif (item.tipo === 'f1_email') {\n  system = `Você é Thyago, fundador da Somos Atitude (agência digital de Goiânia que cria sites e presença no Google para clínicas e profissionais de saúde/estética). Você escreve e-mails de follow-up curtos, pessoais e consultivos — nunca com cara de mala direta.\\n\\nRETORNE SOMENTE JSON válido, sem markdown, no formato: {\\\"assunto\\\": \\\"...\\\", \\\"corpo\\\": \\\"...\\\"}\\n\\nREGRAS INVIOLÁVEIS:\\n- assunto: máx. 60 caracteres, específico ao negócio, sem CAPS, sem exclamações duplas, sem palavras como grátis, promoção, imperdível, oferta\\n- corpo: texto puro, UM parágrafo principal de valor + fecho curto. Abre referenciando a mensagem de WhatsApp já enviada (\\\"te mandei uma mensagem no WhatsApp essa semana sobre...\\\"). Traz UM diagnóstico consultivo real do negócio (presença no Google, site, busca local) — espelho, não pitch. NUNCA repete o argumento da msg1: usa um ângulo novo.\\n- SEM nenhum link ou URL no corpo. CTA em texto puro: \\\"é só me chamar no WhatsApp (62) 98195-0604\\\" — e responder este e-mail também funciona\\n- Assinatura ao final, em linhas separadas: \\\"Thyago — Somos Atitude\\\" e \\\"somosatitude.com.br\\\"\\n- Sem preço, sem cupom, sem anexo, sem emoji\\n- Tom: brasileiro natural, direto, respeitoso do tempo da pessoa`;\n  const aviso = item.email_contab ? '\\nATENÇÃO: este e-mail pode ser do contador da empresa. Abra o corpo com: se você cuida da ' + nome + ' ou puder encaminhar ao responsável, agradeço.' : '';\n  prompt = `Empresa: ${nome}${cidade ? ' — ' + cidade : ''}\\nPerfil de oferta: ${perfil || 'não classificado'}\\n\\nMensagem 1 enviada no WhatsApp (para referenciar SEM repetir o argumento):\\n\\\"${msg1 ? msg1.mensagem : '(não localizada — referencie genericamente uma mensagem enviada no WhatsApp essa semana)'}\\\"${aviso}\\n\\nGere o e-mail F1 agora.`;\n\n} else if (item.tipo === 'conversa_parada_auto') {\n  system = `Você é Thyago, da Somos Atitude. O lead veio de um anúncio, você respondeu no WhatsApp, e ele não retornou. Escreva um lembrete curto pra retomar EXATAMENTE de onde parou — leia a sua última mensagem com atenção e identifique o que ficou pendente (pode ser uma venda com CTA, ou uma coleta de dados como nome/cidade do negócio).\\n\\nRETORNE SOMENTE JSON válido, sem markdown: {\\\"mensagem\\\": \\\"...\\\"}\\n\\nREGRAS:\\n- Curta: 1 a 3 frases, entre 60 e 250 caracteres\\n- Se a última mensagem pedia uma AÇÃO do lead (confirmar compra, responder uma pergunta, mandar um dado) — retome exatamente essa ação pendente, sem reexplicar tudo de novo\\n- Tom leve, direto, sem pressão — como quem só está checando se a pessoa viu a mensagem\\n- NUNCA invente uma oferta ou informação que não estava na mensagem original\\n- Sem link, sem emoji ou no máximo um`;\n  prompt = `Lead (via anúncio): ${nome}\\n\\nSua última mensagem enviada (que ficou sem resposta):\\n\\\"${ultimaResposta ? ultimaResposta.mensagem : 'n/d'}\\\"\\n\\nGere o lembrete de retomada agora, identificando e reabrindo o que ficou pendente nessa mensagem.`;\n\n} else if (item.tipo === 'conversa_parada') {\n  system = `Você é Thyago, da Somos Atitude. Uma conversa de WhatsApp com este lead parou e foi agendada uma retomada. Escreva UMA mensagem curta retomando a conversa do ponto em que parou, seguindo a instrução de contexto abaixo.\\n\\nRETORNE SOMENTE JSON válido, sem markdown: {\\\"mensagem\\\": \\\"...\\\"}\\n\\nREGRAS:\\n- Curta: 1 a 3 frases, entre 60 e 300 caracteres\\n- Siga a INSTRUÇÃO DE CONTEXTO à risca — ela diz o que retomar e o que evitar\\n- Termine SEMPRE com uma pergunta ou convite claro à ação\\n- Não repita diagnóstico ou argumento já enviado — retome, não reexplique\\n- Tom leve, humano, sem pressão — como quem está só retomando um papo\\n- Sem preço e sem cupom, a menos que a instrução de contexto peça\\n- Sem link, sem emoji ou no máximo um`;\n  prompt = `Lead: ${nome}${cidade ? ' — ' + cidade : ''}\\n\\nINSTRUÇÃO DE CONTEXTO (gravada quando o follow-up foi agendado):\\n\\\"${item.contexto || 'Retomar a conversa do ponto em que parou.'}\\\"\\n\\nÚltima mensagem que VOCÊ enviou (sem resposta desde então):\\n\\\"${ultimaResposta ? ultimaResposta.mensagem : 'n/d'}\\\"\\n\\nÚltima mensagem que o LEAD enviou:\\n\\\"${ultimaEntrada ? ultimaEntrada.mensagem : 'n/d'}\\\"\\n\\nGere a mensagem de retomada agora.`;\n\n} else {\n  system = `Você é Thyago, da Somos Atitude. Escreva a ÚLTIMA mensagem de WhatsApp para um lead que não respondeu (break-up message).\\n\\nRETORNE SOMENTE JSON válido, sem markdown: {\\\"mensagem\\\": \\\"...\\\"}\\n\\nREGRAS:\\n- Curta: 2 a 4 frases, entre 100 e 350 caracteres\\n- Ângulo de saída elegante: comunica que você não vai insistir mais e deixa a porta aberta pro futuro\\n- Tom: profissional e caloroso, como um consultor que respeita o tempo do cliente — NUNCA informal a ponto de soar brincalhão ou gozador\\n- PROIBIDO usar gírias ou expressões de brincadeira como \\\"cutucar\\\", \\\"incomodar\\\", \\\"chatear\\\", ou qualquer termo que sugira que as mensagens anteriores foram um incômodo\\n- NUNCA repete o argumento da msg1 nem do e-mail F1\\n- Sem link, sem preço, sem cupom, sem pressão, sem emoji ou no máximo um, usado com moderação\\n- Trate o negócio da pessoa (ex: nome da clínica/spa) com o mesmo respeito profissional das mensagens anteriores\\n\\nEXEMPLO DE TOM CORRETO (use como referência de registro, não copie literalmente):\\n\\\"Oi [Nome]! Não vou insistir mais por aqui — mas se em algum momento fizer sentido conversar sobre a presença digital do [Negócio], é só me chamar. Tudo de bom pra vocês!\\\"`;\n  prompt = `Empresa: ${nome}${cidade ? ' — ' + cidade : ''}\\n\\nMsg1 (WhatsApp): \\\"${msg1 ? msg1.mensagem : 'n/d'}\\\"\\nF1 (e-mail já enviado): \\\"${f1ant ? f1ant.mensagem : 'não houve — lead sem e-mail'}\\\"\\n\\nGere o break-up F2 agora.`;\n}\n\nreturn [{ json: {\n  tipo: item.tipo,\n  slug: item.slug,\n  empresa_id: item.empresa_id,\n  devido_em: item.devido_em,\n  contexto: item.contexto || null,\n  email_followup: item.email_followup || null,\n  email_contab: !!item.email_contab,\n  numero_whats: numeroWhats,\n  system, prompt\n} }];"
       },
       "id": "bf3ca2dc-819a-4e8b-b9c0-08baf3758b6a",
       "name": "Montar Prompt",
@@ -199,7 +199,7 @@
       "typeVersion": 2,
       "position": [
         592,
-        0
+        -32
       ]
     },
     {
@@ -232,7 +232,7 @@
       "typeVersion": 4.2,
       "position": [
         816,
-        0
+        -32
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -255,7 +255,7 @@
       "typeVersion": 2,
       "position": [
         1040,
-        0
+        -32
       ]
     },
     {
@@ -340,8 +340,8 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        1936,
-        0
+        2144,
+        -144
       ],
       "webhookId": "ce53e3d8-2d60-4ee8-b06e-5962bb63b62f",
       "credentials": {
@@ -378,8 +378,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1936,
-        192
+        2192,
+        112
       ]
     },
     {
@@ -411,8 +411,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2160,
-        96
+        2416,
+        208
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -431,8 +431,8 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2384,
-        160
+        2640,
+        272
       ],
       "webhookId": "6f2f3030-b295-415b-9f0f-9cd70d59c052"
     },
@@ -509,8 +509,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1712,
-        0
+        1808,
+        -144
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -549,10 +549,82 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1712,
-        192
+        1968,
+        208
       ],
       "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.tipo }}",
+              "rightValue": "conversa_parada",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "id": "3ba71cc6-022e-4bd9-8763-cbac42860ec9"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        112
+      ],
+      "id": "0257507e-fe99-426a-8e00-11dd4545f7ff",
+      "name": "É conversa_parada?"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/followups_agendados?empresa_id=eq.{{ $json.empresa_id }}&tipo=eq.conversa_parada&executado_em=is.null",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ executado_em: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1968,
+        32
+      ],
+      "id": "32d20bc7-2635-40b4-b654-a209fa837af2",
+      "name": "Marcar CP Executada",
       "credentials": {
         "supabaseApi": {
           "id": "TI9uXqodlyBVC9Se",
@@ -726,7 +798,7 @@
         ],
         [
           {
-            "node": "Registrar Followup2",
+            "node": "É conversa_parada?",
             "type": "main",
             "index": 0
           }
@@ -809,6 +881,35 @@
           }
         ]
       ]
+    },
+    "É conversa_parada?": {
+      "main": [
+        [
+          {
+            "node": "Marcar CP Executada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Followup2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar CP Executada": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -822,9 +923,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "b65e1d65-46b2-411e-8b7a-d95c04466e04",
+  "versionId": "5006c643-0627-40f0-9575-bb4db73aa817",
   "activeVersionId": null,
-  "versionCounter": 52,
+  "versionCounter": 67,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
