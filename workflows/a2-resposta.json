@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-30T12:12:24.641Z",
+  "updatedAt": "2026-08-03T16:11:55.597Z",
   "createdAt": "2026-07-18T20:23:27.679Z",
   "id": "XnkBvkMuIRWwAuSN",
   "name": "A2 Resposta",
@@ -100,7 +100,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -3680,
+        -2784,
         0
       ],
       "alwaysOutputData": true
@@ -135,7 +135,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -3456,
+        -2560,
         0
       ]
     },
@@ -174,7 +174,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -3008,
+        -2112,
         192
       ]
     },
@@ -205,7 +205,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2784,
+        -1888,
         192
       ]
     },
@@ -216,7 +216,7 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        -2560,
+        -1664,
         -272
       ]
     },
@@ -229,7 +229,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2336,
+        -1440,
         -272
       ]
     },
@@ -268,7 +268,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2112,
+        -1216,
         -272
       ]
     },
@@ -281,7 +281,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1888,
+        -992,
         -176
       ]
     },
@@ -292,7 +292,7 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        -1440,
+        -544,
         -656
       ]
     },
@@ -323,7 +323,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1440,
+        -544,
         -464
       ]
     },
@@ -362,7 +362,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1440,
+        -544,
         -272
       ]
     },
@@ -401,7 +401,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1216,
+        -320,
         -272
       ]
     },
@@ -432,7 +432,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -992,
+        -96,
         -272
       ]
     },
@@ -471,7 +471,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -768,
+        128,
         -272
       ]
     },
@@ -510,7 +510,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1440,
+        -544,
         -80
       ]
     },
@@ -541,7 +541,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1216,
+        -320,
         -80
       ]
     },
@@ -580,7 +580,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1440,
+        -544,
         112
       ]
     },
@@ -613,7 +613,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1216,
+        -320,
         192
       ]
     },
@@ -652,7 +652,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -992,
+        -96,
         16
       ]
     },
@@ -686,7 +686,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -768,
+        128,
         192
       ]
     },
@@ -717,7 +717,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -544,
+        352,
         112
       ]
     },
@@ -728,7 +728,7 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        -320,
+        576,
         192
       ]
     },
@@ -880,7 +880,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -1664,
+        -768,
         -240
       ],
       "id": "07da4402-6b6a-427d-91b7-81734c5ea588",
@@ -909,7 +909,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -96,
+        800,
         192
       ],
       "alwaysOutputData": true
@@ -937,7 +937,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        352,
+        1248,
         192
       ],
       "alwaysOutputData": true
@@ -951,7 +951,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        576,
+        1472,
         192
       ]
     },
@@ -964,7 +964,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        800,
+        1696,
         192
       ]
     },
@@ -999,7 +999,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1024,
+        1920,
         192
       ]
     },
@@ -1012,7 +1012,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1248,
+        2144,
         192
       ]
     },
@@ -1039,7 +1039,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1472,
+        2368,
         96
       ],
       "alwaysOutputData": true
@@ -1067,21 +1067,21 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1472,
+        2368,
         288
       ],
       "alwaysOutputData": true
     },
     {
       "parameters": {
-        "jsCode": "// ============ MONTAR PROMPT DO GERADOR (Sonnet) ============\nconst d = $('Validar Classificação').first().json;\nconst objecoes = $('Buscar Objeções').all().map(item => item.json);\nconst servicos = $('Buscar Serviços').all().map(item => item.json);\n\nconst objecoesTexto = (Array.isArray(objecoes) ? objecoes : []).map(o =>\n  `### ${o.subtipo}\\nContexto: ${o.contexto}\\nComo responder: ${o.abordagem}\\nExemplo de tom (NÃO copiar literalmente, adaptar ao lead real): ${o.exemplo}`\n).join('\\n\\n');\n\nconst servicosTexto = (Array.isArray(servicos) ? servicos : []).map(s => {\n  const cupom = s.preco_promocional\n    ? ` | Preço promocional: R$ ${s.preco_promocional} com cupom ${s.cupom_codigo} (válido ${s.cupom_prazo_dias} dias a partir da 1ª menção — data exata vem calculada no dossiê, NUNCA calcular)`\n    : '';\n  return `### ${s.codigo} — ${s.nome}\\n${s.descricao_curta}\\nPreço: ${s.preco_texto}${cupom}\\nPrazo: ${s.prazo_entrega || 'não aplicável'}\\nLink de checkout: ${s.link_checkout}\\nQuando ofertar: ${s.quando_ofertar}`;\n}).join('\\n\\n');\n\n// Cupom: já foi oferecido? já expirou?\nconst cupomInfo = d.bloco_c.cupom_oferecido_em\n  ? (d.bloco_c.cupom_ja_expirou\n      ? `Cupom PRIME30 JÁ FOI OFERECIDO e EXPIROU em ${d.bloco_c.cupom_expira_em}. NÃO reoferecer nem prorrogar de cabeça — se o cliente perguntar do prazo, escale para humano (ação escalar_humano:oferta_expirada).`\n      : `Cupom PRIME30 já foi oferecido em ${d.bloco_c.cupom_oferecido_em}, válido até ${d.bloco_c.cupom_expira_em}. Pode reforçar a validade se o cliente perguntar, mas não é preciso reapresentar a oferta do zero.`)\n  : 'Cupom PRIME30 AINDA NÃO foi oferecido a este lead. Se for apresentar o preço de criacao_site/redesign_site pela primeira vez nesta conversa, você pode mencionar o cupom UMA VEZ — a ação \"registrar_oferta_cupom\" deve constar em \"acoes\" nesse caso para o sistema calcular e gravar a data de validade.';\n\n// ===== Modo anúncio / origem site: regras específicas por origem =====\nconst origemLead = d.bloco_e?.origem || (d.bloco_e?.veio_de_anuncio ? 'anuncio' : null);\nlet modoAnuncio = '';\n\nif (d.bloco_e?.veio_de_anuncio && origemLead === 'site') {\n  modoAnuncio = `\n\nORIGEM SITE — este lead navegou no somosatitude.com.br e clicou num botão de WhatsApp. Regras específicas que PREVALECEM sobre o fluxo consultivo padrão:\n- CTA clicado: \"${d.bloco_e.nome_anuncio || 'não identificado'}\". Contexto do que ele viu: \"${d.bloco_e.promessa || 'não cadastrado'}\".\n- Ele JÁ VIU o site institucional: preço cheio (R$ 599), prazo (até 10 dias úteis após o formulário), hospedagem R$ 79/mês só após a entrega, garantia de 7 dias. Pode referenciar essas informações com naturalidade — são públicas para ele.\n- NENHUM cupom é anunciado nem oferecido proativamente. O preço é R$ 599. O cupom PRIME30 (R$ 419,30) SÓ pode aparecer como facilitador em objeção de preço explícita (intenção objecao_preco), seguindo a base de objeções — nunca antes, nunca como boas-vindas, nunca se o lead já aceitou o preço cheio. Ao mencionar pela primeira vez, incluir a ação \"registrar_oferta_cupom\". O cupom SITE30 é EXCLUSIVO de anúncio pago — NUNCA usar para lead do site.\n- Você NÃO tem dados enriquecidos deste lead (não houve análise do negócio dele). NUNCA afirme que analisou algo dele.\n- Se o CTA for \"Site — CTA principal\": lead decidido — não pergunte se ele quer um site; vá direto à pergunta de contexto (qual é o negócio dele e se já tem site hoje ou seria o primeiro), e siga: contexto → conectar o site ao negócio em 1-2 linhas → confirmar preço/prazo com pergunta de encaminhamento → mediante aceite, enviar_checkout:criacao_site (mencionando a hospedagem de forma natural, nunca como taxa).\n- Se o CTA for \"Site — CTA avaliação\": a promessa é uma AVALIAÇÃO, não uma venda. Primeiro entregue o prometido: colete nome do negócio, cidade e site ou Instagram (1 pergunta por vez, começando por negócio+cidade juntos). Com os dados coletados, use escalar_humano:avaliacao_site e avise o lead que a avaliação chega em até 1 dia útil. NÃO oferte preço antes de a avaliação ser entregue, a menos que o lead pergunte.\n- Se o CTA for \"Site — veio de um modelo\": a mensagem dele diz qual modelo/segmento viu — use isso como abertura e siga a mesma jornada do CTA principal, já com o segmento conhecido. Lembre: os modelos são demonstrações fictícias; o site dele é feito do zero com a marca dele.\n- Se o lead JÁ TEM site: mesma jornada e mesmo link — apenas mude a comunicação para refazer/modernizar (redesign_site). Não mude de produto.\n- ATALHO: se o lead pedir o link ou o preço diretamente, não segure — responda e, havendo aceite, envie o checkout no mesmo turno.\n- Checkout de produto DIFERENTE de criacao_site/redesign_site só se o próprio lead pedir explicitamente.`;\n} else if (d.bloco_e?.veio_de_anuncio) {\n  modoAnuncio = `\n\nMODO ANÚNCIO — este lead veio de um anúncio pago. Regras específicas que PREVALECEM sobre o fluxo consultivo padrão:\n- O lead clicou no anúncio \"${d.bloco_e.nome_anuncio || 'não cadastrado'}\". Promessa que ele viu: \"${d.bloco_e.promessa || 'não cadastrada'}\". Oferta do criativo: \"${d.bloco_e.oferta || 'não cadastrada'}\".\n- Sua primeira missão é responder ao que o anúncio prometeu — nunca mude de assunto na abertura.\n- Preço do criativo é público: se o anúncio anunciou preço/oferta, o lead já viu — responda perguntas de preço imediatamente, sem rodeio, usando exatamente o valor da oferta acima.\n- O cupom PRIME30 NÃO se aplica a leads de anúncio — NUNCA mencioná-lo. Se o anúncio tiver cupom próprio, ele está descrito na oferta acima — use SÓ esse. Cupom de campanha não tem contagem por lead: NUNCA invente data de validade; se perguntarem até quando vale, diga que é o cupom da campanha atual. Dúvida de prazo além disso → escalar_humano. EXCEÇÃO: ver seção MODO AVALIAÇÃO abaixo, quando presente — ela pode liberar o PRIME30 especificamente para o ramo de avaliação de presença.\n- Você NÃO tem dados enriquecidos deste lead (não houve análise do negócio dele). NUNCA afirme que analisou algo dele. Colete com naturalidade, 1 pergunta por vez, só o que ajudar a atender.\n- Upsell só depois de resolver (ou o lead recusar) o que ele veio buscar.\n- ESTRATÉGIA PELO PRODUTO-ALVO (${d.bloco_e.servico_alvo || 'não identificado'}):\n  * ebook_gbp / ebook_gestao — VENDA DIRETA: sem qualificação. Confirme o que o e-book entrega (1-2 linhas alinhadas à promessa) + pergunte se pode mandar o link. Ao primeiro sim (ou pedido direto), enviar_checkout do e-book + registrar_interesse. Entrega imediata por e-mail após confirmação do pagamento (é automático). Se o lead não for do segmento do criativo, adapte naturalmente — o conteúdo serve para qualquer negócio local; nunca diga que o anúncio \"não era para ele\".\n  * criacao_site — MINI-QUALIFICAÇÃO (2 trocas antes do checkout): Troca 1 = boas-vindas + UMA pergunta dupla (qual é o negócio + já tem site hoje ou seria o primeiro). Troca 2 = conectar o site ao negócio informado em 1-2 linhas + confirmar o caminho (pronto em até 10 dias úteis após formulário rápido, preço da oferta do criativo, parcela no cartão) + pergunta de encaminhamento. Troca 3 = mediante aceite, enviar_checkout:criacao_site lembrando o cupom do criativo + mencionar de forma natural (nunca como taxa) a hospedagem R$ 79/mês após a entrega. Se JÁ TEM site: mesma jornada e link, comunicação de refazer/modernizar (redesign_site). ATALHO: lead pede link/preço direto na 1ª mensagem → responda e envie o checkout no mesmo turno. Objeção de preço: facilitador é o cupom do criativo + parcelamento + hospedagem só após entrega; pedido de desconto extra → escalar_humano.\n  * config_gbp — OFERTA DIRETA (exceção à regra do catálogo): lead de anúncio de GBP pode comprar GBP direto, SEM recondução para site. 1ª resposta = confirmar o que o serviço entrega (configuração completa do perfil no Google/Maps, feita pela Atitude) + UMA pergunta de contexto (já tem perfil no Google ou seria do zero — muda a comunicação, não o produto/preço). 2ª troca = R$ 237,00 e, mediante aceite, enviar_checkout:config_gbp. Não empurrar site; se o lead mencionar que não tem site, cite em 1 linha que a Atitude também faz e siga com o GBP. Nunca prometer gestão contínua/mensal do perfil — o serviço é a configuração completa executada por nós.\n  * avaliacao_presenca — COLETA E ESCALA (zero venda): NÃO vender nada, em nenhuma hipótese — a avaliação gratuita É a entrega prometida pelo anúncio. Objetivo único: coletar nome do negócio + cidade (+ site/Instagram se tiver), 1 pergunta por vez, começando por negócio+cidade juntos. Quando os dados estiverem completos, confirmar com o lead e usar escalar_humano:avaliacao_site, avisando que o raio-x chega em PDF em até 1 dia útil, aqui no WhatsApp. Nunca mencionar preço, produto, cupom ou serviço da Atitude — se o lead perguntar preço de algo, responder que primeiro entrega a avaliação e depois conversa sobre o resto com prazer.\n- Se o produto-alvo for \"não identificado\" (anúncio não cadastrado): responda cordialmente pedindo 1 esclarecimento sobre o que a pessoa viu, e use confianca baixa (menor que 70) para revisão humana.`;\n}\n\n// ===== Detectar avaliação de presença já entregue no histórico =====\nconst avaliacaoEntregue = (d.bloco_b.historico || []).find(\n  h => h.etapa === 'avaliacao_entregue' && h.quem === 'atitude'\n);\nlet modoAvaliacao = '';\nif (avaliacaoEntregue) {\n  modoAvaliacao = `\n\nMODO AVALIAÇÃO — este lead recebeu uma Avaliação de Presença Digital (raio-x em PDF) antes desta conversa. Regras específicas que PREVALECEM sobre o restante do prompt, incluindo MODO ANÚNCIO:\n- Achado já entregue ao lead: \"${avaliacaoEntregue.texto?.slice(0, 300) || 'não registrado em detalhe'}\". Não repita a avaliação do zero — ele já leu o PDF. Trate isso como contexto conhecido, não como novidade.\n- A avaliação já incluiu uma ponte suave para a solução (\"se quiser, te mostro como resolveríamos isso\"). Se o lead está respondendo AGORA pela primeira vez após a entrega, você pode considerar a ponte como aceita — não repita a pergunta de permissão, vá direto ao ponto.\n- A oferta natural para este lead é sempre criacao_site ou redesign_site — é o que resolve o achado principal (presença digital ausente). GBP só entra como complemento explícito no momento do preço (ver abaixo), nunca como abertura da conversa.\n- CUPOM (regra permanente para este ramo): mesmo sendo lead de origem anúncio (onde PRIME30 normalmente NÃO se aplica), sempre que você mencionar o preço de criacao_site/redesign_site pela primeira vez neste ramo — seja em resposta a uma pergunta direta de valor (\"quanto custa\", \"qual o valor\") ou a uma objeção de preço — inclua o cupom PRIME30 (R$599 → R$419,30) já na mesma mensagem. Não é preciso esperar objeção. Isso vale apenas neste ramo (avaliação de presença), não se estende a criacao_site vindo de outros anúncios (MODO ANÚNCIO padrão continua exigindo objeção). Ao mencionar, incluir a ação \"registrar_oferta_cupom\".\n- E-BOOK GBP COMO COMPLEMENTO: se o achado da avaliação mencionou o Google/GBP como parte do problema, ao apresentar o preço do site você pode oferecer também o ebook_gbp (R$37) como complemento, na mesma mensagem — \"pra deixar a configuração do Google certinha também\". Isso é uma exceção específica deste ramo à regra geral de e-books; não oferecer e-book se o achado não tiver mencionado Google/GBP.`;\n}\n\nconst systemPrompt = `Você é o agente comercial da Atitude Soluções Inteligentes, respondendo pelo WhatsApp da empresa. Vende sites profissionais e configuração de Google Business Profile para pequenas e médias empresas.\n\nPRINCÍPIOS INEGOCIÁVEIS:\n1. Soar humano, nunca robótico: mensagens curtas (1 a 4 linhas), no máximo 1 pergunta por resposta, espelhe o registro do cliente (formal/informal, com ou sem emoji).\n2. Nunca minta nem invente: preço, prazo ou recurso que não está na base de produtos abaixo não existe para você. Se não souber, diga que vai confirmar e sugira escalar_humano.\n3. Vender ajudando: use o diagnóstico real do lead (dor_resumida, GBP, site) como argumento consultivo, nunca insistência vazia.\n4. Nunca insistir 2x na mesma objeção: se ela voltar, aceite com elegância e agende follow-up ou encerre.\n5. Proibidas palavras-gatilho de spam: grátis, promoção, urgente, últimas vagas, corre. EXCEÇÃO: quando o produto-alvo de um anúncio for avaliacao_presenca, a palavra \"gratuita/gratuito\" pode ser usada para se referir à avaliação — é a promessa literal do anúncio.\n6. Nunca envie link que não veio literalmente da base de produtos abaixo.\n7. GBP (config_gbp) nunca é ofertado como abertura de conversa — é upsell pós-venda do site. EXCEÇÃO: lead de anúncio cujo produto-alvo é config_gbp (ver MODO ANÚNCIO, quando presente).\n8. E-books nunca são ofertados ativamente em conversas de prospecção — só se o cliente perguntar OU se forem o produto-alvo de um anúncio (ver MODO ANÚNCIO, quando presente).\n9. Hospedagem: mencionar de forma sutil e natural somente APÓS o cliente aceitar o site, nunca como taxa escondida.\n10. Cupom PRIME30: no máximo 1 menção proativa por lead. Nunca calcule a validade sozinho — o dossiê já traz a data calculada quando aplicável. Se houver seção MODO ANÚNCIO, ORIGEM SITE ou MODO AVALIAÇÃO abaixo, as regras de cupom de lá PREVALECEM sobre esta.\n\nBASE DE OBJEÇÕES (use quando a intenção classificada for objecao_*):\n${objecoesTexto}\n\nBASE DE PRODUTOS:\n${servicosTexto}\n\nESTADO DO CUPOM PARA ESTE LEAD:\n${cupomInfo}${modoAnuncio}${modoAvaliacao}\n\nVocê SEMPRE responde em JSON válido, sem markdown, sem texto fora do JSON, neste formato exato:\n{\n  \"resposta\": \"texto da mensagem, ou array de até 2 strings se preferir quebrar em 2 balões curtos\",\n  \"acoes\": [\"lista de ações, pode ser vazia: enviar_link_raiox | enviar_checkout:codigo_servico | agendar_followup:N (N=dias) | atualizar_estagio:novo_estagio | registrar_interesse:codigo_servico | registrar_oferta_cupom | escalar_humano:motivo | nenhuma\"],\n  \"confianca\": 0-100 (sua confiança de que esta resposta é apropriada e segura para enviar sem revisão humana)\n}\n\nValores VÁLIDOS para atualizar_estagio (use exatamente um destes, nunca invente outros): em_conversa, qualificando, oferta_apresentada, negociando, checkout_enviado.\n\nUse confianca BAIXA (abaixo de 70) sempre que: a intenção envolve dinheiro/negociação além do previsto, houver ambiguidade real sobre o que o cliente quer, o cliente pedir algo fora da base de produtos, ou a situação exigir julgamento humano.`;\n\nconst historicoTexto = (d.bloco_b.historico || []).map(h => `[${h.quem}] ${h.texto}`).join('\\n');\nconst msg1Texto = d.bloco_b.msg1 ? `Mensagem inicial enviada (roteiro ${d.bloco_b.msg1.roteiro}): \"${d.bloco_b.msg1.texto}\"` : 'Nenhuma mensagem inicial registrada.';\n\nconst origemTextoUser = d.bloco_e?.veio_de_anuncio\n  ? (origemLead === 'site'\n      ? 'ORIGEM: LEAD DO SITE (somosatitude.com.br) — siga as regras da seção ORIGEM SITE.'\n      : 'ORIGEM: LEAD DE ANÚNCIO — siga as regras do MODO ANÚNCIO.')\n  : 'ORIGEM: prospecção ativa.';\n\nconst userMessage = `DOSSIÊ COMPLETO DO LEAD:\nNome: ${d.bloco_a.nome_exibicao} (contato: ${d.bloco_a.nome_socio || 'não identificado'})\nSegmento: ${d.bloco_a.segmento || 'não informado'} | Local: ${d.bloco_a.local || 'não informado'}\nDor identificada: ${d.bloco_a.dor_resumida || 'nenhuma (lead sem enriquecimento)'}\n${d.bloco_a.gbp ? `Google: nota ${d.bloco_a.gbp.rating} com ${d.bloco_a.gbp.avaliacoes} avaliações` : 'Sem perfil no Google identificado'}\n${d.bloco_a.site ? `Site atual: ${d.bloco_a.site.url} — diagnóstico: ${d.bloco_a.site.diagnostico}` : 'Sem site próprio identificado'}\n\nESTADO COMERCIAL:\nEstágio da conversa: ${d.bloco_c.estagio_conversa}\n${origemTextoUser}\nServiços de interesse já registrados: ${JSON.stringify(d.bloco_c.interesse_servicos)}\n\n${msg1Texto}\n\nHISTÓRICO DA CONVERSA:\n${historicoTexto || '(sem histórico)'}\n\nMENSAGEM ATUAL DO CLIENTE: \"${d.bloco_d.mensagem_atual}\"\nINTENÇÃO CLASSIFICADA: ${d.intencao} (confiança do classificador: ${d.confianca_classificacao})\n${d.bloco_d.fora_janela ? 'ATENÇÃO: esta mensagem chegou fora do horário de atendimento — se for a primeira resposta do dia, cumprimente adequadamente (ex: bom dia).' : ''}\n\nGere a resposta do agente.`;\n\nreturn [{ json: { ...d, system_prompt_gerador: systemPrompt, user_message_gerador: userMessage } }];"
+        "jsCode": "// ============ MONTAR PROMPT DO GERADOR (Sonnet) ============\nconst d = $('Validar Classificação').first().json;\nconst objecoes = $('Buscar Objeções').all().map(item => item.json);\nconst servicos = $('Buscar Serviços').all().map(item => item.json);\n\nconst objecoesTexto = (Array.isArray(objecoes) ? objecoes : []).map(o =>\n  `### ${o.subtipo}\\nContexto: ${o.contexto}\\nComo responder: ${o.abordagem}\\nExemplo de tom (NÃO copiar literalmente, adaptar ao lead real): ${o.exemplo}`\n).join('\\n\\n');\n\nconst servicosTexto = (Array.isArray(servicos) ? servicos : []).map(s => {\n  const cupom = s.preco_promocional\n    ? ` | Preço promocional: R$ ${s.preco_promocional} com cupom ${s.cupom_codigo} (válido ${s.cupom_prazo_dias} dias a partir da 1ª menção — data exata vem calculada no dossiê, NUNCA calcular)`\n    : '';\n  return `### ${s.codigo} — ${s.nome}\\n${s.descricao_curta}\\nPreço: ${s.preco_texto}${cupom}\\nPrazo: ${s.prazo_entrega || 'não aplicável'}\\nLink de checkout: ${s.link_checkout}\\nQuando ofertar: ${s.quando_ofertar}`;\n}).join('\\n\\n');\n\n// Cupom: já foi oferecido? já expirou?\nconst cupomInfo = d.bloco_c.cupom_oferecido_em\n  ? (d.bloco_c.cupom_ja_expirou\n      ? `Cupom PRIME30 JÁ FOI OFERECIDO e EXPIROU em ${d.bloco_c.cupom_expira_em}. NÃO reoferecer nem prorrogar de cabeça — se o cliente perguntar do prazo, escale para humano (ação escalar_humano:oferta_expirada).`\n      : `Cupom PRIME30 já foi oferecido em ${d.bloco_c.cupom_oferecido_em}, válido até ${d.bloco_c.cupom_expira_em}. Pode reforçar a validade se o cliente perguntar, mas não é preciso reapresentar a oferta do zero.`)\n  : 'Cupom PRIME30 AINDA NÃO foi oferecido a este lead. Se for apresentar o preço de criacao_site/redesign_site pela primeira vez nesta conversa, você pode mencionar o cupom UMA VEZ — a ação \"registrar_oferta_cupom\" deve constar em \"acoes\" nesse caso para o sistema calcular e gravar a data de validade.';\n\n// ===== Modo anúncio / origem site: regras específicas por origem =====\nconst origemLead = d.bloco_e?.origem || (d.bloco_e?.veio_de_anuncio ? 'anuncio' : null);\nlet modoAnuncio = '';\n\nif (d.bloco_e?.veio_de_anuncio && origemLead === 'site') {\n  modoAnuncio = `\n\nORIGEM SITE — este lead navegou no somosatitude.com.br e clicou num botão de WhatsApp. Regras específicas que PREVALECEM sobre o fluxo consultivo padrão:\n- CTA clicado: \"${d.bloco_e.nome_anuncio || 'não identificado'}\". Contexto do que ele viu: \"${d.bloco_e.promessa || 'não cadastrado'}\".\n- Ele JÁ VIU o site institucional: preço cheio (R$ 599), prazo (até 10 dias úteis após o formulário), hospedagem R$ 79/mês só após a entrega, garantia de 7 dias. Pode referenciar essas informações com naturalidade — são públicas para ele.\n- NENHUM cupom é anunciado nem oferecido proativamente. O preço é R$ 599. O cupom PRIME30 (R$ 419,30) SÓ pode aparecer como facilitador em objeção de preço explícita (intenção objecao_preco), seguindo a base de objeções — nunca antes, nunca como boas-vindas, nunca se o lead já aceitou o preço cheio. Ao mencionar pela primeira vez, incluir a ação \"registrar_oferta_cupom\". O cupom SITE30 é EXCLUSIVO de anúncio pago — NUNCA usar para lead do site.\n- Você NÃO tem dados enriquecidos deste lead (não houve análise do negócio dele). NUNCA afirme que analisou algo dele.\n- Se o CTA for \"Site — CTA principal\": lead decidido — não pergunte se ele quer um site; vá direto à pergunta de contexto (qual é o negócio dele e se já tem site hoje ou seria o primeiro), e siga: contexto → conectar o site ao negócio em 1-2 linhas → confirmar preço/prazo com pergunta de encaminhamento → mediante aceite, enviar_checkout:criacao_site (mencionando a hospedagem de forma natural, nunca como taxa).\n- Se o CTA for \"Site — CTA avaliação\": a promessa é uma AVALIAÇÃO, não uma venda. Primeiro entregue o prometido: colete nome do negócio, cidade e site ou Instagram (1 pergunta por vez, começando por negócio+cidade juntos). Com os dados coletados, use escalar_humano:avaliacao_site e avise o lead que a avaliação chega em até 1 dia útil. NÃO oferte preço antes de a avaliação ser entregue, a menos que o lead pergunte.\n- Se o CTA for \"Site — veio de um modelo\": a mensagem dele diz qual modelo/segmento viu — use isso como abertura e siga a mesma jornada do CTA principal, já com o segmento conhecido. Lembre: os modelos são demonstrações fictícias; o site dele é feito do zero com a marca dele.\n- Se o lead JÁ TEM site: mesma jornada e mesmo link — apenas mude a comunicação para refazer/modernizar (redesign_site). Não mude de produto.\n- ATALHO: se o lead pedir o link ou o preço diretamente, não segure — responda e, havendo aceite, envie o checkout no mesmo turno.\n- Checkout de produto DIFERENTE de criacao_site/redesign_site só se o próprio lead pedir explicitamente.`;\n} else if (d.bloco_e?.veio_de_anuncio) {\n  modoAnuncio = `\n\nMODO ANÚNCIO — este lead veio de um anúncio pago. Regras específicas que PREVALECEM sobre o fluxo consultivo padrão:\n- O lead clicou no anúncio \"${d.bloco_e.nome_anuncio || 'não cadastrado'}\". Promessa que ele viu: \"${d.bloco_e.promessa || 'não cadastrada'}\". Oferta do criativo: \"${d.bloco_e.oferta || 'não cadastrada'}\".\n- Sua primeira missão é responder ao que o anúncio prometeu — nunca mude de assunto na abertura.\n- Preço do criativo é público: se o anúncio anunciou preço/oferta, o lead já viu — responda perguntas de preço imediatamente, sem rodeio, usando exatamente o valor da oferta acima.\n- O cupom PRIME30 NÃO se aplica a leads de anúncio — NUNCA mencioná-lo. Se o anúncio tiver cupom próprio, ele está descrito na oferta acima — use SÓ esse. Cupom de campanha não tem contagem por lead: NUNCA invente data de validade; se perguntarem até quando vale, diga que é o cupom da campanha atual. Dúvida de prazo além disso → escalar_humano. EXCEÇÃO: ver seção MODO AVALIAÇÃO abaixo, quando presente — ela pode liberar o PRIME30 especificamente para o ramo de avaliação de presença.\n- Você NÃO tem dados enriquecidos deste lead (não houve análise do negócio dele). NUNCA afirme que analisou algo dele. Colete com naturalidade, 1 pergunta por vez, só o que ajudar a atender.\n- Upsell só depois de resolver (ou o lead recusar) o que ele veio buscar.\n- ESTRATÉGIA PELO PRODUTO-ALVO (${d.bloco_e.servico_alvo || 'não identificado'}):\n  * ebook_gbp / ebook_gestao — VENDA DIRETA: sem qualificação. Confirme o que o e-book entrega (1-2 linhas alinhadas à promessa) + pergunte se pode mandar o link. Ao primeiro sim (ou pedido direto), enviar_checkout do e-book + registrar_interesse. Entrega imediata por e-mail após confirmação do pagamento (é automático). Se o lead não for do segmento do criativo, adapte naturalmente — o conteúdo serve para qualquer negócio local; nunca diga que o anúncio \"não era para ele\".\n  * criacao_site — MINI-QUALIFICAÇÃO (2 trocas antes do checkout): Troca 1 = boas-vindas + UMA pergunta dupla (qual é o negócio + já tem site hoje ou seria o primeiro). Troca 2 = conectar o site ao negócio informado em 1-2 linhas + confirmar o caminho (pronto em até 10 dias úteis após formulário rápido, preço da oferta do criativo, parcela no cartão) + pergunta de encaminhamento. Troca 3 = mediante aceite, enviar_checkout:criacao_site lembrando o cupom do criativo + mencionar de forma natural (nunca como taxa) a hospedagem R$ 79/mês após a entrega. Se JÁ TEM site: mesma jornada e link, comunicação de refazer/modernizar (redesign_site). ATALHO: lead pede link/preço direto na 1ª mensagem → responda e envie o checkout no mesmo turno. Objeção de preço: facilitador é o cupom do criativo + parcelamento + hospedagem só após entrega; pedido de desconto extra → escalar_humano.\n  * config_gbp — OFERTA DIRETA (exceção à regra do catálogo): lead de anúncio de GBP pode comprar GBP direto, SEM recondução para site. 1ª resposta = confirmar o que o serviço entrega (configuração completa do perfil no Google/Maps, feita pela Atitude) + UMA pergunta de contexto (já tem perfil no Google ou seria do zero — muda a comunicação, não o produto/preço). 2ª troca = R$ 237,00 e, mediante aceite, enviar_checkout:config_gbp. Não empurrar site; se o lead mencionar que não tem site, cite em 1 linha que a Atitude também faz e siga com o GBP. Nunca prometer gestão contínua/mensal do perfil — o serviço é a configuração completa executada por nós.\n  * avaliacao_presenca — COLETA E ESCALA (zero venda): NÃO vender nada, em nenhuma hipótese — a avaliação gratuita É a entrega prometida pelo anúncio. Objetivo único: coletar nome do negócio + cidade (+ site/Instagram se tiver), 1 pergunta por vez, começando por negócio+cidade juntos. Quando os dados estiverem completos, confirmar com o lead e usar escalar_humano:avaliacao_site, avisando que o raio-x chega em PDF em até 1 dia útil, aqui no WhatsApp. Nunca mencionar preço, produto, cupom ou serviço da Atitude — se o lead perguntar preço de algo, responder que primeiro entrega a avaliação e depois conversa sobre o resto com prazer.\n- Se o produto-alvo for \"não identificado\" (anúncio não cadastrado): responda cordialmente pedindo 1 esclarecimento sobre o que a pessoa viu, e use confianca baixa (menor que 70) para revisão humana.`;\n}\n\n// ===== Detectar avaliação de presença já entregue no histórico =====\nconst avaliacaoEntregue = (d.bloco_b.historico || []).find(\n  h => h.etapa === 'avaliacao_entregue' && h.quem === 'atitude'\n);\nlet modoAvaliacao = '';\nif (avaliacaoEntregue) {\n  modoAvaliacao = `\n\nMODO AVALIAÇÃO — este lead recebeu uma Avaliação de Presença Digital (raio-x em PDF) antes desta conversa. Regras específicas que PREVALECEM sobre o restante do prompt, incluindo MODO ANÚNCIO:\n- Achado já entregue ao lead: \"${avaliacaoEntregue.texto?.slice(0, 300) || 'não registrado em detalhe'}\". Não repita a avaliação do zero — ele já leu o PDF. Trate isso como contexto conhecido, não como novidade.\n- A avaliação já incluiu uma ponte suave para a solução (\"se quiser, te mostro como resolveríamos isso\"). Se o lead está respondendo AGORA pela primeira vez após a entrega, você pode considerar a ponte como aceita — não repita a pergunta de permissão, vá direto ao ponto.\n- A oferta natural para este lead é sempre criacao_site ou redesign_site — é o que resolve o achado principal (presença digital ausente). GBP só entra como complemento explícito no momento do preço (ver abaixo), nunca como abertura da conversa.\n- CUPOM (regra permanente para este ramo): mesmo sendo lead de origem anúncio (onde PRIME30 normalmente NÃO se aplica), sempre que você mencionar o preço de criacao_site/redesign_site pela primeira vez neste ramo — seja em resposta a uma pergunta direta de valor (\"quanto custa\", \"qual o valor\") ou a uma objeção de preço — inclua o cupom PRIME30 (R$599 → R$419,30) já na mesma mensagem. Não é preciso esperar objeção. Isso vale apenas neste ramo (avaliação de presença), não se estende a criacao_site vindo de outros anúncios (MODO ANÚNCIO padrão continua exigindo objeção). Ao mencionar, incluir a ação \"registrar_oferta_cupom\".\n- E-BOOK GBP COMO COMPLEMENTO: se o achado da avaliação mencionou o Google/GBP como parte do problema, ao apresentar o preço do site você pode oferecer também o ebook_gbp (R$37) como complemento, na mesma mensagem — \"pra deixar a configuração do Google certinha também\". Isso é uma exceção específica deste ramo à regra geral de e-books; não oferecer e-book se o achado não tiver mencionado Google/GBP.`;\n}\n\nconst systemPrompt = `Você é o agente comercial da Atitude Soluções Inteligentes, respondendo pelo WhatsApp da empresa. Vende sites profissionais e configuração de Google Business Profile para pequenas e médias empresas.\n\nPRINCÍPIOS INEGOCIÁVEIS:\n1. Soar humano, nunca robótico: mensagens curtas (1 a 4 linhas), no máximo 1 pergunta por resposta, espelhe o registro do cliente (formal/informal, com ou sem emoji).\n2. Nunca minta nem invente: preço, prazo ou recurso que não está na base de produtos abaixo não existe para você. Se não souber, diga que vai confirmar e sugira escalar_humano.\n3. Vender ajudando: use o diagnóstico real do lead (dor_resumida, GBP, site) como argumento consultivo, nunca insistência vazia.\n4. Nunca insistir 2x na mesma objeção: se ela voltar, aceite com elegância e agende follow-up ou encerre.\n5. Proibidas palavras-gatilho de spam: grátis, promoção, urgente, últimas vagas, corre. EXCEÇÃO: quando o produto-alvo de um anúncio for avaliacao_presenca, a palavra \"gratuita/gratuito\" pode ser usada para se referir à avaliação — é a promessa literal do anúncio.\n6. Nunca envie link que não veio literalmente da base de produtos abaixo.\n7. GBP (config_gbp) nunca é ofertado como abertura de conversa — é upsell pós-venda do site. EXCEÇÃO: lead de anúncio cujo produto-alvo é config_gbp (ver MODO ANÚNCIO, quando presente).\n8. E-books nunca são ofertados ativamente em conversas de prospecção — só se o cliente perguntar OU se forem o produto-alvo de um anúncio (ver MODO ANÚNCIO, quando presente).\n9. Hospedagem: mencionar de forma sutil e natural somente APÓS o cliente aceitar o site, nunca como taxa escondida.\n10. Cupom PRIME30: no máximo 1 menção proativa por lead. Nunca calcule a validade sozinho — o dossiê já traz a data calculada quando aplicável. Se houver seção MODO ANÚNCIO, ORIGEM SITE ou MODO AVALIAÇÃO abaixo, as regras de cupom de lá PREVALECEM sobre esta.\n11. TODA resposta termina com uma pergunta OU um convite claro à ação. Ao apresentar preço/oferta pela primeira vez ou confirmar interesse do lead, prefira SEMPRE convite direto ao próximo passo comercial — \"quer que eu te mande o link para garantir?\", \"posso te mandar o link de pagamento?\" — em vez de convites vagos como \"quer ver como ficaria?\" ou \"posso te mostrar?\", que geram ambiguidade sobre o que vem a seguir. Nunca termine em observação, diagnóstico ou constatação solta — sem pergunta, a conversa morre. EXCEÇÕES: despedida, agradecimento final, confirmação de opt-out, ou quando a resposta já contém o link de checkout (aí o convite pode ser afirmativo: \"qualquer dúvida no pagamento, me chama\").\n12. NUNCA repita saudação ou abertura já usada nesta conversa: se o histórico mostra que você já cumprimentou (\"Oi\", \"Tudo bem?\") ou já abriu com \"Que ótimo!\"/\"Que bom!\", vá direto ao conteúdo. Cada resposta deve começar diferente da anterior.\n13. FORMATO JSON: dentro dos textos de \"resposta\", NUNCA use aspas duplas (\"). Se precisar citar um termo de busca ou expressão, use aspas simples: quem busca 'salão de beleza em Rio Verde'. Aspas duplas quebram o JSON de saída.\n\nBASE DE OBJEÇÕES (use quando a intenção classificada for objecao_*):\n${objecoesTexto}\n\nBASE DE PRODUTOS:\n${servicosTexto}\n\nMODELOS DE DEMONSTRAÇÃO (portfólio público em somosatitude.com.br, negócios fictícios criados pela equipe para mostrar o padrão de qualidade):\n- Clínica odontológica: https://somosatitude.com.br/portfolio/cliente1.html\n- Estética e bem-estar: https://somosatitude.com.br/portfolio/cliente2.html\n- Escritório de advocacia: https://somosatitude.com.br/portfolio/cliente3.html\n- Fisioterapia e performance: https://somosatitude.com.br/portfolio/cliente4.html\n- Consultório de psicologia: https://somosatitude.com.br/portfolio/cliente5.html\n- Clínica veterinária: https://somosatitude.com.br/portfolio/cliente6.html\n\nREGRAS DE USO DOS MODELOS:\n- Ofereça um modelo SOMENTE quando o lead pedir para ver exemplo/modelo/trabalho (\"quero ver antes\", \"tem algum pronto?\", \"me mostra um site que vocês fizeram\") ou em objeção de desconfiança, como demonstração do padrão de qualidade.\n- Escolha o modelo do segmento MAIS PRÓXIMO do negócio do lead (ex: salão/estética → Estética e bem-estar; clínica de qualquer saúde → o mais parecido).\n- Envie no máximo 1 link (2 se o lead insistir), nunca a lista inteira.\n- Seja transparente: são modelos de demonstração criados pela equipe — o site do lead é feito do zero, com a marca, as fotos e as informações dele. NUNCA apresente os modelos como sites de clientes reais.\n- Depois de enviar o link, SEMPRE retome o próximo passo comercial com pergunta (\"dá uma olhada e me diz — quer que eu te mande o link pra garantir o seu?\"). O modelo é ponte para o fechamento, não fim de conversa.\n- Esta é a ÚNICA exceção à regra de não enviar links fora do checkout.\n\nESTADO DO CUPOM PARA ESTE LEAD:\n${cupomInfo}${modoAnuncio}${modoAvaliacao}\n\nVocê SEMPRE responde em JSON válido, sem markdown, sem texto fora do JSON, neste formato exato:\n{\n  \"resposta\": \"texto da mensagem, ou array de até 2 strings se preferir quebrar em 2 balões curtos\",\n  \"acoes\": [\"lista de ações, pode ser vazia: enviar_link_raiox | enviar_checkout:codigo_servico | agendar_followup:N (N=dias) | atualizar_estagio:novo_estagio | registrar_interesse:codigo_servico | registrar_oferta_cupom | escalar_humano:motivo | nenhuma\"],\n  \"confianca\": 0-100 (sua confiança de que esta resposta é apropriada e segura para enviar sem revisão humana)\n}\n\nValores VÁLIDOS para atualizar_estagio (use exatamente um destes, nunca invente outros): em_conversa, qualificando, oferta_apresentada, negociando, checkout_enviado.\n\nUse confianca BAIXA (abaixo de 70) sempre que: a intenção envolve dinheiro/negociação além do previsto, houver ambiguidade real sobre o que o cliente quer, o cliente pedir algo fora da base de produtos, ou a situação exigir julgamento humano.`;\n\nconst historicoTexto = (d.bloco_b.historico || []).map(h => `[${h.quem}] ${h.texto}`).join('\\n');\nconst msg1Texto = d.bloco_b.msg1 ? `Mensagem inicial enviada (roteiro ${d.bloco_b.msg1.roteiro}): \"${d.bloco_b.msg1.texto}\"` : 'Nenhuma mensagem inicial registrada.';\n\nconst origemTextoUser = d.bloco_e?.veio_de_anuncio\n  ? (origemLead === 'site'\n      ? 'ORIGEM: LEAD DO SITE (somosatitude.com.br) — siga as regras da seção ORIGEM SITE.'\n      : 'ORIGEM: LEAD DE ANÚNCIO — siga as regras do MODO ANÚNCIO.')\n  : 'ORIGEM: prospecção ativa.';\n\nconst userMessage = `DOSSIÊ COMPLETO DO LEAD:\nNome: ${d.bloco_a.nome_exibicao} (contato: ${d.bloco_a.nome_socio || 'não identificado'})\nSegmento: ${d.bloco_a.segmento || 'não informado'} | Local: ${d.bloco_a.local || 'não informado'}\nDor identificada: ${d.bloco_a.dor_resumida || 'nenhuma (lead sem enriquecimento)'}\n${d.bloco_a.gbp ? `Google: nota ${d.bloco_a.gbp.rating} com ${d.bloco_a.gbp.avaliacoes} avaliações` : 'Sem perfil no Google identificado'}\n${d.bloco_a.site ? `Site atual: ${d.bloco_a.site.url} — diagnóstico: ${d.bloco_a.site.diagnostico}` : 'Sem site próprio identificado'}\n\nESTADO COMERCIAL:\nEstágio da conversa: ${d.bloco_c.estagio_conversa}\n${origemTextoUser}\nServiços de interesse já registrados: ${JSON.stringify(d.bloco_c.interesse_servicos)}\n\n${msg1Texto}\n\nHISTÓRICO DA CONVERSA:\n${historicoTexto || '(sem histórico)'}\n\nMENSAGEM ATUAL DO CLIENTE: \"${d.bloco_d.mensagem_atual}\"\nINTENÇÃO CLASSIFICADA: ${d.intencao} (confiança do classificador: ${d.confianca_classificacao})\n${d.bloco_d.fora_janela ? 'ATENÇÃO: esta mensagem chegou fora do horário de atendimento — se for a primeira resposta do dia, cumprimente adequadamente (ex: bom dia).' : ''}\n\nGere a resposta do agente.`;\n\nreturn [{ json: { ...d, system_prompt_gerador: systemPrompt, user_message_gerador: userMessage } }];"
       },
       "id": "9b6bf281-f577-465a-b7b8-4920767f1920",
       "name": "Montar Prompt Gerador",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1920,
+        2816,
         192
       ]
     },
@@ -1116,20 +1116,20 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2144,
+        3040,
         192
       ]
     },
     {
       "parameters": {
-        "jsCode": "// ============ VALIDAR RESPOSTA DO GERADOR ============\nconst d = $('Montar Prompt Gerador').first().json;\n\nlet resposta = null;\nlet acoes = [];\nlet confianca = 0;\nlet erroParse = false;\n\ntry {\n  const raw = $json.content?.[0]?.text || '';\n  const clean = raw.replace(/```json|```/g, '').trim();\n  const p = JSON.parse(clean);\n  resposta = p.resposta || null;\n  acoes = Array.isArray(p.acoes) ? p.acoes : [];\n  confianca = Number.isFinite(p.confianca) ? Math.max(0, Math.min(100, p.confianca)) : 0;\n} catch (e) {\n  erroParse = true;\n}\n\n// Normaliza resposta para array de balões (1 ou 2 mensagens curtas)\nlet balões = [];\nif (Array.isArray(resposta)) balões = resposta.filter(Boolean);\nelse if (typeof resposta === 'string' && resposta.trim()) balões = [resposta.trim()];\n\n// Falha de parse ou resposta vazia => força confiança 0 (nunca envia sem revisão)\nif (erroParse || balões.length === 0) {\n  confianca = 0;\n  acoes = ['escalar_humano:falha_geracao'];\n}\n\nreturn [{ json: {\n  ...d,\n  resposta_balões: balões,\n  acoes_sugeridas: acoes,\n  confianca_geracao: confianca,\n  erro_parse_gerador: erroParse\n} }];"
+        "jsCode": "// ============ VALIDAR RESPOSTA DO GERADOR ============\nconst d = $('Montar Prompt Gerador').first().json;\n\nlet resposta = null;\nlet acoes = [];\nlet confianca = 0;\nlet erroParse = false;\n\ntry {\n  const raw = $json.content?.[0]?.text || '';\n  const clean = raw.replace(/```json|```/g, '').trim();\n  const p = JSON.parse(clean);\n  resposta = p.resposta || null;\n  acoes = Array.isArray(p.acoes) ? p.acoes : [];\n  confianca = Number.isFinite(p.confianca) ? Math.max(0, Math.min(100, p.confianca)) : 0;\n} catch (e) {\n  erroParse = true;\n}\n\n// Normaliza resposta para array de balões (1 ou 2 mensagens curtas)\nlet balões = [];\nif (Array.isArray(resposta)) balões = resposta.filter(Boolean);\nelse if (typeof resposta === 'string' && resposta.trim()) balões = [resposta.trim()];\n\n// Falha de parse ou resposta vazia => força confiança 0 (nunca envia sem revisão)\nif (erroParse || balões.length === 0) {\n  confianca = 0;\n  acoes = ['escalar_humano:falha_geracao'];\n}\n\n// ===== CHECK DETERMINÍSTICO: fechamento com pergunta/CTA (princípio 11) =====\n// Se nenhum balão contém \"?\", e não é caso de exceção, rebaixa a confiança\n// para <70 => Gate Autonomia retém para revisão humana em vez de enviar.\nlet semPergunta = false;\nif (!erroParse && balões.length > 0) {\n  const temPergunta = balões.some(b => b.includes('?'));\n  const intencao = (d.intencao || '').toLowerCase();\n  const intencaoIsenta = ['despedida', 'agradecimento', 'opt_out', 'confirmacao']\n    .some(x => intencao.includes(x));\n  const acaoIsenta = acoes.some(a =>\n    String(a).startsWith('enviar_checkout') ||\n    String(a).startsWith('escalar_humano') ||\n    String(a).startsWith('enviar_link_raiox')\n  );\n  if (!temPergunta && !intencaoIsenta && !acaoIsenta) {\n    semPergunta = true;\n    confianca = Math.min(confianca, 65);\n  }\n}\n\nreturn [{ json: {\n  ...d,\n  resposta_balões: balões,\n  acoes_sugeridas: acoes,\n  confianca_geracao: confianca,\n  erro_parse_gerador: erroParse,\n  flag_sem_pergunta: semPergunta\n} }];"
       },
       "id": "e33285dc-7f9b-4812-95fe-f1a393c8afa3",
       "name": "Validar Resposta Gerador",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2368,
+        3264,
         192
       ]
     },
@@ -1138,7 +1138,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1696,
+        2592,
         192
       ],
       "id": "a3ac5ffe-3af1-480a-bb7d-b2be64a1bac3",
@@ -1206,7 +1206,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        4384,
+        5280,
         288
       ]
     },
@@ -1239,7 +1239,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        4608,
+        5504,
         384
       ]
     },
@@ -1272,7 +1272,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        4832,
+        5728,
         480
       ]
     },
@@ -1303,7 +1303,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ empresa_id: $json.empresa_id, tipo: 'followup_agente', devido_em: $now.plus({ days: Number($json.param || 3) }).toISO(), contexto: 'Agendado pelo agente A2 v3 apos aprovacao' }) }}",
+        "jsonBody": "=={{ JSON.stringify({ empresa_id: $json.empresa_id, tipo: 'conversa_parada', devido_em: $now.plus({ days: Number($json.param || 3) }).toISO(), contexto: 'Followup agendado pelo agente. Retomar a conversa do ponto em que parou.' }) }}",
         "options": {}
       },
       "id": "cfa6aca6-40c5-492d-93d7-5e1359341f2d",
@@ -1311,7 +1311,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4608,
+        5504,
         192
       ]
     },
@@ -1346,7 +1346,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4832,
+        5728,
         288
       ]
     },
@@ -1385,7 +1385,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        5056,
+        5952,
         384
       ]
     },
@@ -1420,7 +1420,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        5056,
+        5952,
         576
       ]
     },
@@ -1454,7 +1454,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -3232,
+        -2336,
         96
       ]
     },
@@ -1481,7 +1481,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -3008,
+        -2112,
         -80
       ],
       "alwaysOutputData": true
@@ -1521,7 +1521,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2784,
+        -1888,
         -80
       ]
     },
@@ -1534,7 +1534,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2560,
+        -1664,
         -80
       ]
     },
@@ -1573,7 +1573,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2336,
+        -1440,
         -80
       ]
     },
@@ -1604,7 +1604,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2112,
+        -1216,
         -80
       ]
     },
@@ -1631,7 +1631,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        128,
+        1024,
         192
       ],
       "alwaysOutputData": true
@@ -1645,7 +1645,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2592,
+        3488,
         192
       ]
     },
@@ -1679,7 +1679,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2816,
+        3712,
         192
       ]
     },
@@ -1710,7 +1710,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3040,
+        3936,
         96
       ]
     },
@@ -1721,7 +1721,7 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        3264,
+        4160,
         96
       ]
     },
@@ -1752,7 +1752,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3040,
+        3936,
         288
       ]
     },
@@ -1785,7 +1785,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3264,
+        4160,
         288
       ]
     },
@@ -1798,7 +1798,7 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        3488,
+        4384,
         208
       ],
       "webhookId": "ceb820cc-3b07-4dda-bb13-cb85698f97de"
@@ -1830,7 +1830,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3712,
+        4608,
         208
       ]
     },
@@ -1869,7 +1869,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3936,
+        4832,
         288
       ]
     },
@@ -1882,7 +1882,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4160,
+        5056,
         288
       ]
     },
@@ -1896,6 +1896,112 @@
         -4128,
         -192
       ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/conversa_buffer?on_conflict=evolution_id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation,resolution=ignore-duplicates"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  remote_jid: $json.numero + '@s.whatsapp.net',\n  mensagem: $json.texto || null,\n  midia_tipo: $json.midia_tipo || 'texto',\n  evolution_id: $json.evolution_id || null,\n  processar_apos: new Date(Date.now() + 15000).toISOString()\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3680,
+        0
+      ],
+      "id": "fc68be20-f9a5-42f0-945f-4fb214c1f2fb",
+      "name": "B1 Gravar Buffer"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3456,
+        0
+      ],
+      "id": "4ba39658-f5c0-4515-8994-3099a85951ad",
+      "name": "B2 Aguardar Rajada",
+      "webhookId": "7f8cdf78-a683-45a0-a232-a84e5932d60d"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/conversa_buffer?remote_jid=eq.{{ $('G2 Gate Dedup').first().json.numero }}@s.whatsapp.net&processado=eq.false",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{REDACTED_SB_SECRET}}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ processado: true, processado_em: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3232,
+        0
+      ],
+      "id": "9c150f0d-346f-4d17-8daa-e36da06c0461",
+      "name": "B3 Reivindicar Rajada",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============ B4 — CONSOLIDAR RAJADA ============\n// O PATCH do B3 retornou APENAS as linhas que ESTA execução capturou.\n// Zero linhas => outra execução (a primeira da rajada) já levou tudo => encerra.\n// Atenção fan-out do n8n: multi-row vira múltiplos items => usar .all()\nconst capturadas = $input.all()\n  .map(i => i.json)\n  .filter(r => r && r.id);\n\nif (capturadas.length === 0) return [];\n\n// Ordena por chegada e agrega os textos em uma mensagem única\ncapturadas.sort((a, b) => new Date(a.recebida_em) - new Date(b.recebida_em));\nconst textoAgregado = capturadas\n  .map(r => (r.mensagem || '').trim())\n  .filter(Boolean)\n  .join('\\n');\n\n// Base = payload original normalizado desta execução\nconst base = $('G2 Gate Dedup').first().json;\n\nreturn [{ json: {\n  ...base,\n  texto: textoAgregado || base.texto,\n  rajada_qtd: capturadas.length,\n  rajada_evolution_ids: capturadas.map(r => r.evolution_id).filter(Boolean)\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3008,
+        0
+      ],
+      "id": "9354b913-b7d4-4836-af1b-30532527c203",
+      "name": "B4 Consolidar Rajada"
     }
   ],
   "connections": {
@@ -1936,7 +2042,7 @@
       "main": [
         [
           {
-            "node": "G3 Buscar Lead",
+            "node": "B1 Gravar Buffer",
             "type": "main",
             "index": 0
           }
@@ -2602,6 +2708,50 @@
           }
         ]
       ]
+    },
+    "B1 Gravar Buffer": {
+      "main": [
+        [
+          {
+            "node": "B2 Aguardar Rajada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B2 Aguardar Rajada": {
+      "main": [
+        [
+          {
+            "node": "B3 Reivindicar Rajada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B3 Reivindicar Rajada": {
+      "main": [
+        [
+          {
+            "node": "B4 Consolidar Rajada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B4 Consolidar Rajada": {
+      "main": [
+        [
+          {
+            "node": "G3 Buscar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -2613,9 +2763,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "b631a78c-4edd-49f3-8bbc-1782adff43f5",
-  "activeVersionId": "b631a78c-4edd-49f3-8bbc-1782adff43f5",
-  "versionCounter": 215,
+  "versionId": "a5ed42ca-3b6f-4c5f-87e6-153f1201d6a1",
+  "activeVersionId": "a5ed42ca-3b6f-4c5f-87e6-153f1201d6a1",
+  "versionCounter": 230,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "shared": [
@@ -2640,9 +2790,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-07-30T12:12:27.919Z",
-    "createdAt": "2026-07-30T12:12:24.646Z",
-    "versionId": "b631a78c-4edd-49f3-8bbc-1782adff43f5",
+    "updatedAt": "2026-08-03T16:12:22.377Z",
+    "createdAt": "2026-08-03T16:11:55.600Z",
+    "versionId": "a5ed42ca-3b6f-4c5f-87e6-153f1201d6a1",
     "workflowId": "XnkBvkMuIRWwAuSN",
     "nodes": [
       {
@@ -2738,7 +2888,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -3680,
+          -2784,
           0
         ],
         "alwaysOutputData": true
@@ -2773,7 +2923,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          -3456,
+          -2560,
           0
         ]
       },
@@ -2812,7 +2962,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -3008,
+          -2112,
           192
         ]
       },
@@ -2843,7 +2993,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -2784,
+          -1888,
           192
         ]
       },
@@ -2854,7 +3004,7 @@
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
         "position": [
-          -2560,
+          -1664,
           -272
         ]
       },
@@ -2867,7 +3017,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -2336,
+          -1440,
           -272
         ]
       },
@@ -2906,7 +3056,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -2112,
+          -1216,
           -272
         ]
       },
@@ -2919,7 +3069,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -1888,
+          -992,
           -176
         ]
       },
@@ -2930,7 +3080,7 @@
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
         "position": [
-          -1440,
+          -544,
           -656
         ]
       },
@@ -2961,7 +3111,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -1440,
+          -544,
           -464
         ]
       },
@@ -3000,7 +3150,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -1440,
+          -544,
           -272
         ]
       },
@@ -3039,7 +3189,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -1216,
+          -320,
           -272
         ]
       },
@@ -3070,7 +3220,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -992,
+          -96,
           -272
         ]
       },
@@ -3109,7 +3259,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -768,
+          128,
           -272
         ]
       },
@@ -3148,7 +3298,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -1440,
+          -544,
           -80
         ]
       },
@@ -3179,7 +3329,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -1216,
+          -320,
           -80
         ]
       },
@@ -3218,7 +3368,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -1440,
+          -544,
           112
         ]
       },
@@ -3251,7 +3401,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          -1216,
+          -320,
           192
         ]
       },
@@ -3290,7 +3440,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -992,
+          -96,
           16
         ]
       },
@@ -3324,7 +3474,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          -768,
+          128,
           192
         ]
       },
@@ -3355,7 +3505,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -544,
+          352,
           112
         ]
       },
@@ -3366,7 +3516,7 @@
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
         "position": [
-          -320,
+          576,
           192
         ]
       },
@@ -3518,7 +3668,7 @@
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.4,
         "position": [
-          -1664,
+          -768,
           -240
         ],
         "id": "07da4402-6b6a-427d-91b7-81734c5ea588",
@@ -3547,7 +3697,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -96,
+          800,
           192
         ],
         "alwaysOutputData": true
@@ -3575,7 +3725,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          352,
+          1248,
           192
         ],
         "alwaysOutputData": true
@@ -3589,7 +3739,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          576,
+          1472,
           192
         ]
       },
@@ -3602,7 +3752,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          800,
+          1696,
           192
         ]
       },
@@ -3637,7 +3787,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1024,
+          1920,
           192
         ]
       },
@@ -3650,7 +3800,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1248,
+          2144,
           192
         ]
       },
@@ -3677,7 +3827,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1472,
+          2368,
           96
         ],
         "alwaysOutputData": true
@@ -3705,21 +3855,21 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1472,
+          2368,
           288
         ],
         "alwaysOutputData": true
       },
       {
         "parameters": {
-          "jsCode": "// ============ MONTAR PROMPT DO GERADOR (Sonnet) ============\nconst d = $('Validar Classificação').first().json;\nconst objecoes = $('Buscar Objeções').all().map(item => item.json);\nconst servicos = $('Buscar Serviços').all().map(item => item.json);\n\nconst objecoesTexto = (Array.isArray(objecoes) ? objecoes : []).map(o =>\n  `### ${o.subtipo}\\nContexto: ${o.contexto}\\nComo responder: ${o.abordagem}\\nExemplo de tom (NÃO copiar literalmente, adaptar ao lead real): ${o.exemplo}`\n).join('\\n\\n');\n\nconst servicosTexto = (Array.isArray(servicos) ? servicos : []).map(s => {\n  const cupom = s.preco_promocional\n    ? ` | Preço promocional: R$ ${s.preco_promocional} com cupom ${s.cupom_codigo} (válido ${s.cupom_prazo_dias} dias a partir da 1ª menção — data exata vem calculada no dossiê, NUNCA calcular)`\n    : '';\n  return `### ${s.codigo} — ${s.nome}\\n${s.descricao_curta}\\nPreço: ${s.preco_texto}${cupom}\\nPrazo: ${s.prazo_entrega || 'não aplicável'}\\nLink de checkout: ${s.link_checkout}\\nQuando ofertar: ${s.quando_ofertar}`;\n}).join('\\n\\n');\n\n// Cupom: já foi oferecido? já expirou?\nconst cupomInfo = d.bloco_c.cupom_oferecido_em\n  ? (d.bloco_c.cupom_ja_expirou\n      ? `Cupom PRIME30 JÁ FOI OFERECIDO e EXPIROU em ${d.bloco_c.cupom_expira_em}. NÃO reoferecer nem prorrogar de cabeça — se o cliente perguntar do prazo, escale para humano (ação escalar_humano:oferta_expirada).`\n      : `Cupom PRIME30 já foi oferecido em ${d.bloco_c.cupom_oferecido_em}, válido até ${d.bloco_c.cupom_expira_em}. Pode reforçar a validade se o cliente perguntar, mas não é preciso reapresentar a oferta do zero.`)\n  : 'Cupom PRIME30 AINDA NÃO foi oferecido a este lead. Se for apresentar o preço de criacao_site/redesign_site pela primeira vez nesta conversa, você pode mencionar o cupom UMA VEZ — a ação \"registrar_oferta_cupom\" deve constar em \"acoes\" nesse caso para o sistema calcular e gravar a data de validade.';\n\n// ===== Modo anúncio / origem site: regras específicas por origem =====\nconst origemLead = d.bloco_e?.origem || (d.bloco_e?.veio_de_anuncio ? 'anuncio' : null);\nlet modoAnuncio = '';\n\nif (d.bloco_e?.veio_de_anuncio && origemLead === 'site') {\n  modoAnuncio = `\n\nORIGEM SITE — este lead navegou no somosatitude.com.br e clicou num botão de WhatsApp. Regras específicas que PREVALECEM sobre o fluxo consultivo padrão:\n- CTA clicado: \"${d.bloco_e.nome_anuncio || 'não identificado'}\". Contexto do que ele viu: \"${d.bloco_e.promessa || 'não cadastrado'}\".\n- Ele JÁ VIU o site institucional: preço cheio (R$ 599), prazo (até 10 dias úteis após o formulário), hospedagem R$ 79/mês só após a entrega, garantia de 7 dias. Pode referenciar essas informações com naturalidade — são públicas para ele.\n- NENHUM cupom é anunciado nem oferecido proativamente. O preço é R$ 599. O cupom PRIME30 (R$ 419,30) SÓ pode aparecer como facilitador em objeção de preço explícita (intenção objecao_preco), seguindo a base de objeções — nunca antes, nunca como boas-vindas, nunca se o lead já aceitou o preço cheio. Ao mencionar pela primeira vez, incluir a ação \"registrar_oferta_cupom\". O cupom SITE30 é EXCLUSIVO de anúncio pago — NUNCA usar para lead do site.\n- Você NÃO tem dados enriquecidos deste lead (não houve análise do negócio dele). NUNCA afirme que analisou algo dele.\n- Se o CTA for \"Site — CTA principal\": lead decidido — não pergunte se ele quer um site; vá direto à pergunta de contexto (qual é o negócio dele e se já tem site hoje ou seria o primeiro), e siga: contexto → conectar o site ao negócio em 1-2 linhas → confirmar preço/prazo com pergunta de encaminhamento → mediante aceite, enviar_checkout:criacao_site (mencionando a hospedagem de forma natural, nunca como taxa).\n- Se o CTA for \"Site — CTA avaliação\": a promessa é uma AVALIAÇÃO, não uma venda. Primeiro entregue o prometido: colete nome do negócio, cidade e site ou Instagram (1 pergunta por vez, começando por negócio+cidade juntos). Com os dados coletados, use escalar_humano:avaliacao_site e avise o lead que a avaliação chega em até 1 dia útil. NÃO oferte preço antes de a avaliação ser entregue, a menos que o lead pergunte.\n- Se o CTA for \"Site — veio de um modelo\": a mensagem dele diz qual modelo/segmento viu — use isso como abertura e siga a mesma jornada do CTA principal, já com o segmento conhecido. Lembre: os modelos são demonstrações fictícias; o site dele é feito do zero com a marca dele.\n- Se o lead JÁ TEM site: mesma jornada e mesmo link — apenas mude a comunicação para refazer/modernizar (redesign_site). Não mude de produto.\n- ATALHO: se o lead pedir o link ou o preço diretamente, não segure — responda e, havendo aceite, envie o checkout no mesmo turno.\n- Checkout de produto DIFERENTE de criacao_site/redesign_site só se o próprio lead pedir explicitamente.`;\n} else if (d.bloco_e?.veio_de_anuncio) {\n  modoAnuncio = `\n\nMODO ANÚNCIO — este lead veio de um anúncio pago. Regras específicas que PREVALECEM sobre o fluxo consultivo padrão:\n- O lead clicou no anúncio \"${d.bloco_e.nome_anuncio || 'não cadastrado'}\". Promessa que ele viu: \"${d.bloco_e.promessa || 'não cadastrada'}\". Oferta do criativo: \"${d.bloco_e.oferta || 'não cadastrada'}\".\n- Sua primeira missão é responder ao que o anúncio prometeu — nunca mude de assunto na abertura.\n- Preço do criativo é público: se o anúncio anunciou preço/oferta, o lead já viu — responda perguntas de preço imediatamente, sem rodeio, usando exatamente o valor da oferta acima.\n- O cupom PRIME30 NÃO se aplica a leads de anúncio — NUNCA mencioná-lo. Se o anúncio tiver cupom próprio, ele está descrito na oferta acima — use SÓ esse. Cupom de campanha não tem contagem por lead: NUNCA invente data de validade; se perguntarem até quando vale, diga que é o cupom da campanha atual. Dúvida de prazo além disso → escalar_humano. EXCEÇÃO: ver seção MODO AVALIAÇÃO abaixo, quando presente — ela pode liberar o PRIME30 especificamente para o ramo de avaliação de presença.\n- Você NÃO tem dados enriquecidos deste lead (não houve análise do negócio dele). NUNCA afirme que analisou algo dele. Colete com naturalidade, 1 pergunta por vez, só o que ajudar a atender.\n- Upsell só depois de resolver (ou o lead recusar) o que ele veio buscar.\n- ESTRATÉGIA PELO PRODUTO-ALVO (${d.bloco_e.servico_alvo || 'não identificado'}):\n  * ebook_gbp / ebook_gestao — VENDA DIRETA: sem qualificação. Confirme o que o e-book entrega (1-2 linhas alinhadas à promessa) + pergunte se pode mandar o link. Ao primeiro sim (ou pedido direto), enviar_checkout do e-book + registrar_interesse. Entrega imediata por e-mail após confirmação do pagamento (é automático). Se o lead não for do segmento do criativo, adapte naturalmente — o conteúdo serve para qualquer negócio local; nunca diga que o anúncio \"não era para ele\".\n  * criacao_site — MINI-QUALIFICAÇÃO (2 trocas antes do checkout): Troca 1 = boas-vindas + UMA pergunta dupla (qual é o negócio + já tem site hoje ou seria o primeiro). Troca 2 = conectar o site ao negócio informado em 1-2 linhas + confirmar o caminho (pronto em até 10 dias úteis após formulário rápido, preço da oferta do criativo, parcela no cartão) + pergunta de encaminhamento. Troca 3 = mediante aceite, enviar_checkout:criacao_site lembrando o cupom do criativo + mencionar de forma natural (nunca como taxa) a hospedagem R$ 79/mês após a entrega. Se JÁ TEM site: mesma jornada e link, comunicação de refazer/modernizar (redesign_site). ATALHO: lead pede link/preço direto na 1ª mensagem → responda e envie o checkout no mesmo turno. Objeção de preço: facilitador é o cupom do criativo + parcelamento + hospedagem só após entrega; pedido de desconto extra → escalar_humano.\n  * config_gbp — OFERTA DIRETA (exceção à regra do catálogo): lead de anúncio de GBP pode comprar GBP direto, SEM recondução para site. 1ª resposta = confirmar o que o serviço entrega (configuração completa do perfil no Google/Maps, feita pela Atitude) + UMA pergunta de contexto (já tem perfil no Google ou seria do zero — muda a comunicação, não o produto/preço). 2ª troca = R$ 237,00 e, mediante aceite, enviar_checkout:config_gbp. Não empurrar site; se o lead mencionar que não tem site, cite em 1 linha que a Atitude também faz e siga com o GBP. Nunca prometer gestão contínua/mensal do perfil — o serviço é a configuração completa executada por nós.\n  * avaliacao_presenca — COLETA E ESCALA (zero venda): NÃO vender nada, em nenhuma hipótese — a avaliação gratuita É a entrega prometida pelo anúncio. Objetivo único: coletar nome do negócio + cidade (+ site/Instagram se tiver), 1 pergunta por vez, começando por negócio+cidade juntos. Quando os dados estiverem completos, confirmar com o lead e usar escalar_humano:avaliacao_site, avisando que o raio-x chega em PDF em até 1 dia útil, aqui no WhatsApp. Nunca mencionar preço, produto, cupom ou serviço da Atitude — se o lead perguntar preço de algo, responder que primeiro entrega a avaliação e depois conversa sobre o resto com prazer.\n- Se o produto-alvo for \"não identificado\" (anúncio não cadastrado): responda cordialmente pedindo 1 esclarecimento sobre o que a pessoa viu, e use confianca baixa (menor que 70) para revisão humana.`;\n}\n\n// ===== Detectar avaliação de presença já entregue no histórico =====\nconst avaliacaoEntregue = (d.bloco_b.historico || []).find(\n  h => h.etapa === 'avaliacao_entregue' && h.quem === 'atitude'\n);\nlet modoAvaliacao = '';\nif (avaliacaoEntregue) {\n  modoAvaliacao = `\n\nMODO AVALIAÇÃO — este lead recebeu uma Avaliação de Presença Digital (raio-x em PDF) antes desta conversa. Regras específicas que PREVALECEM sobre o restante do prompt, incluindo MODO ANÚNCIO:\n- Achado já entregue ao lead: \"${avaliacaoEntregue.texto?.slice(0, 300) || 'não registrado em detalhe'}\". Não repita a avaliação do zero — ele já leu o PDF. Trate isso como contexto conhecido, não como novidade.\n- A avaliação já incluiu uma ponte suave para a solução (\"se quiser, te mostro como resolveríamos isso\"). Se o lead está respondendo AGORA pela primeira vez após a entrega, você pode considerar a ponte como aceita — não repita a pergunta de permissão, vá direto ao ponto.\n- A oferta natural para este lead é sempre criacao_site ou redesign_site — é o que resolve o achado principal (presença digital ausente). GBP só entra como complemento explícito no momento do preço (ver abaixo), nunca como abertura da conversa.\n- CUPOM (regra permanente para este ramo): mesmo sendo lead de origem anúncio (onde PRIME30 normalmente NÃO se aplica), sempre que você mencionar o preço de criacao_site/redesign_site pela primeira vez neste ramo — seja em resposta a uma pergunta direta de valor (\"quanto custa\", \"qual o valor\") ou a uma objeção de preço — inclua o cupom PRIME30 (R$599 → R$419,30) já na mesma mensagem. Não é preciso esperar objeção. Isso vale apenas neste ramo (avaliação de presença), não se estende a criacao_site vindo de outros anúncios (MODO ANÚNCIO padrão continua exigindo objeção). Ao mencionar, incluir a ação \"registrar_oferta_cupom\".\n- E-BOOK GBP COMO COMPLEMENTO: se o achado da avaliação mencionou o Google/GBP como parte do problema, ao apresentar o preço do site você pode oferecer também o ebook_gbp (R$37) como complemento, na mesma mensagem — \"pra deixar a configuração do Google certinha também\". Isso é uma exceção específica deste ramo à regra geral de e-books; não oferecer e-book se o achado não tiver mencionado Google/GBP.`;\n}\n\nconst systemPrompt = `Você é o agente comercial da Atitude Soluções Inteligentes, respondendo pelo WhatsApp da empresa. Vende sites profissionais e configuração de Google Business Profile para pequenas e médias empresas.\n\nPRINCÍPIOS INEGOCIÁVEIS:\n1. Soar humano, nunca robótico: mensagens curtas (1 a 4 linhas), no máximo 1 pergunta por resposta, espelhe o registro do cliente (formal/informal, com ou sem emoji).\n2. Nunca minta nem invente: preço, prazo ou recurso que não está na base de produtos abaixo não existe para você. Se não souber, diga que vai confirmar e sugira escalar_humano.\n3. Vender ajudando: use o diagnóstico real do lead (dor_resumida, GBP, site) como argumento consultivo, nunca insistência vazia.\n4. Nunca insistir 2x na mesma objeção: se ela voltar, aceite com elegância e agende follow-up ou encerre.\n5. Proibidas palavras-gatilho de spam: grátis, promoção, urgente, últimas vagas, corre. EXCEÇÃO: quando o produto-alvo de um anúncio for avaliacao_presenca, a palavra \"gratuita/gratuito\" pode ser usada para se referir à avaliação — é a promessa literal do anúncio.\n6. Nunca envie link que não veio literalmente da base de produtos abaixo.\n7. GBP (config_gbp) nunca é ofertado como abertura de conversa — é upsell pós-venda do site. EXCEÇÃO: lead de anúncio cujo produto-alvo é config_gbp (ver MODO ANÚNCIO, quando presente).\n8. E-books nunca são ofertados ativamente em conversas de prospecção — só se o cliente perguntar OU se forem o produto-alvo de um anúncio (ver MODO ANÚNCIO, quando presente).\n9. Hospedagem: mencionar de forma sutil e natural somente APÓS o cliente aceitar o site, nunca como taxa escondida.\n10. Cupom PRIME30: no máximo 1 menção proativa por lead. Nunca calcule a validade sozinho — o dossiê já traz a data calculada quando aplicável. Se houver seção MODO ANÚNCIO, ORIGEM SITE ou MODO AVALIAÇÃO abaixo, as regras de cupom de lá PREVALECEM sobre esta.\n\nBASE DE OBJEÇÕES (use quando a intenção classificada for objecao_*):\n${objecoesTexto}\n\nBASE DE PRODUTOS:\n${servicosTexto}\n\nESTADO DO CUPOM PARA ESTE LEAD:\n${cupomInfo}${modoAnuncio}${modoAvaliacao}\n\nVocê SEMPRE responde em JSON válido, sem markdown, sem texto fora do JSON, neste formato exato:\n{\n  \"resposta\": \"texto da mensagem, ou array de até 2 strings se preferir quebrar em 2 balões curtos\",\n  \"acoes\": [\"lista de ações, pode ser vazia: enviar_link_raiox | enviar_checkout:codigo_servico | agendar_followup:N (N=dias) | atualizar_estagio:novo_estagio | registrar_interesse:codigo_servico | registrar_oferta_cupom | escalar_humano:motivo | nenhuma\"],\n  \"confianca\": 0-100 (sua confiança de que esta resposta é apropriada e segura para enviar sem revisão humana)\n}\n\nValores VÁLIDOS para atualizar_estagio (use exatamente um destes, nunca invente outros): em_conversa, qualificando, oferta_apresentada, negociando, checkout_enviado.\n\nUse confianca BAIXA (abaixo de 70) sempre que: a intenção envolve dinheiro/negociação além do previsto, houver ambiguidade real sobre o que o cliente quer, o cliente pedir algo fora da base de produtos, ou a situação exigir julgamento humano.`;\n\nconst historicoTexto = (d.bloco_b.historico || []).map(h => `[${h.quem}] ${h.texto}`).join('\\n');\nconst msg1Texto = d.bloco_b.msg1 ? `Mensagem inicial enviada (roteiro ${d.bloco_b.msg1.roteiro}): \"${d.bloco_b.msg1.texto}\"` : 'Nenhuma mensagem inicial registrada.';\n\nconst origemTextoUser = d.bloco_e?.veio_de_anuncio\n  ? (origemLead === 'site'\n      ? 'ORIGEM: LEAD DO SITE (somosatitude.com.br) — siga as regras da seção ORIGEM SITE.'\n      : 'ORIGEM: LEAD DE ANÚNCIO — siga as regras do MODO ANÚNCIO.')\n  : 'ORIGEM: prospecção ativa.';\n\nconst userMessage = `DOSSIÊ COMPLETO DO LEAD:\nNome: ${d.bloco_a.nome_exibicao} (contato: ${d.bloco_a.nome_socio || 'não identificado'})\nSegmento: ${d.bloco_a.segmento || 'não informado'} | Local: ${d.bloco_a.local || 'não informado'}\nDor identificada: ${d.bloco_a.dor_resumida || 'nenhuma (lead sem enriquecimento)'}\n${d.bloco_a.gbp ? `Google: nota ${d.bloco_a.gbp.rating} com ${d.bloco_a.gbp.avaliacoes} avaliações` : 'Sem perfil no Google identificado'}\n${d.bloco_a.site ? `Site atual: ${d.bloco_a.site.url} — diagnóstico: ${d.bloco_a.site.diagnostico}` : 'Sem site próprio identificado'}\n\nESTADO COMERCIAL:\nEstágio da conversa: ${d.bloco_c.estagio_conversa}\n${origemTextoUser}\nServiços de interesse já registrados: ${JSON.stringify(d.bloco_c.interesse_servicos)}\n\n${msg1Texto}\n\nHISTÓRICO DA CONVERSA:\n${historicoTexto || '(sem histórico)'}\n\nMENSAGEM ATUAL DO CLIENTE: \"${d.bloco_d.mensagem_atual}\"\nINTENÇÃO CLASSIFICADA: ${d.intencao} (confiança do classificador: ${d.confianca_classificacao})\n${d.bloco_d.fora_janela ? 'ATENÇÃO: esta mensagem chegou fora do horário de atendimento — se for a primeira resposta do dia, cumprimente adequadamente (ex: bom dia).' : ''}\n\nGere a resposta do agente.`;\n\nreturn [{ json: { ...d, system_prompt_gerador: systemPrompt, user_message_gerador: userMessage } }];"
+          "jsCode": "// ============ MONTAR PROMPT DO GERADOR (Sonnet) ============\nconst d = $('Validar Classificação').first().json;\nconst objecoes = $('Buscar Objeções').all().map(item => item.json);\nconst servicos = $('Buscar Serviços').all().map(item => item.json);\n\nconst objecoesTexto = (Array.isArray(objecoes) ? objecoes : []).map(o =>\n  `### ${o.subtipo}\\nContexto: ${o.contexto}\\nComo responder: ${o.abordagem}\\nExemplo de tom (NÃO copiar literalmente, adaptar ao lead real): ${o.exemplo}`\n).join('\\n\\n');\n\nconst servicosTexto = (Array.isArray(servicos) ? servicos : []).map(s => {\n  const cupom = s.preco_promocional\n    ? ` | Preço promocional: R$ ${s.preco_promocional} com cupom ${s.cupom_codigo} (válido ${s.cupom_prazo_dias} dias a partir da 1ª menção — data exata vem calculada no dossiê, NUNCA calcular)`\n    : '';\n  return `### ${s.codigo} — ${s.nome}\\n${s.descricao_curta}\\nPreço: ${s.preco_texto}${cupom}\\nPrazo: ${s.prazo_entrega || 'não aplicável'}\\nLink de checkout: ${s.link_checkout}\\nQuando ofertar: ${s.quando_ofertar}`;\n}).join('\\n\\n');\n\n// Cupom: já foi oferecido? já expirou?\nconst cupomInfo = d.bloco_c.cupom_oferecido_em\n  ? (d.bloco_c.cupom_ja_expirou\n      ? `Cupom PRIME30 JÁ FOI OFERECIDO e EXPIROU em ${d.bloco_c.cupom_expira_em}. NÃO reoferecer nem prorrogar de cabeça — se o cliente perguntar do prazo, escale para humano (ação escalar_humano:oferta_expirada).`\n      : `Cupom PRIME30 já foi oferecido em ${d.bloco_c.cupom_oferecido_em}, válido até ${d.bloco_c.cupom_expira_em}. Pode reforçar a validade se o cliente perguntar, mas não é preciso reapresentar a oferta do zero.`)\n  : 'Cupom PRIME30 AINDA NÃO foi oferecido a este lead. Se for apresentar o preço de criacao_site/redesign_site pela primeira vez nesta conversa, você pode mencionar o cupom UMA VEZ — a ação \"registrar_oferta_cupom\" deve constar em \"acoes\" nesse caso para o sistema calcular e gravar a data de validade.';\n\n// ===== Modo anúncio / origem site: regras específicas por origem =====\nconst origemLead = d.bloco_e?.origem || (d.bloco_e?.veio_de_anuncio ? 'anuncio' : null);\nlet modoAnuncio = '';\n\nif (d.bloco_e?.veio_de_anuncio && origemLead === 'site') {\n  modoAnuncio = `\n\nORIGEM SITE — este lead navegou no somosatitude.com.br e clicou num botão de WhatsApp. Regras específicas que PREVALECEM sobre o fluxo consultivo padrão:\n- CTA clicado: \"${d.bloco_e.nome_anuncio || 'não identificado'}\". Contexto do que ele viu: \"${d.bloco_e.promessa || 'não cadastrado'}\".\n- Ele JÁ VIU o site institucional: preço cheio (R$ 599), prazo (até 10 dias úteis após o formulário), hospedagem R$ 79/mês só após a entrega, garantia de 7 dias. Pode referenciar essas informações com naturalidade — são públicas para ele.\n- NENHUM cupom é anunciado nem oferecido proativamente. O preço é R$ 599. O cupom PRIME30 (R$ 419,30) SÓ pode aparecer como facilitador em objeção de preço explícita (intenção objecao_preco), seguindo a base de objeções — nunca antes, nunca como boas-vindas, nunca se o lead já aceitou o preço cheio. Ao mencionar pela primeira vez, incluir a ação \"registrar_oferta_cupom\". O cupom SITE30 é EXCLUSIVO de anúncio pago — NUNCA usar para lead do site.\n- Você NÃO tem dados enriquecidos deste lead (não houve análise do negócio dele). NUNCA afirme que analisou algo dele.\n- Se o CTA for \"Site — CTA principal\": lead decidido — não pergunte se ele quer um site; vá direto à pergunta de contexto (qual é o negócio dele e se já tem site hoje ou seria o primeiro), e siga: contexto → conectar o site ao negócio em 1-2 linhas → confirmar preço/prazo com pergunta de encaminhamento → mediante aceite, enviar_checkout:criacao_site (mencionando a hospedagem de forma natural, nunca como taxa).\n- Se o CTA for \"Site — CTA avaliação\": a promessa é uma AVALIAÇÃO, não uma venda. Primeiro entregue o prometido: colete nome do negócio, cidade e site ou Instagram (1 pergunta por vez, começando por negócio+cidade juntos). Com os dados coletados, use escalar_humano:avaliacao_site e avise o lead que a avaliação chega em até 1 dia útil. NÃO oferte preço antes de a avaliação ser entregue, a menos que o lead pergunte.\n- Se o CTA for \"Site — veio de um modelo\": a mensagem dele diz qual modelo/segmento viu — use isso como abertura e siga a mesma jornada do CTA principal, já com o segmento conhecido. Lembre: os modelos são demonstrações fictícias; o site dele é feito do zero com a marca dele.\n- Se o lead JÁ TEM site: mesma jornada e mesmo link — apenas mude a comunicação para refazer/modernizar (redesign_site). Não mude de produto.\n- ATALHO: se o lead pedir o link ou o preço diretamente, não segure — responda e, havendo aceite, envie o checkout no mesmo turno.\n- Checkout de produto DIFERENTE de criacao_site/redesign_site só se o próprio lead pedir explicitamente.`;\n} else if (d.bloco_e?.veio_de_anuncio) {\n  modoAnuncio = `\n\nMODO ANÚNCIO — este lead veio de um anúncio pago. Regras específicas que PREVALECEM sobre o fluxo consultivo padrão:\n- O lead clicou no anúncio \"${d.bloco_e.nome_anuncio || 'não cadastrado'}\". Promessa que ele viu: \"${d.bloco_e.promessa || 'não cadastrada'}\". Oferta do criativo: \"${d.bloco_e.oferta || 'não cadastrada'}\".\n- Sua primeira missão é responder ao que o anúncio prometeu — nunca mude de assunto na abertura.\n- Preço do criativo é público: se o anúncio anunciou preço/oferta, o lead já viu — responda perguntas de preço imediatamente, sem rodeio, usando exatamente o valor da oferta acima.\n- O cupom PRIME30 NÃO se aplica a leads de anúncio — NUNCA mencioná-lo. Se o anúncio tiver cupom próprio, ele está descrito na oferta acima — use SÓ esse. Cupom de campanha não tem contagem por lead: NUNCA invente data de validade; se perguntarem até quando vale, diga que é o cupom da campanha atual. Dúvida de prazo além disso → escalar_humano. EXCEÇÃO: ver seção MODO AVALIAÇÃO abaixo, quando presente — ela pode liberar o PRIME30 especificamente para o ramo de avaliação de presença.\n- Você NÃO tem dados enriquecidos deste lead (não houve análise do negócio dele). NUNCA afirme que analisou algo dele. Colete com naturalidade, 1 pergunta por vez, só o que ajudar a atender.\n- Upsell só depois de resolver (ou o lead recusar) o que ele veio buscar.\n- ESTRATÉGIA PELO PRODUTO-ALVO (${d.bloco_e.servico_alvo || 'não identificado'}):\n  * ebook_gbp / ebook_gestao — VENDA DIRETA: sem qualificação. Confirme o que o e-book entrega (1-2 linhas alinhadas à promessa) + pergunte se pode mandar o link. Ao primeiro sim (ou pedido direto), enviar_checkout do e-book + registrar_interesse. Entrega imediata por e-mail após confirmação do pagamento (é automático). Se o lead não for do segmento do criativo, adapte naturalmente — o conteúdo serve para qualquer negócio local; nunca diga que o anúncio \"não era para ele\".\n  * criacao_site — MINI-QUALIFICAÇÃO (2 trocas antes do checkout): Troca 1 = boas-vindas + UMA pergunta dupla (qual é o negócio + já tem site hoje ou seria o primeiro). Troca 2 = conectar o site ao negócio informado em 1-2 linhas + confirmar o caminho (pronto em até 10 dias úteis após formulário rápido, preço da oferta do criativo, parcela no cartão) + pergunta de encaminhamento. Troca 3 = mediante aceite, enviar_checkout:criacao_site lembrando o cupom do criativo + mencionar de forma natural (nunca como taxa) a hospedagem R$ 79/mês após a entrega. Se JÁ TEM site: mesma jornada e link, comunicação de refazer/modernizar (redesign_site). ATALHO: lead pede link/preço direto na 1ª mensagem → responda e envie o checkout no mesmo turno. Objeção de preço: facilitador é o cupom do criativo + parcelamento + hospedagem só após entrega; pedido de desconto extra → escalar_humano.\n  * config_gbp — OFERTA DIRETA (exceção à regra do catálogo): lead de anúncio de GBP pode comprar GBP direto, SEM recondução para site. 1ª resposta = confirmar o que o serviço entrega (configuração completa do perfil no Google/Maps, feita pela Atitude) + UMA pergunta de contexto (já tem perfil no Google ou seria do zero — muda a comunicação, não o produto/preço). 2ª troca = R$ 237,00 e, mediante aceite, enviar_checkout:config_gbp. Não empurrar site; se o lead mencionar que não tem site, cite em 1 linha que a Atitude também faz e siga com o GBP. Nunca prometer gestão contínua/mensal do perfil — o serviço é a configuração completa executada por nós.\n  * avaliacao_presenca — COLETA E ESCALA (zero venda): NÃO vender nada, em nenhuma hipótese — a avaliação gratuita É a entrega prometida pelo anúncio. Objetivo único: coletar nome do negócio + cidade (+ site/Instagram se tiver), 1 pergunta por vez, começando por negócio+cidade juntos. Quando os dados estiverem completos, confirmar com o lead e usar escalar_humano:avaliacao_site, avisando que o raio-x chega em PDF em até 1 dia útil, aqui no WhatsApp. Nunca mencionar preço, produto, cupom ou serviço da Atitude — se o lead perguntar preço de algo, responder que primeiro entrega a avaliação e depois conversa sobre o resto com prazer.\n- Se o produto-alvo for \"não identificado\" (anúncio não cadastrado): responda cordialmente pedindo 1 esclarecimento sobre o que a pessoa viu, e use confianca baixa (menor que 70) para revisão humana.`;\n}\n\n// ===== Detectar avaliação de presença já entregue no histórico =====\nconst avaliacaoEntregue = (d.bloco_b.historico || []).find(\n  h => h.etapa === 'avaliacao_entregue' && h.quem === 'atitude'\n);\nlet modoAvaliacao = '';\nif (avaliacaoEntregue) {\n  modoAvaliacao = `\n\nMODO AVALIAÇÃO — este lead recebeu uma Avaliação de Presença Digital (raio-x em PDF) antes desta conversa. Regras específicas que PREVALECEM sobre o restante do prompt, incluindo MODO ANÚNCIO:\n- Achado já entregue ao lead: \"${avaliacaoEntregue.texto?.slice(0, 300) || 'não registrado em detalhe'}\". Não repita a avaliação do zero — ele já leu o PDF. Trate isso como contexto conhecido, não como novidade.\n- A avaliação já incluiu uma ponte suave para a solução (\"se quiser, te mostro como resolveríamos isso\"). Se o lead está respondendo AGORA pela primeira vez após a entrega, você pode considerar a ponte como aceita — não repita a pergunta de permissão, vá direto ao ponto.\n- A oferta natural para este lead é sempre criacao_site ou redesign_site — é o que resolve o achado principal (presença digital ausente). GBP só entra como complemento explícito no momento do preço (ver abaixo), nunca como abertura da conversa.\n- CUPOM (regra permanente para este ramo): mesmo sendo lead de origem anúncio (onde PRIME30 normalmente NÃO se aplica), sempre que você mencionar o preço de criacao_site/redesign_site pela primeira vez neste ramo — seja em resposta a uma pergunta direta de valor (\"quanto custa\", \"qual o valor\") ou a uma objeção de preço — inclua o cupom PRIME30 (R$599 → R$419,30) já na mesma mensagem. Não é preciso esperar objeção. Isso vale apenas neste ramo (avaliação de presença), não se estende a criacao_site vindo de outros anúncios (MODO ANÚNCIO padrão continua exigindo objeção). Ao mencionar, incluir a ação \"registrar_oferta_cupom\".\n- E-BOOK GBP COMO COMPLEMENTO: se o achado da avaliação mencionou o Google/GBP como parte do problema, ao apresentar o preço do site você pode oferecer também o ebook_gbp (R$37) como complemento, na mesma mensagem — \"pra deixar a configuração do Google certinha também\". Isso é uma exceção específica deste ramo à regra geral de e-books; não oferecer e-book se o achado não tiver mencionado Google/GBP.`;\n}\n\nconst systemPrompt = `Você é o agente comercial da Atitude Soluções Inteligentes, respondendo pelo WhatsApp da empresa. Vende sites profissionais e configuração de Google Business Profile para pequenas e médias empresas.\n\nPRINCÍPIOS INEGOCIÁVEIS:\n1. Soar humano, nunca robótico: mensagens curtas (1 a 4 linhas), no máximo 1 pergunta por resposta, espelhe o registro do cliente (formal/informal, com ou sem emoji).\n2. Nunca minta nem invente: preço, prazo ou recurso que não está na base de produtos abaixo não existe para você. Se não souber, diga que vai confirmar e sugira escalar_humano.\n3. Vender ajudando: use o diagnóstico real do lead (dor_resumida, GBP, site) como argumento consultivo, nunca insistência vazia.\n4. Nunca insistir 2x na mesma objeção: se ela voltar, aceite com elegância e agende follow-up ou encerre.\n5. Proibidas palavras-gatilho de spam: grátis, promoção, urgente, últimas vagas, corre. EXCEÇÃO: quando o produto-alvo de um anúncio for avaliacao_presenca, a palavra \"gratuita/gratuito\" pode ser usada para se referir à avaliação — é a promessa literal do anúncio.\n6. Nunca envie link que não veio literalmente da base de produtos abaixo.\n7. GBP (config_gbp) nunca é ofertado como abertura de conversa — é upsell pós-venda do site. EXCEÇÃO: lead de anúncio cujo produto-alvo é config_gbp (ver MODO ANÚNCIO, quando presente).\n8. E-books nunca são ofertados ativamente em conversas de prospecção — só se o cliente perguntar OU se forem o produto-alvo de um anúncio (ver MODO ANÚNCIO, quando presente).\n9. Hospedagem: mencionar de forma sutil e natural somente APÓS o cliente aceitar o site, nunca como taxa escondida.\n10. Cupom PRIME30: no máximo 1 menção proativa por lead. Nunca calcule a validade sozinho — o dossiê já traz a data calculada quando aplicável. Se houver seção MODO ANÚNCIO, ORIGEM SITE ou MODO AVALIAÇÃO abaixo, as regras de cupom de lá PREVALECEM sobre esta.\n11. TODA resposta termina com uma pergunta OU um convite claro à ação. Ao apresentar preço/oferta pela primeira vez ou confirmar interesse do lead, prefira SEMPRE convite direto ao próximo passo comercial — \"quer que eu te mande o link para garantir?\", \"posso te mandar o link de pagamento?\" — em vez de convites vagos como \"quer ver como ficaria?\" ou \"posso te mostrar?\", que geram ambiguidade sobre o que vem a seguir. Nunca termine em observação, diagnóstico ou constatação solta — sem pergunta, a conversa morre. EXCEÇÕES: despedida, agradecimento final, confirmação de opt-out, ou quando a resposta já contém o link de checkout (aí o convite pode ser afirmativo: \"qualquer dúvida no pagamento, me chama\").\n12. NUNCA repita saudação ou abertura já usada nesta conversa: se o histórico mostra que você já cumprimentou (\"Oi\", \"Tudo bem?\") ou já abriu com \"Que ótimo!\"/\"Que bom!\", vá direto ao conteúdo. Cada resposta deve começar diferente da anterior.\n13. FORMATO JSON: dentro dos textos de \"resposta\", NUNCA use aspas duplas (\"). Se precisar citar um termo de busca ou expressão, use aspas simples: quem busca 'salão de beleza em Rio Verde'. Aspas duplas quebram o JSON de saída.\n\nBASE DE OBJEÇÕES (use quando a intenção classificada for objecao_*):\n${objecoesTexto}\n\nBASE DE PRODUTOS:\n${servicosTexto}\n\nMODELOS DE DEMONSTRAÇÃO (portfólio público em somosatitude.com.br, negócios fictícios criados pela equipe para mostrar o padrão de qualidade):\n- Clínica odontológica: https://somosatitude.com.br/portfolio/cliente1.html\n- Estética e bem-estar: https://somosatitude.com.br/portfolio/cliente2.html\n- Escritório de advocacia: https://somosatitude.com.br/portfolio/cliente3.html\n- Fisioterapia e performance: https://somosatitude.com.br/portfolio/cliente4.html\n- Consultório de psicologia: https://somosatitude.com.br/portfolio/cliente5.html\n- Clínica veterinária: https://somosatitude.com.br/portfolio/cliente6.html\n\nREGRAS DE USO DOS MODELOS:\n- Ofereça um modelo SOMENTE quando o lead pedir para ver exemplo/modelo/trabalho (\"quero ver antes\", \"tem algum pronto?\", \"me mostra um site que vocês fizeram\") ou em objeção de desconfiança, como demonstração do padrão de qualidade.\n- Escolha o modelo do segmento MAIS PRÓXIMO do negócio do lead (ex: salão/estética → Estética e bem-estar; clínica de qualquer saúde → o mais parecido).\n- Envie no máximo 1 link (2 se o lead insistir), nunca a lista inteira.\n- Seja transparente: são modelos de demonstração criados pela equipe — o site do lead é feito do zero, com a marca, as fotos e as informações dele. NUNCA apresente os modelos como sites de clientes reais.\n- Depois de enviar o link, SEMPRE retome o próximo passo comercial com pergunta (\"dá uma olhada e me diz — quer que eu te mande o link pra garantir o seu?\"). O modelo é ponte para o fechamento, não fim de conversa.\n- Esta é a ÚNICA exceção à regra de não enviar links fora do checkout.\n\nESTADO DO CUPOM PARA ESTE LEAD:\n${cupomInfo}${modoAnuncio}${modoAvaliacao}\n\nVocê SEMPRE responde em JSON válido, sem markdown, sem texto fora do JSON, neste formato exato:\n{\n  \"resposta\": \"texto da mensagem, ou array de até 2 strings se preferir quebrar em 2 balões curtos\",\n  \"acoes\": [\"lista de ações, pode ser vazia: enviar_link_raiox | enviar_checkout:codigo_servico | agendar_followup:N (N=dias) | atualizar_estagio:novo_estagio | registrar_interesse:codigo_servico | registrar_oferta_cupom | escalar_humano:motivo | nenhuma\"],\n  \"confianca\": 0-100 (sua confiança de que esta resposta é apropriada e segura para enviar sem revisão humana)\n}\n\nValores VÁLIDOS para atualizar_estagio (use exatamente um destes, nunca invente outros): em_conversa, qualificando, oferta_apresentada, negociando, checkout_enviado.\n\nUse confianca BAIXA (abaixo de 70) sempre que: a intenção envolve dinheiro/negociação além do previsto, houver ambiguidade real sobre o que o cliente quer, o cliente pedir algo fora da base de produtos, ou a situação exigir julgamento humano.`;\n\nconst historicoTexto = (d.bloco_b.historico || []).map(h => `[${h.quem}] ${h.texto}`).join('\\n');\nconst msg1Texto = d.bloco_b.msg1 ? `Mensagem inicial enviada (roteiro ${d.bloco_b.msg1.roteiro}): \"${d.bloco_b.msg1.texto}\"` : 'Nenhuma mensagem inicial registrada.';\n\nconst origemTextoUser = d.bloco_e?.veio_de_anuncio\n  ? (origemLead === 'site'\n      ? 'ORIGEM: LEAD DO SITE (somosatitude.com.br) — siga as regras da seção ORIGEM SITE.'\n      : 'ORIGEM: LEAD DE ANÚNCIO — siga as regras do MODO ANÚNCIO.')\n  : 'ORIGEM: prospecção ativa.';\n\nconst userMessage = `DOSSIÊ COMPLETO DO LEAD:\nNome: ${d.bloco_a.nome_exibicao} (contato: ${d.bloco_a.nome_socio || 'não identificado'})\nSegmento: ${d.bloco_a.segmento || 'não informado'} | Local: ${d.bloco_a.local || 'não informado'}\nDor identificada: ${d.bloco_a.dor_resumida || 'nenhuma (lead sem enriquecimento)'}\n${d.bloco_a.gbp ? `Google: nota ${d.bloco_a.gbp.rating} com ${d.bloco_a.gbp.avaliacoes} avaliações` : 'Sem perfil no Google identificado'}\n${d.bloco_a.site ? `Site atual: ${d.bloco_a.site.url} — diagnóstico: ${d.bloco_a.site.diagnostico}` : 'Sem site próprio identificado'}\n\nESTADO COMERCIAL:\nEstágio da conversa: ${d.bloco_c.estagio_conversa}\n${origemTextoUser}\nServiços de interesse já registrados: ${JSON.stringify(d.bloco_c.interesse_servicos)}\n\n${msg1Texto}\n\nHISTÓRICO DA CONVERSA:\n${historicoTexto || '(sem histórico)'}\n\nMENSAGEM ATUAL DO CLIENTE: \"${d.bloco_d.mensagem_atual}\"\nINTENÇÃO CLASSIFICADA: ${d.intencao} (confiança do classificador: ${d.confianca_classificacao})\n${d.bloco_d.fora_janela ? 'ATENÇÃO: esta mensagem chegou fora do horário de atendimento — se for a primeira resposta do dia, cumprimente adequadamente (ex: bom dia).' : ''}\n\nGere a resposta do agente.`;\n\nreturn [{ json: { ...d, system_prompt_gerador: systemPrompt, user_message_gerador: userMessage } }];"
         },
         "id": "9b6bf281-f577-465a-b7b8-4920767f1920",
         "name": "Montar Prompt Gerador",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1920,
+          2816,
           192
         ]
       },
@@ -3754,20 +3904,20 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          2144,
+          3040,
           192
         ]
       },
       {
         "parameters": {
-          "jsCode": "// ============ VALIDAR RESPOSTA DO GERADOR ============\nconst d = $('Montar Prompt Gerador').first().json;\n\nlet resposta = null;\nlet acoes = [];\nlet confianca = 0;\nlet erroParse = false;\n\ntry {\n  const raw = $json.content?.[0]?.text || '';\n  const clean = raw.replace(/```json|```/g, '').trim();\n  const p = JSON.parse(clean);\n  resposta = p.resposta || null;\n  acoes = Array.isArray(p.acoes) ? p.acoes : [];\n  confianca = Number.isFinite(p.confianca) ? Math.max(0, Math.min(100, p.confianca)) : 0;\n} catch (e) {\n  erroParse = true;\n}\n\n// Normaliza resposta para array de balões (1 ou 2 mensagens curtas)\nlet balões = [];\nif (Array.isArray(resposta)) balões = resposta.filter(Boolean);\nelse if (typeof resposta === 'string' && resposta.trim()) balões = [resposta.trim()];\n\n// Falha de parse ou resposta vazia => força confiança 0 (nunca envia sem revisão)\nif (erroParse || balões.length === 0) {\n  confianca = 0;\n  acoes = ['escalar_humano:falha_geracao'];\n}\n\nreturn [{ json: {\n  ...d,\n  resposta_balões: balões,\n  acoes_sugeridas: acoes,\n  confianca_geracao: confianca,\n  erro_parse_gerador: erroParse\n} }];"
+          "jsCode": "// ============ VALIDAR RESPOSTA DO GERADOR ============\nconst d = $('Montar Prompt Gerador').first().json;\n\nlet resposta = null;\nlet acoes = [];\nlet confianca = 0;\nlet erroParse = false;\n\ntry {\n  const raw = $json.content?.[0]?.text || '';\n  const clean = raw.replace(/```json|```/g, '').trim();\n  const p = JSON.parse(clean);\n  resposta = p.resposta || null;\n  acoes = Array.isArray(p.acoes) ? p.acoes : [];\n  confianca = Number.isFinite(p.confianca) ? Math.max(0, Math.min(100, p.confianca)) : 0;\n} catch (e) {\n  erroParse = true;\n}\n\n// Normaliza resposta para array de balões (1 ou 2 mensagens curtas)\nlet balões = [];\nif (Array.isArray(resposta)) balões = resposta.filter(Boolean);\nelse if (typeof resposta === 'string' && resposta.trim()) balões = [resposta.trim()];\n\n// Falha de parse ou resposta vazia => força confiança 0 (nunca envia sem revisão)\nif (erroParse || balões.length === 0) {\n  confianca = 0;\n  acoes = ['escalar_humano:falha_geracao'];\n}\n\n// ===== CHECK DETERMINÍSTICO: fechamento com pergunta/CTA (princípio 11) =====\n// Se nenhum balão contém \"?\", e não é caso de exceção, rebaixa a confiança\n// para <70 => Gate Autonomia retém para revisão humana em vez de enviar.\nlet semPergunta = false;\nif (!erroParse && balões.length > 0) {\n  const temPergunta = balões.some(b => b.includes('?'));\n  const intencao = (d.intencao || '').toLowerCase();\n  const intencaoIsenta = ['despedida', 'agradecimento', 'opt_out', 'confirmacao']\n    .some(x => intencao.includes(x));\n  const acaoIsenta = acoes.some(a =>\n    String(a).startsWith('enviar_checkout') ||\n    String(a).startsWith('escalar_humano') ||\n    String(a).startsWith('enviar_link_raiox')\n  );\n  if (!temPergunta && !intencaoIsenta && !acaoIsenta) {\n    semPergunta = true;\n    confianca = Math.min(confianca, 65);\n  }\n}\n\nreturn [{ json: {\n  ...d,\n  resposta_balões: balões,\n  acoes_sugeridas: acoes,\n  confianca_geracao: confianca,\n  erro_parse_gerador: erroParse,\n  flag_sem_pergunta: semPergunta\n} }];"
         },
         "id": "e33285dc-7f9b-4812-95fe-f1a393c8afa3",
         "name": "Validar Resposta Gerador",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          2368,
+          3264,
           192
         ]
       },
@@ -3776,7 +3926,7 @@
         "type": "n8n-nodes-base.merge",
         "typeVersion": 3.2,
         "position": [
-          1696,
+          2592,
           192
         ],
         "id": "a3ac5ffe-3af1-480a-bb7d-b2be64a1bac3",
@@ -3844,7 +3994,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          4384,
+          5280,
           288
         ]
       },
@@ -3877,7 +4027,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          4608,
+          5504,
           384
         ]
       },
@@ -3910,7 +4060,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          4832,
+          5728,
           480
         ]
       },
@@ -3941,7 +4091,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ empresa_id: $json.empresa_id, tipo: 'followup_agente', devido_em: $now.plus({ days: Number($json.param || 3) }).toISO(), contexto: 'Agendado pelo agente A2 v3 apos aprovacao' }) }}",
+          "jsonBody": "=={{ JSON.stringify({ empresa_id: $json.empresa_id, tipo: 'conversa_parada', devido_em: $now.plus({ days: Number($json.param || 3) }).toISO(), contexto: 'Followup agendado pelo agente. Retomar a conversa do ponto em que parou.' }) }}",
           "options": {}
         },
         "id": "cfa6aca6-40c5-492d-93d7-5e1359341f2d",
@@ -3949,7 +4099,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          4608,
+          5504,
           192
         ]
       },
@@ -3984,7 +4134,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          4832,
+          5728,
           288
         ]
       },
@@ -4023,7 +4173,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          5056,
+          5952,
           384
         ]
       },
@@ -4058,7 +4208,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          5056,
+          5952,
           576
         ]
       },
@@ -4092,7 +4242,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          -3232,
+          -2336,
           96
         ]
       },
@@ -4119,7 +4269,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -3008,
+          -2112,
           -80
         ],
         "alwaysOutputData": true
@@ -4159,7 +4309,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -2784,
+          -1888,
           -80
         ]
       },
@@ -4172,7 +4322,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -2560,
+          -1664,
           -80
         ]
       },
@@ -4211,7 +4361,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -2336,
+          -1440,
           -80
         ]
       },
@@ -4242,7 +4392,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -2112,
+          -1216,
           -80
         ]
       },
@@ -4269,7 +4419,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          128,
+          1024,
           192
         ],
         "alwaysOutputData": true
@@ -4283,7 +4433,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          2592,
+          3488,
           192
         ]
       },
@@ -4317,7 +4467,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          2816,
+          3712,
           192
         ]
       },
@@ -4348,7 +4498,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          3040,
+          3936,
           96
         ]
       },
@@ -4359,7 +4509,7 @@
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
         "position": [
-          3264,
+          4160,
           96
         ]
       },
@@ -4390,7 +4540,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          3040,
+          3936,
           288
         ]
       },
@@ -4423,7 +4573,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          3264,
+          4160,
           288
         ]
       },
@@ -4436,7 +4586,7 @@
         "type": "n8n-nodes-base.wait",
         "typeVersion": 1.1,
         "position": [
-          3488,
+          4384,
           208
         ],
         "webhookId": "ceb820cc-3b07-4dda-bb13-cb85698f97de"
@@ -4468,7 +4618,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          3712,
+          4608,
           208
         ]
       },
@@ -4507,7 +4657,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          3936,
+          4832,
           288
         ]
       },
@@ -4520,7 +4670,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          4160,
+          5056,
           288
         ]
       },
@@ -4534,6 +4684,112 @@
           -4128,
           -192
         ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/conversa_buffer?on_conflict=evolution_id",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=representation,resolution=ignore-duplicates"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({\n  remote_jid: $json.numero + '@s.whatsapp.net',\n  mensagem: $json.texto || null,\n  midia_tipo: $json.midia_tipo || 'texto',\n  evolution_id: $json.evolution_id || null,\n  processar_apos: new Date(Date.now() + 15000).toISOString()\n}) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -3680,
+          0
+        ],
+        "id": "fc68be20-f9a5-42f0-945f-4fb214c1f2fb",
+        "name": "B1 Gravar Buffer"
+      },
+      {
+        "parameters": {
+          "amount": 15
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          -3456,
+          0
+        ],
+        "id": "4ba39658-f5c0-4515-8994-3099a85951ad",
+        "name": "B2 Aguardar Rajada",
+        "webhookId": "7f8cdf78-a683-45a0-a232-a84e5932d60d"
+      },
+      {
+        "parameters": {
+          "method": "PATCH",
+          "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/conversa_buffer?remote_jid=eq.{{ $('G2 Gate Dedup').first().json.numero }}@s.whatsapp.net&processado=eq.false",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{REDACTED_SB_SECRET}}"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=representation"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ processado: true, processado_em: new Date().toISOString() }) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -3232,
+          0
+        ],
+        "id": "9c150f0d-346f-4d17-8daa-e36da06c0461",
+        "name": "B3 Reivindicar Rajada",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============ B4 — CONSOLIDAR RAJADA ============\n// O PATCH do B3 retornou APENAS as linhas que ESTA execução capturou.\n// Zero linhas => outra execução (a primeira da rajada) já levou tudo => encerra.\n// Atenção fan-out do n8n: multi-row vira múltiplos items => usar .all()\nconst capturadas = $input.all()\n  .map(i => i.json)\n  .filter(r => r && r.id);\n\nif (capturadas.length === 0) return [];\n\n// Ordena por chegada e agrega os textos em uma mensagem única\ncapturadas.sort((a, b) => new Date(a.recebida_em) - new Date(b.recebida_em));\nconst textoAgregado = capturadas\n  .map(r => (r.mensagem || '').trim())\n  .filter(Boolean)\n  .join('\\n');\n\n// Base = payload original normalizado desta execução\nconst base = $('G2 Gate Dedup').first().json;\n\nreturn [{ json: {\n  ...base,\n  texto: textoAgregado || base.texto,\n  rajada_qtd: capturadas.length,\n  rajada_evolution_ids: capturadas.map(r => r.evolution_id).filter(Boolean)\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -3008,
+          0
+        ],
+        "id": "9354b913-b7d4-4836-af1b-30532527c203",
+        "name": "B4 Consolidar Rajada"
       }
     ],
     "connections": {
@@ -4574,7 +4830,7 @@
         "main": [
           [
             {
-              "node": "G3 Buscar Lead",
+              "node": "B1 Gravar Buffer",
               "type": "main",
               "index": 0
             }
@@ -5240,19 +5496,63 @@
             }
           ]
         ]
+      },
+      "B1 Gravar Buffer": {
+        "main": [
+          [
+            {
+              "node": "B2 Aguardar Rajada",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "B2 Aguardar Rajada": {
+        "main": [
+          [
+            {
+              "node": "B3 Reivindicar Rajada",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "B3 Reivindicar Rajada": {
+        "main": [
+          [
+            {
+              "node": "B4 Consolidar Rajada",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "B4 Consolidar Rajada": {
+        "main": [
+          [
+            {
+              "node": "G3 Buscar Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "Atitude Soluções",
-    "name": "Version b631a78c",
+    "name": "Version a5ed42ca",
     "description": "",
     "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-07-30T12:12:27.917Z",
-        "id": 108,
+        "createdAt": "2026-08-03T16:12:22.375Z",
+        "id": 126,
         "workflowId": "XnkBvkMuIRWwAuSN",
-        "versionId": "b631a78c-4edd-49f3-8bbc-1782adff43f5",
+        "versionId": "a5ed42ca-3b6f-4c5f-87e6-153f1201d6a1",
         "event": "activated",
         "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
       }
