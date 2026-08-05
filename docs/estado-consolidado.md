@@ -429,6 +429,158 @@ Deixar a msg1 mais específica e assertiva: enriquecer o lead com dados que já 
    ou editorial); senão null independente do LLM. Princípio: LLM sugere, código decide.
 6. **Resolver Conflito de Place**: limpa também gbp_extra/review_destaque/gancho do
    enriquecimento_extra ao desvincular um place conflitante
+## 2.11 Painel de prospecção — correções e blindagem do funil (05/08/2026)
+
+Sessão longa de manutenção disparada por um pedido simples ("o painel
+quebrou") que acabou revelando uma cadeia de bugs relacionados —
+todos com a mesma raiz: campos/colunas que existiam mas não eram lidos
+corretamente, ou regras de negócio que existiam em um lugar (banco) mas
+não eram aplicadas em outro (painel, motor de follow-up). Registrado
+aqui porque o padrão de causa-raiz se repetiu 6 vezes na mesma sessão
+e vale a lição para o futuro: **sempre que um número parecer errado,
+suspeitar primeiro de origem/agregação/coluna morta antes de suspeitar
+de lógica**.
+
+### a) Painel HTML quebrado (GRANT por coluna)
+
+O fix de segurança de 30/07 (GRANT SELECT restrito a 12 colunas
+não-PII em `empresas`) quebrou o `painel-prospeccao.html`, que fazia
+`empresas?select=*` — PostgREST exige grant em TODAS as colunas para
+`select=*`. Corrigido com `vw_painel_empresas`, view dedicada com
+grant total para `anon`, sem PII. Painel também ganhou fallback
+adaptativo (tenta a view → tenta select=* → cai numa lista explícita
+de colunas, removendo qualquer coluna sem grant automaticamente) para
+não quebrar de novo se o schema mudar sem avisar.
+
+### b) Métricas com taxa de resposta acima de 100% (causa tripla)
+
+`vw_metricas_diarias` mostrava taxas de resposta de até 429%. Três
+causas empilhadas, todas corrigidas:
+1. **Misturava origem** — "respostas" somava conversas de anúncio/site
+   junto com prospecção fria, mas "disparos" só existe no funil frio.
+   Corrigido: `vw_metricas_diarias` agora filtra `origem='cnpja'` nos
+   dois lados; nova view `vw_metricas_anuncio_diaria` cobre o inbound
+   separadamente (sem "taxa de resposta" — não faz sentido nesse funil).
+2. **Contava mensagem, não lead** — um lead que manda 3 mensagens no
+   mesmo dia contava como 3 respostas. Corrigido com
+   `count(DISTINCT empresa_id)`.
+3. **Coluna morta** — `interacoes.classificacao` está NULL em 100%
+   das 442 interações históricas (nenhum pipeline atual a preenche;
+   provável resquício de versão anterior do schema). `interesses` e
+   `opt_outs` sempre mostravam zero por causa disso. Corrigido lendo
+   `empresas.interesse_servicos` (jsonb) e `empresas.opt_out`, que são
+   as fontes reais e já vêm sendo gravadas corretamente pelos
+   workflows — nenhuma mudança necessária em n8n/Zaia/MODO ANÚNCIO.
+   **Pendência de limpeza de schema:** `interacoes.classificacao`
+   candidata a `DROP COLUMN` numa faxina futura (confirmado sem
+   nenhuma view/função dependente via varredura em
+   `information_schema` + `pg_proc`).
+
+### c) Blindagem de follow-up — `fn_contato_permitido()`
+
+Vazamento identificado: leads já descartados (`descartado_x`,
+`perdido_silencio`) continuavam aparecendo na fila de retomada D+1
+porque esse ramo da view só olhava a última interação, nunca o
+`status`. Corrigido centralizando a decisão de contato em UM lugar:
+
+```sql
+fn_contato_permitido(empresas) → boolean
+```
+
+bloqueia: opt_out, atendimento_humano, bot_suspeito, status
+descartado%/perdido_silencio/perdido/sem_celular/sem_whatsapp/
+opt_out/invalido/cliente/pos_venda.
+
+Todos os ramos da agenda de follow-up (`vw_followups_agenda`, ver
+item d) passam por essa função. Um **trigger** em `empresas`
+(`trg_cancelar_followups_bloqueio`) cancela automaticamente
+followups pendentes assim que um lead vira bloqueado — mata órfãos
+na origem, não só retroativamente.
+
+Validado em produção: 4 leads reais (G.R.P, Mendes, Antônio, Joyce)
+removidos da fila antes de qualquer envio indevido — zero mensagem
+enviada por engano.
+
+### d) Refatoração da fonte de follow-up: `vw_followups_agenda`
+
+`vw_followups_devidos` (consumida pelo n8n W3-A) tinha toda a lógica
+de elegibilidade embutida com filtro `<= now()`, o que a impedia de
+mostrar "amanhã"/"futuro" — necessário para o painel. Refatorado para
+hierarquia de fonte única:
+
+- **`vw_followups_agenda`** — TODA a lógica, datas projetadas, sem
+  corte temporal. Base única; nova regra entra só aqui.
+- **`vw_followups_devidos`** — casca: `WHERE devido_em <= now()`.
+  Mesmas 7 colunas, mesma ordem — o node "Buscar Fila" do W3-A não
+  mudou uma linha.
+- **`vw_painel_followups`** — casca sem PII, grant anon, consumida
+  pelo painel (tela Follow-ups com blocos Atrasados/Hoje/Amanhã/
+  Futuros).
+
+Nota de leitura importante para não reabrir a mesma dúvida: o painel
+bucketiza por **dia**, o motor filtra por **timestamp exato** — um
+item "Hoje" no painel pode não estar devido ainda no momento em que
+o motor roda. Isso é esperado, não é bug.
+
+### e) Funil de acompanhamento — leads presos indefinidamente
+
+Identificado (a partir do caso real "LKMI Clínica de Estética" /
+Luciano, que já tinha recebido o F2 de despedida em 31/07 mas
+continuava aparecendo em `abordado` como se a conversa seguisse
+ativa) que **nada movia o status da empresa quando o ciclo de
+follow-up terminava**. A peça para isso — `fn_encerrar_silencio()` —
+já existia pronta no banco, e o node "Encerrar Silêncio" já existia
+corretamente conectado no W3-A (`Encerramento? → True → Encerrar
+Silêncio → Loop`, chamando a função via RPC). **Não havia lacuna no
+workflow** — o tipo `encerrar_silencio` simplesmente nunca tinha tido
+um caso real vencido até 05/08 (prazo configurado:
+`encerramento_pos_f2_dias = 7`).
+
+20 leads do funil frio presos em `abordado`/`respondeu` (com F2
+executado, silêncio total desde então) foram movidos manualmente
+para `perdido_silencio` — decisão de negócio correta, mas
+tecnicamente adiantada em 1-6 dias em relação ao prazo oficial (o
+mais antigo, Lidiane Araújo, só venceria em 06/08).
+
+**Extensão do mesmo padrão para o funil de anúncio/site** (não
+coberto antes — esse funil não tinha NENHUM mecanismo de
+encerramento, nem manual nem automático): três novos ramos
+adicionados a `vw_followups_agenda`, todos reaproveitando o mesmo
+tipo `encerrar_silencio` (zero alteração necessária no workflow n8n,
+já que o Code node "Priorizar e Cortar" e o node "Encerramento?" já
+reconhecem essa string):
+
+1. **Frio** (já existia): F2 executado + 7 dias sem resposta.
+2. **Anúncio, nunca respondeu à retomada D+1**: retomada executada +
+   7 dias sem resposta desde então.
+3. **Anúncio, esfriou sem retomada** (novo padrão, confirmado com
+   dado: 14 de 30 leads ativos em `qualificando`/`oferta_apresentada`
+   parados, 10 já com 7+ dias): cobre leads cuja última mensagem foi
+   deles — `conversa_parada_auto` só dispara quando a última mensagem
+   é nossa `resposta_agente`, então esses nunca chegavam a receber
+   retomada nenhuma. Prazo: 7 dias sem NENHUMA interação (qualquer
+   direção). Destino: igual aos demais, `perdido_silencio`.
+
+Aplicado em produção; 9 dos 18 leads represados do ramo 2 já
+venceram o prazo no dia da aplicação e devem sumir do funil no
+próximo run do W3-A sem intervenção manual.
+
+**Pendência identificada, não resolvida nesta sessão:** 2 leads em
+`estagio_conversa='checkout_enviado'` (Luciana Cunha, e um lead sem
+nome preenchido) não têm NENHUM registro correspondente em
+`negocios` — o ramo `pos_checkout` da agenda depende dessa tabela e
+por isso nunca os processa. Causa não identificada (falha de
+instrumentação no MODO ANÚNCIO ao gerar o link de checkout? webhook
+do Cakto que não disparou?). Não criar um mecanismo de prazo em cima
+do sintoma sem antes entender a causa — investigar em sessão futura.
+
+**Lição de processo registrada:** nesta sessão o Claude propôs por
+duas vezes uma correção em cima de suposição não verificada (workflow
+w3-a de memória, sem checar o JSON real; hipótese de node faltando
+que na verdade já existia). Corrigido ao longo da sessão. Reforça a
+prática já documentada em `FONTES.md`: **sempre buscar a versão viva
+do workflow/schema antes de propor mudança**, nunca assumir a partir
+de memória de sessões anteriores.
 
 ### Bug crítico corrigido — colapso de itens em lote (A1 p2)
 Os nós "Checar Place Duplicado" / "Resolver Conflito de Place" (adicionados em
