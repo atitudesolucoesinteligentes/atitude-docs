@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-03T16:11:55.597Z",
+  "updatedAt": "2026-08-04T18:07:02.527Z",
   "createdAt": "2026-07-18T20:23:27.679Z",
   "id": "XnkBvkMuIRWwAuSN",
   "name": "A2 Resposta",
@@ -1768,7 +1768,7 @@
           "conditions": [
             {
               "id": "cond-tem-balao2-direto",
-              "leftValue": "={{ $json.resposta_balões.length }}",
+              "leftValue": "={{ $('Validar Resposta Gerador').item.json.resposta_balões.length }}",
               "rightValue": 1,
               "operator": {
                 "type": "number",
@@ -1822,7 +1822,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ number: $json.numero, text: $json.resposta_balões[1] }) }}",
+        "jsonBody": "={{ JSON.stringify({ number: $('Validar Resposta Gerador').item.json.numero, text: $('Validar Resposta Gerador').item.json.resposta_balões[1] }) }}",
         "options": {}
       },
       "id": "c71084c5-2994-4836-b6fe-640938ee2368",
@@ -2763,9 +2763,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "a5ed42ca-3b6f-4c5f-87e6-153f1201d6a1",
-  "activeVersionId": "a5ed42ca-3b6f-4c5f-87e6-153f1201d6a1",
-  "versionCounter": 230,
+  "versionId": "5d4498a1-cb3a-4a7f-aaff-d3701f507532",
+  "activeVersionId": "5d4498a1-cb3a-4a7f-aaff-d3701f507532",
+  "versionCounter": 232,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "shared": [
@@ -2790,9 +2790,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-08-03T16:12:22.377Z",
-    "createdAt": "2026-08-03T16:11:55.600Z",
-    "versionId": "a5ed42ca-3b6f-4c5f-87e6-153f1201d6a1",
+    "updatedAt": "2026-08-04T18:07:27.104Z",
+    "createdAt": "2026-08-04T18:07:02.530Z",
+    "versionId": "5d4498a1-cb3a-4a7f-aaff-d3701f507532",
     "workflowId": "XnkBvkMuIRWwAuSN",
     "nodes": [
       {
@@ -4556,7 +4556,7 @@
             "conditions": [
               {
                 "id": "cond-tem-balao2-direto",
-                "leftValue": "={{ $json.resposta_balões.length }}",
+                "leftValue": "={{ $('Validar Resposta Gerador').item.json.resposta_balões.length }}",
                 "rightValue": 1,
                 "operator": {
                   "type": "number",
@@ -4610,7 +4610,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ number: $json.numero, text: $json.resposta_balões[1] }) }}",
+          "jsonBody": "={{ JSON.stringify({ number: $('Validar Resposta Gerador').item.json.numero, text: $('Validar Resposta Gerador').item.json.resposta_balões[1] }) }}",
           "options": {}
         },
         "id": "c71084c5-2994-4836-b6fe-640938ee2368",
@@ -5544,15 +5544,15 @@
     },
     "nodeGroups": [],
     "authors": "Atitude Soluções",
-    "name": "Version a5ed42ca",
+    "name": "Version 5d4498a1",
     "description": "",
     "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-08-03T16:12:22.375Z",
-        "id": 126,
+        "createdAt": "2026-08-04T18:07:27.099Z",
+        "id": 165,
         "workflowId": "XnkBvkMuIRWwAuSN",
-        "versionId": "a5ed42ca-3b6f-4c5f-87e6-153f1201d6a1",
+        "versionId": "5d4498a1-cb3a-4a7f-aaff-d3701f507532",
         "event": "activated",
         "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
       }
