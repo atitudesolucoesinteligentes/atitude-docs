@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-05)
+# Schema — Somos Atitude (gerado em 2026-08-06)
 
 # TABELAS
 
@@ -708,7 +708,7 @@
   ORDER BY m.ultimo_marco;
 ```
 
-## View: vw_followups_devidos
+## View: vw_followups_agenda
 ```sql
  WITH cfg AS (
          SELECT config.valor
@@ -729,13 +729,13 @@
             m.enviada_em
            FROM (empresas e
              JOIN msg1 m ON ((m.empresa_id = e.id)))
-          WHERE ((e.status = 'abordado'::text) AND (COALESCE(e.origem, ''::text) <> ALL (ARRAY['anuncio'::text, 'site'::text])) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (COALESCE(e.bot_suspeito, false) = false) AND (NOT (EXISTS ( SELECT 1
+          WHERE ((e.status = 'abordado'::text) AND (COALESCE(e.origem, ''::text) <> ALL (ARRAY['anuncio'::text, 'site'::text])) AND fn_contato_permitido(e.*) AND (NOT (EXISTS ( SELECT 1
                    FROM interacoes i2
                   WHERE ((i2.empresa_id = e.id) AND (i2.direcao = 'entrada'::text))))))
         ), conversa_parada_auto AS (
          SELECT e.id AS empresa_id,
             e.slug,
-            ultima.criado_em AS devido_desde
+            (ultima.criado_em + make_interval(days => ((cfg.valor ->> 'conversa_parada_dias'::text))::integer)) AS devido_em
            FROM ((empresas e
              JOIN LATERAL ( SELECT i.criado_em,
                     i.direcao,
@@ -745,20 +745,42 @@
                   ORDER BY i.criado_em DESC
                  LIMIT 1) ultima ON (true))
              CROSS JOIN cfg)
-          WHERE ((COALESCE(e.origem, ''::text) = ANY (ARRAY['anuncio'::text, 'site'::text])) AND (e.status <> ALL (ARRAY['cliente'::text, 'pos_venda'::text, 'perdido'::text, 'descartado'::text, 'invalido'::text, 'opt_out'::text, 'perdido_silencio'::text])) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (COALESCE(e.bot_suspeito, false) = false) AND (ultima.direcao = 'saida'::text) AND (ultima.etapa = 'resposta_agente'::text) AND (ultima.criado_em <= (now() - ((((cfg.valor ->> 'conversa_parada_dias'::text))::integer || ' days'::text))::interval)) AND (NOT (EXISTS ( SELECT 1
+          WHERE ((COALESCE(e.origem, ''::text) = ANY (ARRAY['anuncio'::text, 'site'::text])) AND fn_contato_permitido(e.*) AND (ultima.direcao = 'saida'::text) AND (ultima.etapa = 'resposta_agente'::text) AND (NOT (EXISTS ( SELECT 1
                    FROM followups_agendados f
                   WHERE ((f.empresa_id = e.id) AND (f.tipo = 'conversa_parada_auto'::text))))))
+        ), silencio_anuncio AS (
+         SELECT f.empresa_id,
+            e.slug,
+            f.executado_em AS retomada_em
+           FROM (followups_agendados f
+             JOIN empresas e ON ((e.id = f.empresa_id)))
+          WHERE ((f.tipo = 'conversa_parada_auto'::text) AND (f.executado_em IS NOT NULL) AND fn_contato_permitido(e.*) AND (NOT (EXISTS ( SELECT 1
+                   FROM interacoes i
+                  WHERE ((i.empresa_id = f.empresa_id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > f.executado_em))))))
+        ), estagio_esfriado AS (
+         SELECT e.id AS empresa_id,
+            e.slug,
+            ult.criado_em AS ultima_interacao_em
+           FROM (empresas e
+             JOIN LATERAL ( SELECT max(i.criado_em) AS criado_em
+                   FROM interacoes i
+                  WHERE (i.empresa_id = e.id)) ult ON (true))
+          WHERE ((e.origem = ANY (ARRAY['anuncio'::text, 'site'::text])) AND (e.estagio_conversa = ANY (ARRAY['qualificando'::text, 'oferta_apresentada'::text])) AND fn_contato_permitido(e.*) AND (ult.criado_em IS NOT NULL) AND (NOT (EXISTS ( SELECT 1
+                   FROM followups_agendados f
+                  WHERE ((f.empresa_id = e.id) AND (f.tipo = 'conversa_parada_auto'::text) AND (f.executado_em IS NOT NULL) AND (NOT (EXISTS ( SELECT 1
+                           FROM interacoes i2
+                          WHERE ((i2.empresa_id = e.id) AND (i2.direcao = 'entrada'::text) AND (i2.criado_em > f.executado_em))))))))))
         )
  SELECT el.id AS empresa_id,
     el.slug,
     'f1_email'::text AS tipo,
-    (el.enviada_em + ((((cfg.valor ->> 'f1_email_dias'::text))::integer || ' days'::text))::interval) AS devido_em,
+    (el.enviada_em + make_interval(days => ((cfg.valor ->> 'f1_email_dias'::text))::integer)) AS devido_em,
     el.email_followup,
     el.email_contab,
     NULL::text AS contexto
    FROM (elegiveis el
      CROSS JOIN cfg)
-  WHERE ((el.email_status = 'valido'::text) AND (el.email_followup IS NOT NULL) AND (el.enviada_em <= (now() - ((((cfg.valor ->> 'f1_email_dias'::text))::integer || ' days'::text))::interval)) AND (NOT (EXISTS ( SELECT 1
+  WHERE ((el.email_status = 'valido'::text) AND (el.email_followup IS NOT NULL) AND (NOT (EXISTS ( SELECT 1
            FROM followups_agendados f
           WHERE ((f.empresa_id = el.id) AND (f.tipo = 'f1_email'::text))))) AND (NOT (EXISTS ( SELECT 1
            FROM followups_agendados f
@@ -767,21 +789,21 @@ UNION ALL
  SELECT el.id AS empresa_id,
     el.slug,
     'f2_breakup'::text AS tipo,
-    GREATEST((el.enviada_em + ((((cfg.valor ->> 'f2_breakup_dias'::text))::integer || ' days'::text))::interval), COALESCE((f1.executado_em + ((((cfg.valor ->> 'f2_apos_f1_dias'::text))::integer || ' days'::text))::interval), (el.enviada_em + ((((cfg.valor ->> 'f2_breakup_dias'::text))::integer || ' days'::text))::interval))) AS devido_em,
+    GREATEST((el.enviada_em + make_interval(days => ((cfg.valor ->> 'f2_breakup_dias'::text))::integer)), COALESCE((f1.executado_em + make_interval(days => ((cfg.valor ->> 'f2_apos_f1_dias'::text))::integer)), (el.enviada_em + make_interval(days => ((cfg.valor ->> 'f2_breakup_dias'::text))::integer)))) AS devido_em,
     NULL::text AS email_followup,
     false AS email_contab,
     NULL::text AS contexto
    FROM ((elegiveis el
      CROSS JOIN cfg)
      LEFT JOIN followups_agendados f1 ON (((f1.empresa_id = el.id) AND (f1.tipo = 'f1_email'::text) AND (f1.executado_em IS NOT NULL))))
-  WHERE ((el.enviada_em <= (now() - ((((cfg.valor ->> 'f2_breakup_dias'::text))::integer || ' days'::text))::interval)) AND (NOT (EXISTS ( SELECT 1
+  WHERE ((NOT (EXISTS ( SELECT 1
            FROM followups_agendados f
-          WHERE ((f.empresa_id = el.id) AND (f.tipo = 'f2_breakup'::text))))) AND ((el.email_status <> 'valido'::text) OR (el.email_followup IS NULL) OR ((f1.executado_em IS NOT NULL) AND (f1.executado_em <= (now() - ((((cfg.valor ->> 'f2_apos_f1_dias'::text))::integer || ' days'::text))::interval)))))
+          WHERE ((f.empresa_id = el.id) AND (f.tipo = 'f2_breakup'::text))))) AND ((el.email_status <> 'valido'::text) OR (el.email_followup IS NULL) OR (f1.executado_em IS NOT NULL)))
 UNION ALL
  SELECT cp.empresa_id,
     cp.slug,
     'conversa_parada_auto'::text AS tipo,
-    cp.devido_desde AS devido_em,
+    cp.devido_em,
     NULL::text AS email_followup,
     false AS email_contab,
     NULL::text AS contexto
@@ -790,14 +812,33 @@ UNION ALL
  SELECT el.id AS empresa_id,
     el.slug,
     'encerrar_silencio'::text AS tipo,
-    (f2.executado_em + ((((cfg.valor ->> 'encerramento_pos_f2_dias'::text))::integer || ' days'::text))::interval) AS devido_em,
+    (f2.executado_em + make_interval(days => ((cfg.valor ->> 'encerramento_pos_f2_dias'::text))::integer)) AS devido_em,
     NULL::text AS email_followup,
     false AS email_contab,
     NULL::text AS contexto
    FROM ((elegiveis el
      CROSS JOIN cfg)
      JOIN followups_agendados f2 ON (((f2.empresa_id = el.id) AND (f2.tipo = 'f2_breakup'::text) AND (f2.executado_em IS NOT NULL))))
-  WHERE (f2.executado_em <= (now() - ((((cfg.valor ->> 'encerramento_pos_f2_dias'::text))::integer || ' days'::text))::interval))
+UNION ALL
+ SELECT sa.empresa_id,
+    sa.slug,
+    'encerrar_silencio'::text AS tipo,
+    (sa.retomada_em + make_interval(days => ((cfg.valor ->> 'encerramento_pos_f2_dias'::text))::integer)) AS devido_em,
+    NULL::text AS email_followup,
+    false AS email_contab,
+    NULL::text AS contexto
+   FROM (silencio_anuncio sa
+     CROSS JOIN cfg)
+UNION ALL
+ SELECT ee.empresa_id,
+    ee.slug,
+    'encerrar_silencio'::text AS tipo,
+    (ee.ultima_interacao_em + make_interval(days => ((cfg.valor ->> 'encerramento_pos_f2_dias'::text))::integer)) AS devido_em,
+    NULL::text AS email_followup,
+    false AS email_contab,
+    NULL::text AS contexto
+   FROM (estagio_esfriado ee
+     CROSS JOIN cfg)
 UNION ALL
  SELECT fa.empresa_id,
     e.slug,
@@ -808,7 +849,7 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = 'conversa_parada'::text) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND (e.status <> ALL (ARRAY['cliente'::text, 'pos_venda'::text, 'perdido'::text, 'descartado'::text, 'invalido'::text, 'opt_out'::text, 'perdido_silencio'::text])))
+  WHERE ((fa.tipo = 'conversa_parada'::text) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*))
 UNION ALL
  SELECT n.empresa_id,
     e.slug,
@@ -816,8 +857,8 @@ UNION ALL
         CASE
             WHEN (NOT (EXISTS ( SELECT 1
                FROM followups_agendados f
-              WHERE ((f.empresa_id = n.empresa_id) AND (f.tipo = 'pos_checkout'::text) AND (f.contexto = 'lembrete'::text))))) THEN (n.criado_em + ((((cfg.valor ->> 'pos_checkout_lembrete_dias'::text))::integer || ' days'::text))::interval)
-            ELSE (n.criado_em + ((((cfg.valor ->> 'pos_checkout_escalar_dias'::text))::integer || ' days'::text))::interval)
+              WHERE ((f.empresa_id = n.empresa_id) AND (f.tipo = 'pos_checkout'::text) AND (f.contexto = 'lembrete'::text))))) THEN (n.criado_em + make_interval(days => ((cfg.valor ->> 'pos_checkout_lembrete_dias'::text))::integer))
+            ELSE (n.criado_em + make_interval(days => ((cfg.valor ->> 'pos_checkout_escalar_dias'::text))::integer))
         END AS devido_em,
     NULL::text AS email_followup,
     false AS email_contab,
@@ -830,19 +871,116 @@ UNION ALL
    FROM ((negocios n
      CROSS JOIN cfg)
      JOIN empresas e ON ((e.id = n.empresa_id)))
-  WHERE ((n.status = 'checkout_enviado'::text) AND (n.pago IS NULL) AND (NOT e.opt_out) AND (e.status <> ALL (ARRAY['cliente'::text, 'pos_venda'::text, 'perdido'::text, 'descartado'::text, 'invalido'::text, 'opt_out'::text, 'perdido_silencio'::text])));
+  WHERE ((n.status = 'checkout_enviado'::text) AND (n.pago IS NULL) AND fn_contato_permitido(e.*));
+```
+
+## View: vw_followups_devidos
+```sql
+ SELECT empresa_id,
+    slug,
+    tipo,
+    devido_em,
+    email_followup,
+    email_contab,
+    contexto
+   FROM vw_followups_agenda
+  WHERE ((devido_em <= now()) OR (tipo = ANY (ARRAY['conversa_parada'::text, 'pos_checkout'::text])))
+  ORDER BY devido_em;
+```
+
+## View: vw_metricas_anuncio_diaria
+```sql
+ SELECT (i.criado_em)::date AS dia,
+    count(DISTINCT i.empresa_id) FILTER (WHERE (i.direcao = 'entrada'::text)) AS leads_conversando,
+    count(*) FILTER (WHERE (i.direcao = 'entrada'::text)) AS mensagens_recebidas,
+    count(*) FILTER (WHERE (i.direcao = 'saida'::text)) AS mensagens_enviadas,
+    count(DISTINCT i.empresa_id) FILTER (WHERE ((i.direcao = 'entrada'::text) AND (COALESCE(e.interesse_servicos, '[]'::jsonb) <> '[]'::jsonb))) AS interesses,
+    count(DISTINCT i.empresa_id) FILTER (WHERE ((i.direcao = 'entrada'::text) AND e.opt_out)) AS opt_outs
+   FROM (interacoes i
+     JOIN empresas e ON ((e.id = i.empresa_id)))
+  WHERE (e.origem = ANY (ARRAY['anuncio'::text, 'site'::text]))
+  GROUP BY ((i.criado_em)::date)
+  ORDER BY ((i.criado_em)::date) DESC;
 ```
 
 ## View: vw_metricas_diarias
 ```sql
- SELECT (criado_em)::date AS dia,
-    count(*) FILTER (WHERE ((direcao = 'saida'::text) AND (etapa = 'msg1'::text))) AS disparos,
-    count(*) FILTER (WHERE (direcao = 'entrada'::text)) AS respostas,
-    count(*) FILTER (WHERE ((direcao = 'entrada'::text) AND (classificacao = 'interesse'::text))) AS interesses,
-    count(*) FILTER (WHERE ((direcao = 'entrada'::text) AND (classificacao = 'opt_out'::text))) AS opt_outs
-   FROM interacoes
-  GROUP BY ((criado_em)::date)
-  ORDER BY ((criado_em)::date) DESC;
+ SELECT (i.criado_em)::date AS dia,
+    count(*) FILTER (WHERE ((i.direcao = 'saida'::text) AND (i.etapa = 'msg1'::text))) AS disparos,
+    count(DISTINCT i.empresa_id) FILTER (WHERE ((i.direcao = 'entrada'::text) AND (e.origem = 'cnpja'::text))) AS respostas,
+    count(DISTINCT i.empresa_id) FILTER (WHERE ((i.direcao = 'entrada'::text) AND (e.origem = 'cnpja'::text) AND (COALESCE(e.interesse_servicos, '[]'::jsonb) <> '[]'::jsonb))) AS interesses,
+    count(DISTINCT i.empresa_id) FILTER (WHERE ((i.direcao = 'entrada'::text) AND (e.origem = 'cnpja'::text) AND e.opt_out)) AS opt_outs
+   FROM (interacoes i
+     JOIN empresas e ON ((e.id = i.empresa_id)))
+  WHERE (e.origem = 'cnpja'::text)
+  GROUP BY ((i.criado_em)::date)
+  ORDER BY ((i.criado_em)::date) DESC;
+```
+
+## View: vw_painel_empresas
+```sql
+ SELECT id,
+    slug,
+    razao_social,
+    nome_fantasia,
+    nome_exibicao,
+    segmento,
+    cnae_principal,
+    cnae_descricao,
+    bairro,
+    municipio,
+    uf,
+    data_abertura,
+    status,
+    estagio_conversa,
+    perfil_oferta,
+    dor_resumida,
+    score,
+    tem_site,
+    site_url,
+    site_diagnostico,
+    tem_gbp,
+    gbp_rating,
+    gbp_avaliacoes,
+    tem_instagram,
+    whatsapp_valido,
+    opt_out,
+    tentativas,
+    ultimo_contato,
+    motivo_descarte,
+    motivo_atencao,
+    raiox_em,
+    criado_em,
+    origem,
+    interesse_servicos,
+    fn_contato_permitido(empresas.*) AS ativo_no_funil
+   FROM empresas;
+```
+
+## View: vw_painel_followups
+```sql
+ SELECT a.empresa_id,
+    a.empresa_id AS id,
+    a.slug,
+    a.tipo,
+        CASE
+            WHEN (a.tipo = 'f1_email'::text) THEN 'email'::text
+            WHEN (a.tipo = 'encerrar_silencio'::text) THEN 'sistema'::text
+            ELSE 'whatsapp'::text
+        END AS canal,
+    a.devido_em,
+    ((a.devido_em AT TIME ZONE 'America/Sao_Paulo'::text))::date AS devido_dia,
+    e.nome_exibicao,
+    e.municipio,
+    e.uf,
+    e.perfil_oferta,
+    e.score,
+    e.status,
+    e.ultimo_contato,
+    ((e.email_status = 'valido'::text) AND (e.email_followup IS NOT NULL)) AS tem_email
+   FROM (vw_followups_agenda a
+     JOIN empresas e ON ((e.id = a.empresa_id)))
+  ORDER BY a.devido_em;
 ```
 
 ## View: vw_planilha_disparo_manual
@@ -1134,6 +1272,24 @@ begin
 
   return 'OK: envio confirmado (msg1 já existia) para ' || p_slug;
 end;
+$function$
+
+```
+
+## Função: fn_contato_permitido
+```sql
+CREATE OR REPLACE FUNCTION public.fn_contato_permitido(e empresas)
+ RETURNS boolean
+ LANGUAGE sql
+ IMMUTABLE
+AS $function$
+  SELECT NOT e.opt_out
+     AND NOT e.atendimento_humano
+     AND COALESCE(e.bot_suspeito, false) = false
+     AND e.status NOT LIKE 'descartado%'
+     AND e.status NOT IN ('perdido_silencio','perdido','sem_celular',
+                          'sem_whatsapp','opt_out','invalido',
+                          'cliente','pos_venda');
 $function$
 
 ```
@@ -1457,5 +1613,25 @@ CREATE OR REPLACE FUNCTION public.fn_touch_atualizado_em()
 AS $function$
 begin new.atualizado_em := now(); return new; end;
 $function$
+
+```
+
+## Função: fn_trg_cancelar_followups_bloqueio
+```sql
+CREATE OR REPLACE FUNCTION public.fn_trg_cancelar_followups_bloqueio()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+  IF fn_contato_permitido(OLD) AND NOT fn_contato_permitido(NEW) THEN
+    UPDATE followups_agendados
+       SET cancelado_motivo = 'bloqueio: ' || NEW.status
+             || CASE WHEN NEW.opt_out THEN ' (opt_out)' ELSE '' END
+     WHERE empresa_id = NEW.id
+       AND executado_em IS NULL
+       AND cancelado_motivo IS NULL;
+  END IF;
+  RETURN NEW;
+END $function$
 
 ```
