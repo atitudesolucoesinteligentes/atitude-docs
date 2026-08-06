@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-03T13:28:08.841Z",
+  "updatedAt": "2026-08-05T13:58:00.535Z",
   "createdAt": "2026-07-24T18:02:19.923Z",
   "id": "NhwhxXXpwikIwX04",
   "name": "W3-A — Motor de Follow-up",
@@ -105,7 +105,7 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "loose",
+            "typeValidation": "strict",
             "version": 1
           },
           "conditions": [
@@ -115,7 +115,8 @@
               "operator": {
                 "type": "string",
                 "operation": "equals"
-              }
+              },
+              "id": "0a2a5b9a-92ba-4040-8b34-6e90a83c37cc"
             }
           ],
           "combinator": "and"
@@ -923,9 +924,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "5006c643-0627-40f0-9575-bb4db73aa817",
+  "versionId": "fb7b82d8-6fe9-42b2-968a-e94939d54f3a",
   "activeVersionId": null,
-  "versionCounter": 67,
+  "versionCounter": 68,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
