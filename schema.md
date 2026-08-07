@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-06)
+# Schema — Somos Atitude (gerado em 2026-08-07)
 
 # TABELAS
 
@@ -47,6 +47,41 @@
 - `status` text NOT NULL DEFAULT 'pendente'::text
 - `criado_em` timestamp with time zone DEFAULT now()
 - `resolvido_em` timestamp with time zone
+
+## Tabela: assinatura_eventos
+- `id` bigint NOT NULL DEFAULT nextval('assinatura_eventos_id_seq'::regclass)
+- `cakto_event_id` text
+- `assinatura_id` bigint
+- `tipo` text NOT NULL
+- `payload` jsonb
+- `processado_em` timestamp with time zone NOT NULL DEFAULT now()
+
+## Tabela: assinaturas
+- `id` bigint NOT NULL DEFAULT nextval('assinaturas_id_seq'::regclass)
+- `empresa_id` bigint NOT NULL
+- `produto` text NOT NULL
+- `plano` text
+- `cakto_subscription_id` text
+- `cakto_customer_id` text
+- `cakto_order_id` text
+- `email` text
+- `valor` numeric
+- `status` text NOT NULL DEFAULT 'ativa'::text
+- `valido_ate` date
+- `proximo_ciclo` date
+- `link_pagamento` text
+- `aceite_em` timestamp with time zone
+- `aceite_canal` text
+- `termos_versao` text
+- `origem_atualizacao` text
+- `criado_em` timestamp with time zone NOT NULL DEFAULT now()
+- `atualizado_em` timestamp with time zone NOT NULL DEFAULT now()
+
+## Tabela: cnae_ciclo_caixa
+- `cnae_prefixo` text NOT NULL
+- `descricao` text
+- `grupo` text
+- `observacao` text
 
 ## Tabela: config
 - `chave` text NOT NULL
@@ -179,6 +214,15 @@
 - `raiox_em` timestamp with time zone
 - `gancho_abordagem` text
 - `enriquecimento_extra` jsonb
+- `esteira` text
+- `esteira_definida_em` timestamp with time zone
+- `esteira_motivo` text
+- `opt_out_em` timestamp with time zone
+- `opt_out_motivo` text
+- `opt_out_canal` text
+- `raiox_fin_nota` numeric
+- `raiox_fin_faixa` text
+- `raiox_fin_em` timestamp with time zone
 
 ## Tabela: followups_agendados
 - `id` bigint NOT NULL
@@ -321,6 +365,36 @@
 - `concluido` boolean NOT NULL DEFAULT false
 - `concluido_em` timestamp with time zone
 
+## Tabela: planilhas_cliente
+- `id` bigint NOT NULL DEFAULT nextval('planilhas_cliente_id_seq'::regclass)
+- `empresa_id` bigint NOT NULL
+- `spreadsheet_id` text NOT NULL
+- `versao_template` text NOT NULL DEFAULT 'v1.0'::text
+- `email_google` text
+- `propriedade_transferida_em` timestamp with time zone
+- `ativada_em` timestamp with time zone
+- `ultimo_lancamento_em` date
+- `ultima_analise_em` timestamp with time zone
+- `analise_demo_em` timestamp with time zone
+- `status` text NOT NULL DEFAULT 'provisionada'::text
+- `criado_em` timestamp with time zone NOT NULL DEFAULT now()
+
+## Tabela: raiox_financeiro
+- `id` bigint NOT NULL DEFAULT nextval('raiox_financeiro_id_seq'::regclass)
+- `empresa_id` bigint NOT NULL
+- `versao_quiz` text NOT NULL DEFAULT '1.0'::text
+- `pontos` integer NOT NULL
+- `nota` numeric NOT NULL
+- `faixa` text NOT NULL
+- `dimensoes` jsonb NOT NULL
+- `dimensao_mais_fraca` text
+- `respostas` jsonb NOT NULL
+- `perfil` jsonb
+- `contexto` jsonb
+- `consentimento` jsonb
+- `idempotency_key` text
+- `criado_em` timestamp with time zone NOT NULL DEFAULT now()
+
 ## Tabela: roteiros
 - `id` bigint NOT NULL
 - `codigo` text NOT NULL
@@ -376,6 +450,12 @@
 - `criado_em` timestamp with time zone NOT NULL DEFAULT now()
 - `person_id` text
 - `papel` text
+
+## Tabela: warmup_canal
+- `instancia` text NOT NULL DEFAULT 'atitude-principal'::text
+- `dia` date NOT NULL DEFAULT CURRENT_DATE
+- `mensagens_enviadas` integer NOT NULL DEFAULT 0
+- `teto_do_dia` integer NOT NULL
 
 # VIEWS
 
@@ -561,10 +641,215 @@
     flag_rede,
     flag_tel_repetido,
     gancho_abordagem,
-    enriquecimento_extra
+    enriquecimento_extra,
+    esteira
    FROM empresas e
   WHERE ((status = 'fila'::text) AND (opt_out = false) AND (tem_celular = true) AND (whatsapp_valido = true) AND (flag_filial_repetida = false) AND (flag_tel_repetido = false) AND (COALESCE(perfil_oferta, ''::text) !~~ 'descartado%'::text) AND (tentativas = 0))
   ORDER BY score DESC NULLS LAST, criado_em;
+```
+
+## View: vw_fila_disparo_digital
+```sql
+ SELECT id,
+    cnpj,
+    cnpj_raiz,
+    filial_numero,
+    matriz_filial,
+    razao_social,
+    nome_fantasia,
+    nome_exibicao,
+    situacao,
+    situacao_motivo,
+    situacao_data,
+    data_abertura,
+    natureza_juridica_codigo,
+    natureza_juridica,
+    qualificacao_responsavel,
+    cnae_principal,
+    cnae_descricao,
+    cnaes_secundarios,
+    segmento,
+    mei,
+    simples,
+    porte_codigo,
+    porte_descricao,
+    capital_social,
+    situacao_especial,
+    situacao_especial_data,
+    cep,
+    tipo_logradouro,
+    logradouro,
+    numero,
+    complemento,
+    bairro,
+    municipio,
+    uf,
+    codigo_ibge,
+    lat,
+    lng,
+    telefone_original,
+    whatsapp,
+    whatsapp_valido,
+    whatsapp_verificado_em,
+    email,
+    email_contab,
+    tem_site,
+    site_url,
+    site_status,
+    site_sinais,
+    site_diagnostico,
+    tem_gbp,
+    gbp_place_id,
+    gbp_rating,
+    gbp_avaliacoes,
+    gbp_reviews,
+    gbp_url,
+    gbp_match_confianca,
+    tem_instagram,
+    instagram,
+    instagram_url,
+    enriquecido_em,
+    perfil_oferta,
+    dor_resumida,
+    score,
+    status,
+    opt_out,
+    tentativas,
+    ultimo_contato,
+    proximo_followup,
+    interesse_servicos,
+    obs,
+    origem,
+    importacao_id,
+    criado_em,
+    atualizado_em,
+    slug,
+    producao_status,
+    url_nova,
+    url_proposta,
+    contrato_status,
+    contrato_em,
+    telefones_json,
+    emails_json,
+    tem_celular,
+    situacao_codigo,
+    motivo_codigo,
+    porte_codigo_num,
+    natureza_codigo,
+    simples_desde,
+    mei_desde,
+    fonte_atualizado_em,
+    nome_socio,
+    flag_filial_repetida,
+    flag_rede,
+    flag_tel_repetido,
+    gancho_abordagem,
+    enriquecimento_extra,
+    esteira
+   FROM vw_fila_disparo
+  WHERE (COALESCE(esteira, ''::text) = 'presenca_digital'::text);
+```
+
+## View: vw_fila_disparo_financeiro
+```sql
+ SELECT id,
+    cnpj,
+    cnpj_raiz,
+    filial_numero,
+    matriz_filial,
+    razao_social,
+    nome_fantasia,
+    nome_exibicao,
+    situacao,
+    situacao_motivo,
+    situacao_data,
+    data_abertura,
+    natureza_juridica_codigo,
+    natureza_juridica,
+    qualificacao_responsavel,
+    cnae_principal,
+    cnae_descricao,
+    cnaes_secundarios,
+    segmento,
+    mei,
+    simples,
+    porte_codigo,
+    porte_descricao,
+    capital_social,
+    situacao_especial,
+    situacao_especial_data,
+    cep,
+    tipo_logradouro,
+    logradouro,
+    numero,
+    complemento,
+    bairro,
+    municipio,
+    uf,
+    codigo_ibge,
+    lat,
+    lng,
+    telefone_original,
+    whatsapp,
+    whatsapp_valido,
+    whatsapp_verificado_em,
+    email,
+    email_contab,
+    tem_site,
+    site_url,
+    site_status,
+    site_sinais,
+    site_diagnostico,
+    tem_gbp,
+    gbp_place_id,
+    gbp_rating,
+    gbp_avaliacoes,
+    gbp_reviews,
+    gbp_url,
+    gbp_match_confianca,
+    tem_instagram,
+    instagram,
+    instagram_url,
+    enriquecido_em,
+    perfil_oferta,
+    dor_resumida,
+    score,
+    status,
+    opt_out,
+    tentativas,
+    ultimo_contato,
+    proximo_followup,
+    interesse_servicos,
+    obs,
+    origem,
+    importacao_id,
+    criado_em,
+    atualizado_em,
+    slug,
+    producao_status,
+    url_nova,
+    url_proposta,
+    contrato_status,
+    contrato_em,
+    telefones_json,
+    emails_json,
+    tem_celular,
+    situacao_codigo,
+    motivo_codigo,
+    porte_codigo_num,
+    natureza_codigo,
+    simples_desde,
+    mei_desde,
+    fonte_atualizado_em,
+    nome_socio,
+    flag_filial_repetida,
+    flag_rede,
+    flag_tel_repetido,
+    gancho_abordagem,
+    enriquecimento_extra,
+    esteira
+   FROM vw_fila_disparo
+  WHERE (COALESCE(esteira, ''::text) = 'financeiro'::text);
 ```
 
 ## View: vw_fila_priorizada
@@ -1091,6 +1376,24 @@ $function$
 
 ```
 
+## Função: fn_assinatura_ativa
+```sql
+CREATE OR REPLACE FUNCTION public.fn_assinatura_ativa(p_empresa_id bigint, p_plano text DEFAULT NULL::text)
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE
+AS $function$
+  select exists (
+    select 1 from assinaturas
+     where empresa_id = p_empresa_id
+       and (p_plano is null or plano = p_plano)
+       and status in ('ativa','inadimplente')
+       and (valido_ate is null or valido_ate >= current_date)
+  );
+$function$
+
+```
+
 ## Função: fn_calcular_score
 ```sql
 CREATE OR REPLACE FUNCTION public.fn_calcular_score(p_empresa_id bigint)
@@ -1294,6 +1597,24 @@ $function$
 
 ```
 
+## Função: fn_cota_pro_restante
+```sql
+CREATE OR REPLACE FUNCTION public.fn_cota_pro_restante(p_empresa_id bigint)
+ RETURNS integer
+ LANGUAGE sql
+ STABLE
+AS $function$
+  select 20 - (
+    select count(*)::int
+      from interacoes
+     where empresa_id = p_empresa_id
+       and etapa = 'pergunta_pro'
+       and criado_em >= date_trunc('month', now())
+  );
+$function$
+
+```
+
 ## Função: fn_dashboard_update
 ```sql
 CREATE OR REPLACE FUNCTION public.fn_dashboard_update(p_slug text, p_patch jsonb)
@@ -1362,6 +1683,59 @@ begin
   end if;
 end;
 $function$
+
+```
+
+## Função: fn_definir_esteira
+```sql
+CREATE OR REPLACE FUNCTION public.fn_definir_esteira(p_empresa_id bigint)
+ RETURNS text
+ LANGUAGE plpgsql
+AS $function$
+declare
+  e             record;
+  v_esteira     text;
+  v_motivo      text;
+  v_idade_anos  numeric;
+begin
+  select * into e from empresas where id = p_empresa_id;
+  if not found then
+    return null;
+  end if;
+
+  v_idade_anos := extract(epoch from (now() - e.data_abertura::timestamptz)) / 31557600;
+
+  if e.data_abertura is not null and v_idade_anos < 2 then
+    v_esteira := 'presenca_digital'; v_motivo := 'idade_menor_2a';
+
+  elsif coalesce(e.mei, false) then
+    v_esteira := 'presenca_digital'; v_motivo := 'mei';
+
+  elsif e.perfil_oferta in ('criacao_zero','site_para_gbp','sem_gbp') then
+    v_esteira := 'presenca_digital'; v_motivo := 'perfil_digital';
+
+  elsif e.porte_codigo_num in (1,3,5)
+        and e.data_abertura is not null and v_idade_anos >= 2
+        and exists (select 1 from cnae_ciclo_caixa c
+                     where e.cnae_principal like c.cnae_prefixo || '%') then
+    v_esteira := 'financeiro'; v_motivo := 'porte_cnae_ciclo';
+
+  elsif e.perfil_oferta = 'descartado_site_bom'
+        and e.data_abertura is not null and v_idade_anos >= 2 then
+    v_esteira := 'financeiro'; v_motivo := 'resgate_site_bom';
+
+  else
+    v_esteira := null; v_motivo := 'sem_regra';
+  end if;
+
+  update empresas
+     set esteira            = v_esteira,
+         esteira_motivo     = v_motivo,
+         esteira_definida_em = now()
+   where id = p_empresa_id;
+
+  return v_esteira;
+end $function$
 
 ```
 
@@ -1605,6 +1979,44 @@ end $function$
 
 ```
 
+## Função: fn_registrar_opt_out
+```sql
+CREATE OR REPLACE FUNCTION public.fn_registrar_opt_out(p_telefone text, p_motivo text DEFAULT 'pediu_saida'::text, p_canal text DEFAULT 'whatsapp'::text)
+ RETURNS bigint
+ LANGUAGE plpgsql
+AS $function$
+declare
+  v_id   bigint;
+  v_slug text;
+begin
+  select id, slug into v_id, v_slug
+    from empresas
+   where whatsapp = regexp_replace(p_telefone, '\D', '', 'g')
+   limit 1;
+
+  if v_id is null then
+    return null;
+  end if;
+
+  update empresas
+     set opt_out        = true,
+         opt_out_em     = now(),
+         opt_out_motivo = p_motivo,
+         opt_out_canal  = p_canal
+   where id = v_id;
+
+  insert into interacoes (empresa_id, canal, direcao, etapa, mensagem)
+  values (v_id, p_canal, 'entrada', 'opt_out', p_motivo);
+
+  if v_slug is not null then
+    perform fn_cancelar_followups(v_slug, 'opt_out');
+  end if;
+
+  return v_id;
+end $function$
+
+```
+
 ## Função: fn_touch_atualizado_em
 ```sql
 CREATE OR REPLACE FUNCTION public.fn_touch_atualizado_em()
@@ -1633,5 +2045,86 @@ BEGIN
   END IF;
   RETURN NEW;
 END $function$
+
+```
+
+## Função: fn_warmup_pode_enviar
+```sql
+CREATE OR REPLACE FUNCTION public.fn_warmup_pode_enviar(p_instancia text DEFAULT 'atitude-principal'::text)
+ RETURNS boolean
+ LANGUAGE sql
+AS $function$
+  select coalesce(
+           (select mensagens_enviadas from warmup_canal
+             where instancia = p_instancia and dia = current_date), 0)
+         < fn_warmup_teto_hoje(p_instancia);
+$function$
+
+```
+
+## Função: fn_warmup_registrar_envio
+```sql
+CREATE OR REPLACE FUNCTION public.fn_warmup_registrar_envio(p_instancia text DEFAULT 'atitude-principal'::text)
+ RETURNS integer
+ LANGUAGE plpgsql
+AS $function$
+declare v integer;
+begin
+  perform fn_warmup_teto_hoje(p_instancia);
+  update warmup_canal
+     set mensagens_enviadas = mensagens_enviadas + 1
+   where instancia = p_instancia and dia = current_date
+   returning mensagens_enviadas into v;
+  return v;
+end $function$
+
+```
+
+## Função: fn_warmup_teto_hoje
+```sql
+CREATE OR REPLACE FUNCTION public.fn_warmup_teto_hoje(p_instancia text DEFAULT 'atitude-principal'::text)
+ RETURNS integer
+ LANGUAGE plpgsql
+AS $function$
+declare
+  c              jsonb;
+  v_teto         integer;
+  v_dias_no_teto integer;
+begin
+  select valor into c from config where chave = 'warmup';
+
+  if c is null then
+    return 10;
+  end if;
+
+  select teto_do_dia into v_teto
+    from warmup_canal
+   where instancia = p_instancia
+   order by dia desc
+   limit 1;
+  v_teto := coalesce(v_teto, (c->>'teto_inicial')::int);
+
+  if (c->>'congelado_ate') is not null
+     and (c->>'congelado_ate')::date >= current_date then
+    insert into warmup_canal (instancia, dia, teto_do_dia)
+    values (p_instancia, current_date, v_teto)
+    on conflict (instancia, dia) do nothing;
+    return v_teto;
+  end if;
+
+  select count(*) into v_dias_no_teto
+    from warmup_canal
+   where instancia = p_instancia and teto_do_dia = v_teto;
+
+  if v_dias_no_teto >= (c->>'dias_por_degrau')::int then
+    v_teto := least(v_teto + (c->>'incremento')::int, (c->>'teto_maximo')::int);
+  end if;
+
+  insert into warmup_canal (instancia, dia, teto_do_dia)
+  values (p_instancia, current_date, v_teto)
+  on conflict (instancia, dia) do nothing;
+
+  return v_teto;
+end $function$
 
 ```
