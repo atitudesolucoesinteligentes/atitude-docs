@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-07)
+# Schema — Somos Atitude (gerado em 2026-08-08)
 
 # TABELAS
 
@@ -852,6 +852,108 @@
   WHERE (COALESCE(esteira, ''::text) = 'financeiro'::text);
 ```
 
+## View: vw_fila_disparo_sem_esteira
+```sql
+ SELECT id,
+    cnpj,
+    cnpj_raiz,
+    filial_numero,
+    matriz_filial,
+    razao_social,
+    nome_fantasia,
+    nome_exibicao,
+    situacao,
+    situacao_motivo,
+    situacao_data,
+    data_abertura,
+    natureza_juridica_codigo,
+    natureza_juridica,
+    qualificacao_responsavel,
+    cnae_principal,
+    cnae_descricao,
+    cnaes_secundarios,
+    segmento,
+    mei,
+    simples,
+    porte_codigo,
+    porte_descricao,
+    capital_social,
+    situacao_especial,
+    situacao_especial_data,
+    cep,
+    tipo_logradouro,
+    logradouro,
+    numero,
+    complemento,
+    bairro,
+    municipio,
+    uf,
+    codigo_ibge,
+    lat,
+    lng,
+    telefone_original,
+    whatsapp,
+    whatsapp_valido,
+    whatsapp_verificado_em,
+    email,
+    email_contab,
+    tem_site,
+    site_url,
+    site_status,
+    site_sinais,
+    site_diagnostico,
+    tem_gbp,
+    gbp_place_id,
+    gbp_rating,
+    gbp_avaliacoes,
+    gbp_reviews,
+    gbp_url,
+    gbp_match_confianca,
+    tem_instagram,
+    instagram,
+    instagram_url,
+    enriquecido_em,
+    perfil_oferta,
+    dor_resumida,
+    score,
+    status,
+    opt_out,
+    tentativas,
+    ultimo_contato,
+    proximo_followup,
+    interesse_servicos,
+    obs,
+    origem,
+    importacao_id,
+    criado_em,
+    atualizado_em,
+    slug,
+    producao_status,
+    url_nova,
+    url_proposta,
+    contrato_status,
+    contrato_em,
+    telefones_json,
+    emails_json,
+    tem_celular,
+    situacao_codigo,
+    motivo_codigo,
+    porte_codigo_num,
+    natureza_codigo,
+    simples_desde,
+    mei_desde,
+    fonte_atualizado_em,
+    nome_socio,
+    flag_filial_repetida,
+    flag_rede,
+    flag_tel_repetido,
+    gancho_abordagem,
+    enriquecimento_extra,
+    esteira
+   FROM vw_fila_disparo
+  WHERE (esteira IS NULL);
+```
+
 ## View: vw_fila_priorizada
 ```sql
  SELECT id,
@@ -1238,7 +1340,8 @@ UNION ALL
     criado_em,
     origem,
     interesse_servicos,
-    fn_contato_permitido(empresas.*) AS ativo_no_funil
+    fn_contato_permitido(empresas.*) AS ativo_no_funil,
+    esteira
    FROM empresas;
 ```
 
