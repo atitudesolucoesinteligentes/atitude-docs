@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-31T12:07:57.333Z",
+  "updatedAt": "2026-08-07T21:52:02.081Z",
   "createdAt": "2026-07-16T19:13:28.447Z",
   "id": "3Av5ajLwyr8EF1iJ",
   "name": "A1 Higienização p2 - Enriquecimento",
@@ -355,6 +355,43 @@
       ],
       "id": "ac6ddec6-e427-4030-8b4c-e134a7023979",
       "name": "Resolver Conflito de Place"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/rpc/fn_definir_esteira",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_empresa_id: $('Gravar Enriquecimento').item.json.id }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2496,
+        384
+      ],
+      "id": "b7e4c1a9-3f26-4d58-9a01-6c2d8e5f4b30",
+      "name": "Definir Esteira",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
     }
   ],
   "connections": {
@@ -472,7 +509,7 @@
       "main": [
         [
           {
-            "node": "Resumo do Enriquecimento",
+            "node": "Definir Esteira",
             "type": "main",
             "index": 0
           }
@@ -500,6 +537,17 @@
           }
         ]
       ]
+    },
+    "Definir Esteira": {
+      "main": [
+        [
+          {
+            "node": "Resumo do Enriquecimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -511,9 +559,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "1b990501-1116-48dc-9046-51f34841aed1",
+  "versionId": "6d309e31-b0a1-49d0-ada0-27115e6ab384",
   "activeVersionId": null,
-  "versionCounter": 76,
+  "versionCounter": 81,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
