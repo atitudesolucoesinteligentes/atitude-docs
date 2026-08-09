@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-07T21:52:02.081Z",
+  "updatedAt": "2026-08-08T13:30:10.243Z",
   "createdAt": "2026-07-16T19:13:28.447Z",
   "id": "3Av5ajLwyr8EF1iJ",
   "name": "A1 Higienização p2 - Enriquecimento",
@@ -132,7 +132,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        880,
+        896,
         384
       ],
       "onError": "continueRegularOutput"
@@ -147,7 +147,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1104,
+        1120,
         384
       ]
     },
@@ -182,7 +182,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1328,
+        1344,
         384
       ],
       "credentials": {
@@ -203,7 +203,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1552,
+        1568,
         384
       ]
     },
@@ -236,7 +236,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2176,
+        2240,
         384
       ],
       "alwaysOutputData": true,
@@ -257,7 +257,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2608,
+        2912,
         384
       ]
     },
@@ -268,8 +268,8 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2608,
-        560
+        0,
+        608
       ]
     },
     {
@@ -279,7 +279,7 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2832,
+        3136,
         384
       ]
     },
@@ -306,7 +306,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2384,
+        2464,
         384
       ],
       "id": "14228c25-acf6-4cf8-8359-de51eae551ec",
@@ -329,7 +329,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        1760,
+        1792,
         384
       ],
       "id": "c7b5d480-0c32-4892-a6b4-412aadabbf57",
@@ -345,12 +345,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// Roda UMA vez para o lote inteiro: reconstrói os itens a partir do\n// \"Aplicar Classificação\" e cruza com os donos de place retornados\n// pela consulta batelada do \"Checar Place Duplicado\".\n// Garantia estrutural: N itens entram na origem => N itens saem daqui.\nconst classif = $('Aplicar Classificação').all().map(i => i.json);\n\nlet donos = [];\ntry {\n  donos = $input.all().map(i => i.json).filter(j => j && j.id !== undefined);\n} catch (e) { donos = []; }\n\nconst out = [];\nfor (const item of classif) {\n  const patch = { ...item.patch };\n\n  const conflito = patch.gbp_place_id && donos.some(d =>\n    d.gbp_place_id === patch.gbp_place_id && d.id !== item.id\n  );\n\n  if (conflito) {\n    // Remove o vínculo de GBP para não colidir com outra empresa já dona desse place\n    delete patch.gbp_place_id;\n    delete patch.gbp_business_status;\n    delete patch.gbp_rating;\n    delete patch.gbp_avaliacoes;\n    delete patch.gbp_url;\n    delete patch.gbp_reviews;\n    delete patch.gbp_match_confianca;\n    patch.tem_gbp = false;\n    patch.obs = ((item.patch.obs || '') + ' | gbp_place_id conflitante removido (' + new Date().toISOString() + ')').trim();\n\n    // Limpa também os dados do GBP dentro de enriquecimento_extra\n    if (patch.enriquecimento_extra) {\n      const extra = { ...patch.enriquecimento_extra };\n      delete extra.gbp_fotos_qtd;\n      delete extra.gbp_tem_horario;\n      delete extra.gbp_tipo_google;\n      delete extra.gbp_editorial;\n      delete extra.review_mais_recente_dias;\n      extra.review_destaque = null;\n      patch.enriquecimento_extra = extra;\n    }\n\n    // gancho pode ter sido construído em cima do GBP conflitante\n    patch.gancho_abordagem = null;\n\n    // Recalcula perfil_oferta considerando que agora tem_gbp = false\n    const siteRuim = ['fraco', 'fora_do_ar', 'terceiros'].includes(patch.site_status);\n    const temSite = patch.site_status === 'ok' || siteRuim;\n    if (patch.perfil_oferta !== 'recem_aberta') {\n      patch.perfil_oferta = temSite ? 'sem_gbp' : 'criacao_zero';\n      patch.status = 'fila';\n    }\n  }\n\n  out.push({ json: { id: item.id, slug: item.slug, patch, perfil: patch.perfil_oferta } });\n}\n\nreturn out;"
+        "jsCode": "// Roda UMA vez para o lote inteiro: reconstrói os itens a partir do\n// \"Aplicar Classificação\" e cruza com os donos de place retornados\n// pela consulta batelada do \"Checar Place Duplicado\".\n// Garantia estrutural: N itens entram na origem => N itens saem daqui.\nconst classif = $('Aplicar Classificação').all().map(i => i.json);\n\nlet donos = [];\ntry {\n  donos = $input.all().map(i => i.json).filter(j => j && j.id !== undefined);\n} catch (e) { donos = []; }\n\nconst out = [];\nfor (const item of classif) {\n  const patch = { ...item.patch };\n\n  const conflito = patch.gbp_place_id && donos.some(d =>\n    d.gbp_place_id === patch.gbp_place_id && d.id !== item.id\n  );\n\n  if (conflito) {\n    // Remove o vínculo de GBP para não colidir com outra empresa já dona desse place\n    delete patch.gbp_place_id;\n    delete patch.gbp_business_status;\n    delete patch.gbp_rating;\n    delete patch.gbp_avaliacoes;\n    delete patch.gbp_url;\n    delete patch.gbp_reviews;\n    delete patch.gbp_match_confianca;\n    patch.tem_gbp = false;\n    patch.obs = ((item.patch.obs || '') + ' | gbp_place_id conflitante removido (' + new Date().toISOString() + ')').trim();\n\n    // Limpa também os dados do GBP dentro de enriquecimento_extra\n    if (patch.enriquecimento_extra) {\n      const extra = { ...patch.enriquecimento_extra };\n      delete extra.gbp_fotos_qtd;\n      delete extra.gbp_tem_horario;\n      delete extra.gbp_tipo_google;\n      delete extra.gbp_editorial;\n      delete extra.review_mais_recente_dias;\n      extra.review_destaque = null;\n      patch.enriquecimento_extra = extra;\n    }\n\n    // gancho pode ter sido construído em cima do GBP conflitante\n    patch.gancho_abordagem = null;\n\n    // Recalcula perfil_oferta considerando que agora tem_gbp = false\n    const siteRuim = ['fraco', 'fora_do_ar', 'terceiros'].includes(patch.site_status);\n    const temSite = patch.site_status === 'ok' || siteRuim;\n    if (patch.enriquecido_em && patch.perfil_oferta !== 'recem_aberta') {\n      patch.perfil_oferta = temSite ? 'sem_gbp' : 'criacao_zero';\n      patch.status = 'fila';\n    }\n  }\n\n  out.push({ json: { id: item.id, slug: item.slug, patch, perfil: patch.perfil_oferta } });\n}\n\nreturn out;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1968,
+        2016,
         384
       ],
       "id": "ac6ddec6-e427-4030-8b4c-e134a7023979",
@@ -379,19 +379,19 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2496,
+        2688,
         384
       ],
       "id": "b7e4c1a9-3f26-4d58-9a01-6c2d8e5f4b30",
       "name": "Definir Esteira",
       "alwaysOutputData": true,
-      "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
           "id": "TI9uXqodlyBVC9Se",
           "name": "Supabase account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -559,9 +559,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "6d309e31-b0a1-49d0-ada0-27115e6ab384",
+  "versionId": "9317e833-ed75-4cca-a2dd-fbad98e683ac",
   "activeVersionId": null,
-  "versionCounter": 81,
+  "versionCounter": 83,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
