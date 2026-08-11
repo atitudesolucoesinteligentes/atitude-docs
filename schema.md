@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-10)
+# Schema — Somos Atitude (gerado em 2026-08-11)
 
 # TABELAS
 
@@ -76,6 +76,9 @@
 - `origem_atualizacao` text
 - `criado_em` timestamp with time zone NOT NULL DEFAULT now()
 - `atualizado_em` timestamp with time zone NOT NULL DEFAULT now()
+- `inadimplente_desde` date
+- `msgs_ciclo_cobranca` integer NOT NULL DEFAULT 0
+- `regua_pausada_em` timestamp with time zone
 
 ## Tabela: cnae_ciclo_caixa
 - `cnae_prefixo` text NOT NULL
