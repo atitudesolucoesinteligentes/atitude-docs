@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-11)
+# Schema — Somos Atitude (gerado em 2026-08-12)
 
 # TABELAS
 
@@ -34,6 +34,7 @@
 - `ativo` boolean DEFAULT true
 - `criado_em` timestamp with time zone DEFAULT now()
 - `frase_gatilho` text
+- `linha` text
 
 ## Tabela: aprovacoes_pendentes
 - `id` bigint NOT NULL
@@ -226,6 +227,7 @@
 - `raiox_fin_nota` numeric
 - `raiox_fin_faixa` text
 - `raiox_fin_em` timestamp with time zone
+- `linha` text
 
 ## Tabela: followups_agendados
 - `id` bigint NOT NULL
@@ -329,6 +331,7 @@
 - `ativo` boolean NOT NULL DEFAULT true
 - `created_at` timestamp with time zone NOT NULL DEFAULT now()
 - `updated_at` timestamp with time zone NOT NULL DEFAULT now()
+- `linha` text
 
 ## Tabela: onboarding
 - `id` bigint NOT NULL
@@ -407,6 +410,7 @@
 - `ativo` boolean NOT NULL DEFAULT true
 - `guia` text
 - `exemplo` text
+- `linha` text
 
 ## Tabela: score_cidades
 - `municipio` text NOT NULL
@@ -436,6 +440,7 @@
 - `preco_promocional` numeric
 - `cupom_codigo` text
 - `cupom_prazo_dias` integer
+- `linha` text
 
 ## Tabela: socios
 - `id` bigint NOT NULL
