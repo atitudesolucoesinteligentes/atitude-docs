@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-05T13:58:00.535Z",
+  "updatedAt": "2026-08-11T23:54:17.301Z",
   "createdAt": "2026-07-24T18:02:19.923Z",
   "id": "NhwhxXXpwikIwX04",
   "name": "W3-A — Motor de Follow-up",
@@ -632,6 +632,159 @@
           "name": "Supabase account"
         }
       }
+    },
+    {
+      "id": "c7a599af-de91-4f86-9413-ecfa56d47911",
+      "name": "Revalidar Contato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        400
+      ],
+      "parameters": {
+        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?id=eq.{{ $json.empresa_id }}&select=id,opt_out,status,atendimento_humano,bot_suspeito,fn_contato_permitido",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "id": "8dbdd8a8-7182-4334-a11b-bc2353bfa26a",
+      "name": "Gate de Envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        400
+      ],
+      "parameters": {
+        "jsCode": "// Gate de Envio (D42, revisto pela D49) — revalidacao de opt_out no momento do envio.\n//\n// O TETO DE WARMUP FOI REMOVIDO PELA D49 (13/08). Motivo medido em\n// docs/medicao-warmup-13-08.md: com teto 10, um dia tipico perdia 14 de 24 itens\n// (5 f2 bloqueados + 9 e-mails que nem passam por este gate, mas morriam junto\n// porque a parada encerrava o run antes deles).\n// O REGISTRO de envio (fn_warmup_registrar_envio, depois do POST) PERMANECE:\n// o contador precisa refletir a realidade mesmo sem teto.\n//\n// Em qualquer duvida, NAO envia (fail-closed).\nconst meta = $('Validar').item.json;\n\n// revalidacao de contato: leitura NOVA, feita agora, nao o valor do minuto zero\nlet linha = null;\ntry {\n  const r = $('Revalidar Contato').item.json;\n  linha = Array.isArray(r) ? r[0] : r;\n} catch (e) { linha = null; }\n\nlet permitido = null;\nif (linha && typeof linha.fn_contato_permitido === 'boolean') {\n  permitido = linha.fn_contato_permitido;\n}\n\nlet enviar = false, motivo = null;\n\nif (permitido !== true) {\n  motivo = (permitido === false)\n    ? 'BLOQUEADO: contato nao permitido agora (opt_out / atendimento_humano / bot_suspeito / status)'\n    : 'BLOQUEADO: revalidacao indeterminada — fail-closed, nao envia';\n} else {\n  enviar = true;\n}\n\nreturn [{ json: {\n  ...meta,\n  gate_enviar: enviar,\n  gate_motivo: motivo,\n  gate_empresa_id: meta.empresa_id,\n  gate_tipo: meta.tipo,\n  gate_permitido_lido: permitido,\n  gate_opt_out_agora: linha ? linha.opt_out : null,\n  gate_status_agora: linha ? linha.status : null,\n  gate_verificado_em: new Date().toISOString()\n} }];"
+      }
+    },
+    {
+      "id": "849c9cf1-e646-49e8-9b10-17917293c962",
+      "name": "Pode Enviar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d42-pode-enviar",
+              "leftValue": "={{ $json.gate_enviar }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "e102fa75-8014-4acb-bdc0-066936b102b0",
+      "name": "Bloqueado: segue fila",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        640
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "d2e40aa9-5e04-47ed-8cbb-59e61184cd47",
+      "name": "Envio OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        112
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d42-envio-ok",
+              "leftValue": "={{ !!($json.key && $json.key.id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "03b506e2-cf90-4a1f-9db8-97c177ff480f",
+      "name": "Registrar Warmup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2304,
+        -60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/rpc/fn_warmup_registrar_envio",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_instancia: 'atitude-principal' }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
     }
   ],
   "connections": {
@@ -799,7 +952,7 @@
         ],
         [
           {
-            "node": "É conversa_parada?",
+            "node": "Revalidar Contato",
             "type": "main",
             "index": 0
           }
@@ -807,17 +960,6 @@
       ]
     },
     "Enviar E-mail": {
-      "main": [
-        [
-          {
-            "node": "Registrar Interação",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Enviar WhatsApp": {
       "main": [
         [
           {
@@ -911,6 +1053,97 @@
           }
         ]
       ]
+    },
+    "Gate de Envio": {
+      "main": [
+        [
+          {
+            "node": "Pode Enviar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pode Enviar?": {
+      "main": [
+        [
+          {
+            "node": "É conversa_parada?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bloqueado: segue fila",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bloqueado: segue fila": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Envio OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envio OK?": {
+      "main": [
+        [
+          {
+            "node": "Registrar Warmup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Interação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Warmup": {
+      "main": [
+        [
+          {
+            "node": "Registrar Interação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revalidar Contato": {
+      "main": [
+        [
+          {
+            "node": "Gate de Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -924,9 +1157,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "fb7b82d8-6fe9-42b2-968a-e94939d54f3a",
+  "versionId": "f125ae75-688e-46aa-bc3e-0f9d138064b0",
   "activeVersionId": null,
-  "versionCounter": 68,
+  "versionCounter": 70,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
