@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-08T13:30:10.243Z",
+  "updatedAt": "2026-08-13T16:23:10.161Z",
   "createdAt": "2026-07-16T19:13:28.447Z",
   "id": "3Av5ajLwyr8EF1iJ",
   "name": "A1 Higienização p2 - Enriquecimento",
@@ -35,7 +35,7 @@
     },
     {
       "parameters": {
-        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?select=id,slug,nome_exibicao,nome_socio,municipio,uf,bairro,whatsapp,telefones_json,data_abertura,segmento,cnae_descricao,obs&status=eq.novo&whatsapp_valido=eq.true&enriquecido_em=is.null&order=id&limit=25",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?select=id,importacao_id,slug,nome_exibicao,nome_socio,municipio,uf,bairro,whatsapp,telefones_json,data_abertura,segmento,cnae_descricao,obs&status=eq.novo&whatsapp_valido=eq.true&enriquecido_em=is.null&order=id&limit=25",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "options": {}
@@ -250,7 +250,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Resumo por perfil de oferta\nconst itens = $('Aplicar Classificação').all().map(i => i.json);\nconst porPerfil = {};\nfor (const i of itens) porPerfil[i.perfil] = (porPerfil[i.perfil] || 0) + 1;\nreturn [{ json: { processados: itens.length, por_perfil: porPerfil } }];"
+        "jsCode": "// Resumo por perfil de oferta\nconst itens = $('Aplicar Classificação').all().map(i => i.json);\nconst porPerfil = {};\nfor (const i of itens) porPerfil[i.perfil] = (porPerfil[i.perfil] || 0) + 1;\n\n// --- INSTRUMENTAÇÃO (13/08/2026) ---------------------------------------\n// `Buscar Leads Validados` é uma FILA QUE DRENA, por desenho: pega qualquer\n// lead pendente, de qualquer importação. Isso está CERTO e não foi alterado.\n// O que faltava era o resumo DIZER de quais lotes vieram os processados —\n// sem isso, \"processados: 13\" não fecha com \"a rodada pediu 25\" e ninguém\n// sabe se falta gente ou se sobrou remanescente de lote antigo.\nconst leads = $('Buscar Leads Validados').all().map(i => i.json);\nconst porImportacao = {};\nfor (const l of leads) {\n  const k = (l && l.importacao_id != null) ? String(l.importacao_id) : 'sem_importacao';\n  porImportacao[k] = (porImportacao[k] || 0) + 1;\n}\nconst lotes = Object.keys(porImportacao).sort();\n\nreturn [{ json: {\n  processados: itens.length,\n  por_perfil: porPerfil,\n  por_importacao: porImportacao,\n  lotes,\n  remanescente: lotes.length > 1\n} }];"
       },
       "id": "adda3d69-6a97-4688-bfcb-9800bfe927fe",
       "name": "Resumo do Enriquecimento",
@@ -259,17 +259,6 @@
       "position": [
         2912,
         384
-      ]
-    },
-    {
-      "parameters": {},
-      "id": "089790d7-3ce2-43fc-81bc-15ac52915a1e",
-      "name": "Instagram via Custom Search (plugar depois)",
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        0,
-        608
       ]
     },
     {
@@ -374,7 +363,13 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ p_empresa_id: $('Gravar Enriquecimento').item.json.id }) }}",
-        "options": {}
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -392,6 +387,21 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "id": "819c6598-d62a-4e1e-995b-57476c26f754",
+      "name": "PLANEJADO — Instagram via Custom Search",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        608
+      ],
+      "parameters": {
+        "width": 420,
+        "height": 220,
+        "content": "## PLANEJADO — nunca ligado\n\n**Instagram via Google Custom Search**, para enriquecer o lead quando não há site.\n\n- **Planejado desde:** criação do A1 p2 (16/07/2026).\n- **Nunca foi conectado nem executado.** Existia como um nó `noOp` solto neste ponto do canvas.\n- **Virou nota em 13/08/2026**, porque nó desconectado impedia gravar qualquer alteração neste workflow pela API.\n\nO nó removido está transcrito na íntegra em `docs/esteira-13-08-00-medicao.md` §9.2 — é só um `noOp` sem parâmetros.\n\n⚠ O sticky `Instruções` diz \"no lugar do nó indicado\": o lugar é **aqui**."
+      }
     }
   ],
   "connections": {
@@ -559,9 +569,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "9317e833-ed75-4cca-a2dd-fbad98e683ac",
+  "versionId": "9a368f68-1d79-4376-aac5-d8e8c35409ab",
   "activeVersionId": null,
-  "versionCounter": 83,
+  "versionCounter": 87,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
