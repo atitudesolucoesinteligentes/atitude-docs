@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-29T13:21:23.627Z",
+  "updatedAt": "2026-08-13T16:20:18.103Z",
   "createdAt": "2026-07-16T18:03:24.304Z",
   "id": "NLAtaqdypvL2i8wD",
   "name": "A0 Busca CNPJá v2",
@@ -328,7 +328,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Decide se busca a próxima página (estado vem do Mapear Registros)\nconst st = $('Mapear Registros1').first().json.__state;\nconst continuar = !!st.token && st.acumulado < st.maximo && st.paginas < 10;\nreturn [{ json: { continuar, state: st } }];"
+        "jsCode": "// Decide se busca a próxima página (estado vem do Mapear Registros)\nconst st = $('Mapear Registros1').first().json.__state;\nconst continuar = !!st.token && st.acumulado < st.maximo && st.paginas < 10;\n\n// --- INSTRUMENTAÇÃO (13/08/2026) ---------------------------------------\n// Conta o resultado REAL do upsert desta página e acumula no estado, que já\n// dá a volta no laço. NÃO altera `continuar` nem nenhuma chave existente:\n// só acrescenta inseridos_acum, rejeitados_acum e rejeicoes_motivo.\n//\n// Guarda __vazio: quando a página vem sem registros, o fluxo vai direto de\n// `Tem registros?1` para cá, SEM passar pelo upsert — e $('Upsert Empresas1')\n// .all() devolveria os itens da página ANTERIOR, contando tudo duas vezes.\nconst vazia = $('Mapear Registros1').first().json.__vazio === true;\nlet ins = 0, rej = 0;\nconst motivos = {};\nif (!vazia) {\n  for (const it of $('Upsert Empresas1').all()) {\n    const j = (it && it.json) || {};\n    if (j.code) {                      // PostgREST devolveu erro (neverError:true)\n      rej++;\n      const m = j.message && /constraint \"([^\"]+)\"/.exec(j.message);\n      const cod = String(j.code);\n      const alvo = m ? m[1] : 'sem_constraint_nomeada';\n      motivos[cod] = motivos[cod] || {};\n      motivos[cod][alvo] = (motivos[cod][alvo] || 0) + 1;\n    } else {\n      ins++;\n    }\n  }\n}\n\nconst motivosAcum = {};\nfor (const c in (st.rejeicoes_motivo || {})) motivosAcum[c] = { ...st.rejeicoes_motivo[c] };\nfor (const c in motivos) {\n  motivosAcum[c] = motivosAcum[c] || {};\n  for (const a in motivos[c]) motivosAcum[c][a] = (motivosAcum[c][a] || 0) + motivos[c][a];\n}\n\nconst state = {\n  ...st,\n  inseridos_acum:   (st.inseridos_acum   || 0) + ins,\n  rejeitados_acum:  (st.rejeitados_acum  || 0) + rej,\n  rejeicoes_motivo: motivosAcum\n};\nreturn [{ json: { continuar, state } }];"
       },
       "id": "38d22039-669e-4e47-b30f-ff6e7eb5b071",
       "name": "Controle de Página1",
@@ -375,7 +375,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Resumo final da importação\nconst st = $json.state;\nreturn [{ json: {\n  importacao_id: st.importacao_id,\n  total_gravados: st.acumulado || 0,\n  paginas_lidas: st.paginas || 0,\n  creditos_custo: Math.ceil((st.acumulado || 0) / 10),\n  cursor_token: st.ultimo_token || null\n} }];"
+        "jsCode": "// Resumo final da importação\n// INSTRUMENTAÇÃO (13/08/2026): `total_gravados` passou a ser INSERT REAL.\n// Antes desta data ele carregava `acumulado` — o que o CNPJá devolveu — e\n// errava sempre para mais. O número da API foi para `total_api`, coluna que\n// existia em `importacoes` e nunca havia sido preenchida.\n// `creditos_custo` continua sobre `acumulado`, e isso está CERTO: paga-se o\n// que a API devolve, não o que entra no banco.\nconst st = $json.state;\nconst api = st.acumulado || 0;\nconst ins = st.inseridos_acum || 0;\nconst rej = st.rejeitados_acum || 0;\nreturn [{ json: {\n  importacao_id: st.importacao_id,\n  total_api: api,\n  total_gravados: ins,\n  rejeitados_constraint: rej,\n  rejeicoes_por_motivo: st.rejeicoes_motivo || {},\n  conferencia: (api - rej) === ins ? 'ok' : 'DIVERGENTE: api-rejeitados != inseridos',\n  paginas_lidas: st.paginas || 0,\n  creditos_custo: Math.ceil(api / 10),\n  cursor_token: st.ultimo_token || null\n} }];"
       },
       "id": "f40315a7-c1f7-41d9-866c-488d1ebcf0fc",
       "name": "Montar Resumo1",
@@ -407,7 +407,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ total_gravados: $json.total_gravados, paginas_lidas: $json.paginas_lidas, creditos_custo: $json.creditos_custo, cursor_token: $json.cursor_token }) }}",
+        "jsonBody": "={{ JSON.stringify({ total_api: $json.total_api, total_gravados: $json.total_gravados, paginas_lidas: $json.paginas_lidas, creditos_custo: $json.creditos_custo, cursor_token: $json.cursor_token }) }}",
         "options": {}
       },
       "id": "fbe01109-2c53-4f59-be9f-038f8091fce1",
@@ -948,9 +948,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "f390904d-80eb-4bd2-ad0b-109ab0d28236",
+  "versionId": "8253aa6e-ebff-415b-9643-37fc30a41249",
   "activeVersionId": null,
-  "versionCounter": 33,
+  "versionCounter": 36,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
