@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-14)
+# Schema — Somos Atitude (gerado em 2026-08-15)
 
 # TABELAS
 
@@ -80,6 +80,7 @@
 - `inadimplente_desde` date
 - `msgs_ciclo_cobranca` integer NOT NULL DEFAULT 0
 - `regua_pausada_em` timestamp with time zone
+- `linha` text
 
 ## Tabela: cnae_ciclo_caixa
 - `cnae_prefixo` text NOT NULL
@@ -400,6 +401,10 @@
 - `consentimento` jsonb
 - `idempotency_key` text
 - `criado_em` timestamp with time zone NOT NULL DEFAULT now()
+- `devolucao_status` text
+- `devolucao_em` timestamp with time zone
+- `devolucao_erro` text
+- `checkout_enviado` text
 
 ## Tabela: roteiros
 - `id` bigint NOT NULL
