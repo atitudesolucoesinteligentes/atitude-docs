@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-17)
+# Schema — Somos Atitude (gerado em 2026-08-18)
 
 # TABELAS
 
@@ -81,6 +81,8 @@
 - `msgs_ciclo_cobranca` integer NOT NULL DEFAULT 0
 - `regua_pausada_em` timestamp with time zone
 - `linha` text
+- `trial_iniciado_em` timestamp with time zone
+- `trial_expira_em` date
 
 ## Tabela: cnae_ciclo_caixa
 - `cnae_prefixo` text NOT NULL
@@ -2161,6 +2163,21 @@ BEGIN
   END IF;
   RETURN NEW;
 END $function$
+
+```
+
+## Função: fn_trg_trial_sem_retorno
+```sql
+CREATE OR REPLACE FUNCTION public.fn_trg_trial_sem_retorno()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+begin
+  if old.status = 'trial_expirado' and new.status = 'trial' then
+    raise exception 'D71: trial_expirado nao volta a trial (empresa %, produto %)', old.empresa_id, old.produto;
+  end if;
+  return new;
+end $function$
 
 ```
 
