@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-13T16:23:10.161Z",
+  "updatedAt": "2026-08-18T12:48:13.371Z",
   "createdAt": "2026-07-16T19:13:28.447Z",
   "id": "3Av5ajLwyr8EF1iJ",
   "name": "A1 Higienização p2 - Enriquecimento",
@@ -306,7 +306,12 @@
           "id": "TI9uXqodlyBVC9Se",
           "name": "Supabase account"
         }
-      }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "notes": "18/08: blindado. Um PGRST202 transitorio (PostgREST nao achou a funcao no schema cache, com corpo correto e a chamada executando no banco) derrubou a execucao 2915 no item 8 e levou junto o `Definir Esteira` — 9 leads ficaram em fila com esteira NULA, invisiveis para as duas views de disparo. Agora: 3 tentativas, 2s entre elas, e erro de um item nao para o lote. Mesmo padrao que o `Definir Esteira` ja usava."
     },
     {
       "parameters": {
@@ -569,9 +574,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "9a368f68-1d79-4376-aac5-d8e8c35409ab",
+  "versionId": "e3240dcd-a7fc-4185-93cc-f7a5b3869add",
   "activeVersionId": null,
-  "versionCounter": 87,
+  "versionCounter": 88,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
