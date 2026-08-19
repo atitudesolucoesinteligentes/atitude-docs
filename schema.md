@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-18)
+# Schema — Somos Atitude (gerado em 2026-08-19)
 
 # TABELAS
 
@@ -1811,44 +1811,44 @@ CREATE OR REPLACE FUNCTION public.fn_definir_esteira(p_empresa_id bigint)
  LANGUAGE plpgsql
 AS $function$
 declare
-  e             record;
-  v_esteira     text;
-  v_motivo      text;
-  v_idade_anos  numeric;
+  e         record;
+  v_esteira text;
+  v_motivo  text;
 begin
   select * into e from empresas where id = p_empresa_id;
   if not found then
     return null;
   end if;
 
-  v_idade_anos := extract(epoch from (now() - e.data_abertura::timestamptz)) / 31557600;
+  if e.site_status is null then
+    -- Lead ainda nao enriquecido: nao ha sinal para rotear. Nulo com motivo explicito,
+    -- para nao se confundir com "avaliado e sem regra".
+    v_esteira := null;
+    v_motivo  := 'sem_enriquecimento';
 
-  if e.data_abertura is not null and v_idade_anos < 2 then
-    v_esteira := 'presenca_digital'; v_motivo := 'idade_menor_2a';
-
-  elsif coalesce(e.mei, false) then
-    v_esteira := 'presenca_digital'; v_motivo := 'mei';
-
-  elsif e.perfil_oferta in ('criacao_zero','site_para_gbp','sem_gbp') then
-    v_esteira := 'presenca_digital'; v_motivo := 'perfil_digital';
-
-  elsif e.porte_codigo_num in (1,3,5)
-        and e.data_abertura is not null and v_idade_anos >= 2
-        and exists (select 1 from cnae_ciclo_caixa c
-                     where e.cnae_principal like c.cnae_prefixo || '%') then
-    v_esteira := 'financeiro'; v_motivo := 'porte_cnae_ciclo';
-
-  elsif e.perfil_oferta = 'descartado_site_bom'
-        and e.data_abertura is not null and v_idade_anos >= 2 then
-    v_esteira := 'financeiro'; v_motivo := 'resgate_site_bom';
+  elsif e.site_status = 'ok' and coalesce(e.tem_gbp, false) then
+    -- UNICO caminho para financeiro: a presenca digital ja esta resolvida.
+    v_esteira := 'financeiro';
+    v_motivo  := 'presenca_resolvida';
 
   else
-    v_esteira := null; v_motivo := 'sem_regra';
+    v_esteira := 'presenca_digital';
+    v_motivo  := case e.site_status
+                   when 'sem_site'   then 'sem_site'
+                   when 'terceiros'  then 'site_terceiros'
+                   when 'fora_do_ar' then 'site_fora_do_ar'
+                   when 'fraco'      then 'site_fraco'
+                   when 'ok'         then 'sem_gbp'   -- site ok, mas sem GBP
+                   -- valor novo de site_status: NOMEIA em vez de sumir num generico.
+                   -- A spec verificou cobertura dos 5 valores existentes; este ramo existe
+                   -- para que um valor futuro apareca no diagnostico em vez de silenciar.
+                   else 'site_status_' || e.site_status
+                 end;
   end if;
 
   update empresas
-     set esteira            = v_esteira,
-         esteira_motivo     = v_motivo,
+     set esteira             = v_esteira,
+         esteira_motivo      = v_motivo,
          esteira_definida_em = now()
    where id = p_empresa_id;
 
