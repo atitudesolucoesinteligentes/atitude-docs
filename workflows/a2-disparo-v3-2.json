@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-15T00:49:17.394Z",
+  "updatedAt": "2026-08-24T19:42:45.184Z",
   "createdAt": "2026-07-23T11:54:59.802Z",
   "id": "PGxUrAok89DfXs9u",
   "name": "A2 Disparo v3.2",
@@ -67,7 +67,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Kill switch + janela + parametros. Tudo num no so para abortar cedo e barato.\n// 15/08: passou a receber DUAS linhas de config (disparo + disparo_financeiro).\nconst linhas = $input.all().map(i => i.json).flat();\nconst pega = (k) => {\n  const l = linhas.find(x => x && x.chave === k);\n  return (l && l.valor) || {};\n};\nconst cfg    = pega('disparo');\nconst cfgFin = pega('disparo_financeiro');\n\nconst ativo = cfg.ativo !== false;            // default ligado so se a chave existir\nconst modoTeste = cfg.modo_teste === true;\nconst numeroTeste = String(cfg.numero_teste || '');\nconst limiteDiario = Number(cfg.limite_diario != null ? cfg.limite_diario : 10);\n\nif (modoTeste && !numeroTeste) throw new Error('modo_teste=true mas numero_teste nao configurado — abortando por seguranca');\n\n// ===== LINHA FINANCEIRA — defaults DELIBERADAMENTE ASSIMETRICOS =====\n// `ativo`: default DESLIGADO (=== true). Linha nova e opt-in explicito; chave\n//   ausente ou ilegivel nao pode ligar disparo frio numa linha que nunca rodou.\n// `modo_teste`: default LIGADO (!== false). Na duvida, manda para o numero de\n//   teste, nunca para o lead.\nconst finAtivo      = cfgFin.ativo === true;\nconst finModoTeste  = cfgFin.modo_teste !== false;\nconst finNumeroTeste = String(cfgFin.numero_teste || numeroTeste || '');\nconst finCotaDia    = Number(cfgFin.proporcao_diaria != null ? cfgFin.proporcao_diaria : 2);\n\nif (finAtivo && finModoTeste && !finNumeroTeste) {\n  throw new Error('disparo_financeiro em modo_teste sem numero_teste — abortando por seguranca');\n}\n\n// Janela 8h–18h seg–sex (Sao Paulo = UTC-3, sem horario de verao)\nconst sp = new Date(Date.now() - 3 * 3600 * 1000);\nconst dia = sp.getUTCDay();\nconst hora = sp.getUTCHours();\nconst dentroJanela = dia >= 1 && dia <= 5 && hora >= 8 && hora < 18;\n\nconst prosseguir = ativo && dentroJanela;\n\nreturn [{ json: {\n  prosseguir,\n  motivo_parada: !ativo ? 'kill_switch' : (!dentroJanela ? 'fora_da_janela' : null),\n  modo_teste: modoTeste,\n  numero_teste: numeroTeste,\n  limite_diario: limiteDiario,\n  fin_ativo: finAtivo,\n  fin_modo_teste: finModoTeste,\n  fin_numero_teste: finNumeroTeste,\n  fin_cota_dia: finCotaDia,\n  hoje_sp: sp.toISOString().slice(0, 10)\n} }];"
+        "jsCode": "// Kill switch + janela + parametros. Tudo num no so para abortar cedo e barato.\n// 15/08: passou a receber DUAS linhas de config (disparo + disparo_financeiro).\nconst linhas = $input.all().map(i => i.json).flat();\nconst pega = (k) => {\n  const l = linhas.find(x => x && x.chave === k);\n  return (l && l.valor) || {};\n};\nconst cfg    = pega('disparo');\nconst cfgFin = pega('disparo_financeiro');\n\nconst ativo = cfg.ativo !== false;            // default ligado so se a chave existir\nconst modoTeste = cfg.modo_teste === true;\nconst numeroTeste = String(cfg.numero_teste || '');\nconst limiteDiario = Number(cfg.limite_diario != null ? cfg.limite_diario : 10);\n\n// FILA DE PREVIA: opt-in explicito, igual a linha financeira. Chave ausente\n// ou ilegivel mantem o disparo lendo a vw_fila_disparo_digital de sempre.\nconst filaPrevia = cfg.fila_previa === true;\n\nif (modoTeste && !numeroTeste) throw new Error('modo_teste=true mas numero_teste nao configurado — abortando por seguranca');\n\n// ===== LINHA FINANCEIRA — defaults DELIBERADAMENTE ASSIMETRICOS =====\n// `ativo`: default DESLIGADO (=== true). Linha nova e opt-in explicito; chave\n//   ausente ou ilegivel nao pode ligar disparo frio numa linha que nunca rodou.\n// `modo_teste`: default LIGADO (!== false). Na duvida, manda para o numero de\n//   teste, nunca para o lead.\nconst finAtivo      = cfgFin.ativo === true;\nconst finModoTeste  = cfgFin.modo_teste !== false;\nconst finNumeroTeste = String(cfgFin.numero_teste || numeroTeste || '');\nconst finCotaDia    = Number(cfgFin.proporcao_diaria != null ? cfgFin.proporcao_diaria : 2);\n\nif (finAtivo && finModoTeste && !finNumeroTeste) {\n  throw new Error('disparo_financeiro em modo_teste sem numero_teste — abortando por seguranca');\n}\n\n// Janela 8h–18h seg–sex (Sao Paulo = UTC-3, sem horario de verao)\nconst sp = new Date(Date.now() - 3 * 3600 * 1000);\nconst dia = sp.getUTCDay();\nconst hora = sp.getUTCHours();\nconst dentroJanela = dia >= 1 && dia <= 5 && hora >= 8 && hora < 18;\n\nconst prosseguir = ativo && dentroJanela;\n\nreturn [{ json: {\n  prosseguir,\n  motivo_parada: !ativo ? 'kill_switch' : (!dentroJanela ? 'fora_da_janela' : null),\n  modo_teste: modoTeste,\n  numero_teste: numeroTeste,\n  limite_diario: limiteDiario,\n  fila_previa: filaPrevia,\n  fin_ativo: finAtivo,\n  fin_modo_teste: finModoTeste,\n  fin_numero_teste: finNumeroTeste,\n  fin_cota_dia: finCotaDia,\n  hoje_sp: sp.toISOString().slice(0, 10)\n} }];"
       },
       "id": "a0a6f2f3-d566-4c53-b5ef-0cb8233dd004",
       "name": "Checar Kill Switch + Janela",
@@ -185,7 +185,7 @@
     },
     {
       "parameters": {
-        "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/{{ $json.linha_alvo === 'financeiro' ? 'vw_fila_disparo_financeiro' : 'vw_fila_disparo_digital' }}?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gancho_abordagem,enriquecimento_extra,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score&limit=1",
+        "url": "={{ 'https://qqxnnwycebhugikunxne.supabase.co/rest/v1/' + ($json.linha_alvo === 'financeiro' ? 'vw_fila_disparo_financeiro' : ($json.fila_previa ? 'vw_fila_previa' : 'vw_fila_disparo_digital')) + '?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gancho_abordagem,enriquecimento_extra,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score' + (($json.linha_alvo !== 'financeiro' && $json.fila_previa) ? ',previa_status,previa_url,previa_screenshot_url' : '') + '&limit=1' }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "options": {}
@@ -364,7 +364,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const base = $('Claim OK?').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\nlet roteiros = [];\ntry { roteiros = $input.all().map(i => i.json).flat(); } catch (e) { roteiros = []; }\n\nlet roteiro = null;\nif (ctx.linha_alvo === 'financeiro') {\n  // 🔴 A LINHA E A CHAVE AQUI, nao o perfil_oferta.\n  // Medido em 15/08: os leads da vw_fila_disparo_financeiro tem\n  // perfil_oferta='redesign' — perfil de PRESENCA DIGITAL. Casar por\n  // perfil_oferta mandaria a copy de redesign de site (PRIME30, R$ 599) para\n  // um lead de controladoria. E financeiro_msg1 tem perfil_oferta='nao_aplica'\n  // (sentinela da D36), valor que nenhum lead possui — entao ele NUNCA seria\n  // escolhido pelo casamento antigo.\n  roteiro = roteiros.find(r => r.linha === 'financeiro') || null;\n} else {\n  // DIGITAL: comportamento inalterado, com uma guarda a mais — nunca escolher\n  // roteiro de outra linha, mesmo que a sentinela da D36 mude um dia.\n  roteiro = roteiros.find(r => r.perfil_oferta === lead.perfil_oferta && r.linha !== 'financeiro') || null;\n}\n\nreturn [{ json: { lead, ctx, roteiro } }];"
+        "jsCode": "const base = $('Claim OK?').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\nlet roteiros = [];\ntry { roteiros = $input.all().map(i => i.json).flat(); } catch (e) { roteiros = []; }\n\nlet roteiro = null;\n// PREVIA vence tudo: o lead so chega com previa_status='publicada' se veio da\n// vw_fila_previa, que ja filtra lote, cnae e previa no ar. Casar por\n// perfil_oferta aqui mandaria a copy de redesign para quem ja tem site pronto.\nif (lead.previa_status === 'publicada') {\n  roteiro = roteiros.find(r => r.codigo === 'previa_msg1') || null;\n  if (!roteiro) throw new Error('roteiro previa_msg1 ausente ou inativo — abortando para nao mandar copy errada');\n} else if (ctx.linha_alvo === 'financeiro') {\n  // 🔴 A LINHA E A CHAVE AQUI, nao o perfil_oferta.\n  // Medido em 15/08: os leads da vw_fila_disparo_financeiro tem\n  // perfil_oferta='redesign' — perfil de PRESENCA DIGITAL. Casar por\n  // perfil_oferta mandaria a copy de redesign de site (PRIME30, R$ 599) para\n  // um lead de controladoria. E financeiro_msg1 tem perfil_oferta='nao_aplica'\n  // (sentinela da D36), valor que nenhum lead possui — entao ele NUNCA seria\n  // escolhido pelo casamento antigo.\n  roteiro = roteiros.find(r => r.linha === 'financeiro') || null;\n} else {\n  // DIGITAL: comportamento inalterado, com uma guarda a mais — nunca escolher\n  // roteiro de outra linha, mesmo que a sentinela da D36 mude um dia.\n  roteiro = roteiros.find(r => r.perfil_oferta === lead.perfil_oferta && r.linha !== 'financeiro') || null;\n}\n\nreturn [{ json: { lead, ctx, roteiro } }];"
       },
       "id": "7d51a717-425e-451f-8c62-080fa3111dfa",
       "name": "Juntar Lead + Roteiro",
@@ -419,7 +419,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Valida a mensagem e resolve o DESTINO.\n// 15/08: passou a ser ciente de LINHA — modo_teste, numero de teste e copy de\n// fallback sao proprios de cada linha.\nconst base = $('Juntar Lead + Roteiro').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\nconst ehFin = ctx.linha_alvo === 'financeiro';\n\nlet texto = null;\ntry {\n  texto = ($input.first().json.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();\n} catch (e) { texto = null; }\n\nconst PROIBIDAS = /\\b(gr[aá]tis|promo[cç][aã]o|imperd[ií]vel|desconto|urgente|oportunidade [uú]nica)\\b/i;\nconst TEM_LINK = /https?:\\/\\/|www\\./i;\nconst valido = !!texto && !TEM_LINK.test(texto) && !PROIBIDAS.test(texto)\n  && texto.length >= 60 && texto.length <= 700 && /\\?/.test(texto);\n\n// 🔴 O fallback digital fala de \"presenca digital\" — mandar isso para um lead de\n// controladoria seria o mesmo vazamento que o casamento por perfil_oferta\n// causava. Cada linha tem o seu.\nconst FALLBACK_DIGITAL = 'Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Vi a ' + lead.nome_exibicao + ' aqui em ' + lead.municipio + ' e reparei em algumas coisas na presenca digital de voces que podem estar deixando clientes pelo caminho. Posso te mostrar rapidinho o que encontrei?';\n// Financeiro: gancho + oferta do Raio-X + pedido de permissao, SEM LINK\n// (o link so vai depois do sim — regra da msg1 financeira).\nconst FALLBACK_FINANCEIRO = 'Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Trabalho com controle financeiro para pequenos negocios e queria te oferecer um Raio-X do caixa da ' + lead.nome_exibicao + ': sao 10 perguntas rapidas e no fim voce recebe a leitura de onde o dinheiro pode estar vazando. Posso te explicar como funciona?';\n\nconst FALLBACK = (ehFin ? FALLBACK_FINANCEIRO : FALLBACK_DIGITAL).replace(/\\s+/g, ' ').trim();\n\nconst mensagem = valido ? texto : FALLBACK;\n\n// Modo teste e numero de teste sao POR LINHA.\nconst modoTeste  = ehFin ? ctx.fin_modo_teste : ctx.modo_teste;\nconst numeroTeste = ehFin ? ctx.fin_numero_teste : ctx.numero_teste;\nconst destino = modoTeste ? numeroTeste : String(lead.whatsapp || '');\nif (!destino) throw new Error('Lead sem WhatsApp — abortando (lead ' + lead.slug + ' fica em status abordando para revisao)');\n\n// Delay humano aleatorio: 60s a 40min antes do envio\nconst delaySegundos = 60 + Math.floor(Math.random() * 2340);\n\nreturn [{ json: {\n  lead, ctx, mensagem,\n  copy_fallback: !valido,\n  destino,\n  linha_alvo: ctx.linha_alvo,\n  roteiro_codigo: (base.roteiro && base.roteiro.codigo) || null,\n  etapa: modoTeste ? 'msg1_teste' : 'msg1',\n  delay_segundos: delaySegundos\n} }];"
+        "jsCode": "// Valida a mensagem e resolve o DESTINO.\n// 15/08: passou a ser ciente de LINHA — modo_teste, numero de teste e copy de\n// fallback sao proprios de cada linha.\nconst base = $('Juntar Lead + Roteiro').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\nconst ehFin = ctx.linha_alvo === 'financeiro';\nconst ehPrevia = !!(base.roteiro && base.roteiro.codigo === 'previa_msg1');\n\nlet texto = null;\ntry {\n  texto = ($input.first().json.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();\n} catch (e) { texto = null; }\n\nconst PROIBIDAS = /\\b(gr[aá]tis|promo[cç][aã]o|imperd[ií]vel|desconto|urgente|oportunidade [uú]nica)\\b/i;\nconst TEM_LINK = /https?:\\/\\/|www\\./i;\n// Excecao ao TEM_LINK, e SO na msg1 de previa: a mensagem existe para entregar\n// o endereco da previa. Removemos o link permitido e exigimos que o resto do\n// texto continue sem link nenhum — outro dominio segue barrado.\n// Sem /g no que vai para .test(): RegExp global guarda lastIndex entre chamadas\n// e o segundo teste do mesmo texto voltaria falso sem motivo.\nconst LINK_PREVIA = /(https?:\\/\\/)?(www\\.)?somosatitude\\.com\\.br\\/previa\\/[a-z0-9-]+\\/?/i;\nconst LINK_PREVIA_TODOS = new RegExp(LINK_PREVIA.source, 'ig');\nconst semLinkPermitido = String(texto || '').replace(LINK_PREVIA_TODOS, ' ');\nconst linkOk = ehPrevia\n  ? (LINK_PREVIA.test(String(texto || '')) && !TEM_LINK.test(semLinkPermitido))\n  : !TEM_LINK.test(String(texto || ''));\n\n// PROIBIDAS e a pergunta final continuam valendo para todas as linhas.\nconst valido = !!texto && linkOk && !PROIBIDAS.test(texto)\n  && texto.length >= 60 && texto.length <= 700 && /\\?/.test(texto);\n\n// 🔴 O fallback digital fala de \"presenca digital\" — mandar isso para um lead de\n// controladoria seria o mesmo vazamento que o casamento por perfil_oferta\n// causava. Cada linha tem o seu.\nconst FALLBACK_DIGITAL = 'Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Vi a ' + lead.nome_exibicao + ' aqui em ' + lead.municipio + ' e reparei em algumas coisas na presenca digital de voces que podem estar deixando clientes pelo caminho. Posso te mostrar rapidinho o que encontrei?';\n// Financeiro: gancho + oferta do Raio-X + pedido de permissao, SEM LINK\n// (o link so vai depois do sim — regra da msg1 financeira).\nconst FALLBACK_FINANCEIRO = 'Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Trabalho com controle financeiro para pequenos negocios e queria te oferecer um Raio-X do caixa da ' + lead.nome_exibicao + ': sao 10 perguntas rapidas e no fim voce recebe a leitura de onde o dinheiro pode estar vazando. Posso te explicar como funciona?';\n\n// A previa tem fallback proprio: sem o link a mensagem perde o sentido, e o\n// fallback digital fala de diagnostico, que nao e o que foi prometido aqui.\nconst FALLBACK_PREVIA = 'Oi, ' + (lead.nome_socio || '') + '. Vi as ' + lead.gbp_avaliacoes + ' avaliacoes da ' + lead.nome_exibicao + ' no Google, nota ' + lead.gbp_rating + ', e coloquei o site de voces no ar pra voce ver como fica: ' + String(lead.previa_url || '').replace(/^https?:\\/\\//, '') + ' Esta com suas avaliacoes reais e as fotos do seu perfil. Fica no ar por 7 dias. O que voce mudaria nele?';\n\nconst FALLBACK = (ehPrevia ? FALLBACK_PREVIA : (ehFin ? FALLBACK_FINANCEIRO : FALLBACK_DIGITAL)).replace(/\\s+/g, ' ').trim();\n\nconst mensagem = valido ? texto : FALLBACK;\n\n// Modo teste e numero de teste sao POR LINHA.\nconst modoTeste  = ehFin ? ctx.fin_modo_teste : ctx.modo_teste;\nconst numeroTeste = ehFin ? ctx.fin_numero_teste : ctx.numero_teste;\nconst destino = modoTeste ? numeroTeste : String(lead.whatsapp || '');\nif (!destino) throw new Error('Lead sem WhatsApp — abortando (lead ' + lead.slug + ' fica em status abordando para revisao)');\n\n// Delay humano aleatorio: 60s a 40min antes do envio\nconst delaySegundos = 60 + Math.floor(Math.random() * 2340);\n\nreturn [{ json: {\n  lead, ctx, mensagem,\n  copy_fallback: !valido,\n  destino,\n  linha_alvo: ctx.linha_alvo,\n  roteiro_codigo: (base.roteiro && base.roteiro.codigo) || null,\n  eh_previa: ehPrevia,\n  previa_screenshot_url: (ehPrevia && lead.previa_screenshot_url) || null,\n  etapa: modoTeste ? 'msg1_teste' : 'msg1',\n  delay_segundos: delaySegundos\n} }];"
       },
       "id": "08267024-35b9-46db-9d86-19e47f6cca40",
       "name": "Validar + Resolver Destino",
@@ -461,7 +461,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ number: $json.destino, text: $json.mensagem, delay: 4000 }) }}",
+        "jsonBody": "={{ JSON.stringify({ number: $('Validar + Resolver Destino').first().json.destino, text: $('Validar + Resolver Destino').first().json.mensagem, delay: 4000 }) }}",
         "options": {
           "timeout": 45000
         }
@@ -551,7 +551,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ empresa_id: $json.lead.id, canal: 'whatsapp', direcao: 'saida', etapa: $json.etapa, roteiro_codigo: ($json.roteiro_codigo || ($json.lead.perfil_oferta + '_msg1')), mensagem: $json.mensagem, copy_fallback: $json.copy_fallback, evolution_id: $json.evolution_id }) }}",
+        "jsonBody": "={{ JSON.stringify((() => { const j = $json; const texto = { empresa_id: j.lead.id, canal: 'whatsapp', direcao: 'saida', etapa: j.etapa, roteiro_codigo: (j.roteiro_codigo || (j.lead.perfil_oferta + '_msg1')), mensagem: j.mensagem, copy_fallback: j.copy_fallback, evolution_id: j.evolution_id }; if (!(j.eh_previa && j.previa_screenshot_url)) return texto; return [ Object.assign({}, texto, { mensagem: j.previa_screenshot_url, midia_tipo: 'image', evolution_id: null }), texto ]; })()) }}",
         "options": {}
       },
       "id": "39f81840-5362-4e94-bac8-6fd09339f626",
@@ -688,6 +688,121 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.previa_screenshot_url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "id": "pv0000c3-0000-0000-0000-0000000000p1"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3536,
+        304
+      ],
+      "id": "pv111111-0000-4000-8000-00000000pv11",
+      "name": "Tem imagem de prévia?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://whatsapp.atitudesolucoes.com.br/message/sendMedia/atitude-principal",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $json.destino, mediatype: 'image', media: $json.previa_screenshot_url, caption: '' }) }}",
+        "options": {
+          "timeout": 45000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3640,
+        208
+      ],
+      "id": "pv222222-0000-4000-8000-00000000pv22",
+      "name": "Evolution Enviar Mídia",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lGhduTvTTMaZoDWT",
+          "name": "Evolution apikey"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/followups_agendados",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify((() => { const j = $('Avaliar Envio').first().json; if (!j.eh_previa) return []; const id = j.lead.id; const em = (dias, h, m) => { const d = new Date(); d.setUTCDate(d.getUTCDate() + dias); d.setUTCHours(h + 3, m, 0, 0); return d.toISOString(); }; const ctxt = j.lead.previa_url || null; return [{ empresa_id: id, tipo: 'previa_d2', devido_em: em(2, 9, 30), contexto: ctxt }, { empresa_id: id, tipo: 'previa_d5', devido_em: em(5, 9, 30), contexto: ctxt }, { empresa_id: id, tipo: 'previa_d7_expira', devido_em: em(7, 18, 0), contexto: ctxt } ]; })()) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4784,
+        240
+      ],
+      "id": "pv333333-0000-4000-8000-00000000pv33",
+      "name": "Agendar Follow-ups da Prévia",
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
     }
   ],
   "connections": {
@@ -882,7 +997,7 @@
       "main": [
         [
           {
-            "node": "Evolution Enviar",
+            "node": "Tem imagem de prévia?",
             "type": "main",
             "index": 0
           }
@@ -950,6 +1065,46 @@
           }
         ]
       ]
+    },
+    "Tem imagem de prévia?": {
+      "main": [
+        [
+          {
+            "node": "Evolution Enviar Mídia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evolution Enviar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution Enviar Mídia": {
+      "main": [
+        [
+          {
+            "node": "Evolution Enviar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar Lead Abordado": {
+      "main": [
+        [
+          {
+            "node": "Agendar Follow-ups da Prévia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -970,9 +1125,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "3ab8edfd-ce5a-430c-8b6b-0973d281a593",
-  "activeVersionId": "3ab8edfd-ce5a-430c-8b6b-0973d281a593",
-  "versionCounter": 11,
+  "versionId": "097d52b7-5022-4b6b-b724-2402baf33e2b",
+  "activeVersionId": "097d52b7-5022-4b6b-b724-2402baf33e2b",
+  "versionCounter": 12,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "shared": [
@@ -997,9 +1152,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-08-15T00:49:17.398Z",
-    "createdAt": "2026-08-15T00:49:17.398Z",
-    "versionId": "3ab8edfd-ce5a-430c-8b6b-0973d281a593",
+    "updatedAt": "2026-08-24T19:42:45.187Z",
+    "createdAt": "2026-08-24T19:42:45.187Z",
+    "versionId": "097d52b7-5022-4b6b-b724-2402baf33e2b",
     "workflowId": "PGxUrAok89DfXs9u",
     "nodes": [
       {
@@ -1062,7 +1217,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Kill switch + janela + parametros. Tudo num no so para abortar cedo e barato.\n// 15/08: passou a receber DUAS linhas de config (disparo + disparo_financeiro).\nconst linhas = $input.all().map(i => i.json).flat();\nconst pega = (k) => {\n  const l = linhas.find(x => x && x.chave === k);\n  return (l && l.valor) || {};\n};\nconst cfg    = pega('disparo');\nconst cfgFin = pega('disparo_financeiro');\n\nconst ativo = cfg.ativo !== false;            // default ligado so se a chave existir\nconst modoTeste = cfg.modo_teste === true;\nconst numeroTeste = String(cfg.numero_teste || '');\nconst limiteDiario = Number(cfg.limite_diario != null ? cfg.limite_diario : 10);\n\nif (modoTeste && !numeroTeste) throw new Error('modo_teste=true mas numero_teste nao configurado — abortando por seguranca');\n\n// ===== LINHA FINANCEIRA — defaults DELIBERADAMENTE ASSIMETRICOS =====\n// `ativo`: default DESLIGADO (=== true). Linha nova e opt-in explicito; chave\n//   ausente ou ilegivel nao pode ligar disparo frio numa linha que nunca rodou.\n// `modo_teste`: default LIGADO (!== false). Na duvida, manda para o numero de\n//   teste, nunca para o lead.\nconst finAtivo      = cfgFin.ativo === true;\nconst finModoTeste  = cfgFin.modo_teste !== false;\nconst finNumeroTeste = String(cfgFin.numero_teste || numeroTeste || '');\nconst finCotaDia    = Number(cfgFin.proporcao_diaria != null ? cfgFin.proporcao_diaria : 2);\n\nif (finAtivo && finModoTeste && !finNumeroTeste) {\n  throw new Error('disparo_financeiro em modo_teste sem numero_teste — abortando por seguranca');\n}\n\n// Janela 8h–18h seg–sex (Sao Paulo = UTC-3, sem horario de verao)\nconst sp = new Date(Date.now() - 3 * 3600 * 1000);\nconst dia = sp.getUTCDay();\nconst hora = sp.getUTCHours();\nconst dentroJanela = dia >= 1 && dia <= 5 && hora >= 8 && hora < 18;\n\nconst prosseguir = ativo && dentroJanela;\n\nreturn [{ json: {\n  prosseguir,\n  motivo_parada: !ativo ? 'kill_switch' : (!dentroJanela ? 'fora_da_janela' : null),\n  modo_teste: modoTeste,\n  numero_teste: numeroTeste,\n  limite_diario: limiteDiario,\n  fin_ativo: finAtivo,\n  fin_modo_teste: finModoTeste,\n  fin_numero_teste: finNumeroTeste,\n  fin_cota_dia: finCotaDia,\n  hoje_sp: sp.toISOString().slice(0, 10)\n} }];"
+          "jsCode": "// Kill switch + janela + parametros. Tudo num no so para abortar cedo e barato.\n// 15/08: passou a receber DUAS linhas de config (disparo + disparo_financeiro).\nconst linhas = $input.all().map(i => i.json).flat();\nconst pega = (k) => {\n  const l = linhas.find(x => x && x.chave === k);\n  return (l && l.valor) || {};\n};\nconst cfg    = pega('disparo');\nconst cfgFin = pega('disparo_financeiro');\n\nconst ativo = cfg.ativo !== false;            // default ligado so se a chave existir\nconst modoTeste = cfg.modo_teste === true;\nconst numeroTeste = String(cfg.numero_teste || '');\nconst limiteDiario = Number(cfg.limite_diario != null ? cfg.limite_diario : 10);\n\n// FILA DE PREVIA: opt-in explicito, igual a linha financeira. Chave ausente\n// ou ilegivel mantem o disparo lendo a vw_fila_disparo_digital de sempre.\nconst filaPrevia = cfg.fila_previa === true;\n\nif (modoTeste && !numeroTeste) throw new Error('modo_teste=true mas numero_teste nao configurado — abortando por seguranca');\n\n// ===== LINHA FINANCEIRA — defaults DELIBERADAMENTE ASSIMETRICOS =====\n// `ativo`: default DESLIGADO (=== true). Linha nova e opt-in explicito; chave\n//   ausente ou ilegivel nao pode ligar disparo frio numa linha que nunca rodou.\n// `modo_teste`: default LIGADO (!== false). Na duvida, manda para o numero de\n//   teste, nunca para o lead.\nconst finAtivo      = cfgFin.ativo === true;\nconst finModoTeste  = cfgFin.modo_teste !== false;\nconst finNumeroTeste = String(cfgFin.numero_teste || numeroTeste || '');\nconst finCotaDia    = Number(cfgFin.proporcao_diaria != null ? cfgFin.proporcao_diaria : 2);\n\nif (finAtivo && finModoTeste && !finNumeroTeste) {\n  throw new Error('disparo_financeiro em modo_teste sem numero_teste — abortando por seguranca');\n}\n\n// Janela 8h–18h seg–sex (Sao Paulo = UTC-3, sem horario de verao)\nconst sp = new Date(Date.now() - 3 * 3600 * 1000);\nconst dia = sp.getUTCDay();\nconst hora = sp.getUTCHours();\nconst dentroJanela = dia >= 1 && dia <= 5 && hora >= 8 && hora < 18;\n\nconst prosseguir = ativo && dentroJanela;\n\nreturn [{ json: {\n  prosseguir,\n  motivo_parada: !ativo ? 'kill_switch' : (!dentroJanela ? 'fora_da_janela' : null),\n  modo_teste: modoTeste,\n  numero_teste: numeroTeste,\n  limite_diario: limiteDiario,\n  fila_previa: filaPrevia,\n  fin_ativo: finAtivo,\n  fin_modo_teste: finModoTeste,\n  fin_numero_teste: finNumeroTeste,\n  fin_cota_dia: finCotaDia,\n  hoje_sp: sp.toISOString().slice(0, 10)\n} }];"
         },
         "id": "a0a6f2f3-d566-4c53-b5ef-0cb8233dd004",
         "name": "Checar Kill Switch + Janela",
@@ -1180,7 +1335,7 @@
       },
       {
         "parameters": {
-          "url": "=https://qqxnnwycebhugikunxne.supabase.co/rest/v1/{{ $json.linha_alvo === 'financeiro' ? 'vw_fila_disparo_financeiro' : 'vw_fila_disparo_digital' }}?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gancho_abordagem,enriquecimento_extra,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score&limit=1",
+          "url": "={{ 'https://qqxnnwycebhugikunxne.supabase.co/rest/v1/' + ($json.linha_alvo === 'financeiro' ? 'vw_fila_disparo_financeiro' : ($json.fila_previa ? 'vw_fila_previa' : 'vw_fila_disparo_digital')) + '?select=id,slug,nome_exibicao,nome_socio,municipio,bairro,segmento,cnae_descricao,perfil_oferta,dor_resumida,gancho_abordagem,enriquecimento_extra,gbp_rating,gbp_avaliacoes,gbp_reviews,site_url,whatsapp,score' + (($json.linha_alvo !== 'financeiro' && $json.fila_previa) ? ',previa_status,previa_url,previa_screenshot_url' : '') + '&limit=1' }}",
           "authentication": "predefinedCredentialType",
           "nodeCredentialType": "supabaseApi",
           "options": {}
@@ -1359,7 +1514,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const base = $('Claim OK?').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\nlet roteiros = [];\ntry { roteiros = $input.all().map(i => i.json).flat(); } catch (e) { roteiros = []; }\n\nlet roteiro = null;\nif (ctx.linha_alvo === 'financeiro') {\n  // 🔴 A LINHA E A CHAVE AQUI, nao o perfil_oferta.\n  // Medido em 15/08: os leads da vw_fila_disparo_financeiro tem\n  // perfil_oferta='redesign' — perfil de PRESENCA DIGITAL. Casar por\n  // perfil_oferta mandaria a copy de redesign de site (PRIME30, R$ 599) para\n  // um lead de controladoria. E financeiro_msg1 tem perfil_oferta='nao_aplica'\n  // (sentinela da D36), valor que nenhum lead possui — entao ele NUNCA seria\n  // escolhido pelo casamento antigo.\n  roteiro = roteiros.find(r => r.linha === 'financeiro') || null;\n} else {\n  // DIGITAL: comportamento inalterado, com uma guarda a mais — nunca escolher\n  // roteiro de outra linha, mesmo que a sentinela da D36 mude um dia.\n  roteiro = roteiros.find(r => r.perfil_oferta === lead.perfil_oferta && r.linha !== 'financeiro') || null;\n}\n\nreturn [{ json: { lead, ctx, roteiro } }];"
+          "jsCode": "const base = $('Claim OK?').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\nlet roteiros = [];\ntry { roteiros = $input.all().map(i => i.json).flat(); } catch (e) { roteiros = []; }\n\nlet roteiro = null;\n// PREVIA vence tudo: o lead so chega com previa_status='publicada' se veio da\n// vw_fila_previa, que ja filtra lote, cnae e previa no ar. Casar por\n// perfil_oferta aqui mandaria a copy de redesign para quem ja tem site pronto.\nif (lead.previa_status === 'publicada') {\n  roteiro = roteiros.find(r => r.codigo === 'previa_msg1') || null;\n  if (!roteiro) throw new Error('roteiro previa_msg1 ausente ou inativo — abortando para nao mandar copy errada');\n} else if (ctx.linha_alvo === 'financeiro') {\n  // 🔴 A LINHA E A CHAVE AQUI, nao o perfil_oferta.\n  // Medido em 15/08: os leads da vw_fila_disparo_financeiro tem\n  // perfil_oferta='redesign' — perfil de PRESENCA DIGITAL. Casar por\n  // perfil_oferta mandaria a copy de redesign de site (PRIME30, R$ 599) para\n  // um lead de controladoria. E financeiro_msg1 tem perfil_oferta='nao_aplica'\n  // (sentinela da D36), valor que nenhum lead possui — entao ele NUNCA seria\n  // escolhido pelo casamento antigo.\n  roteiro = roteiros.find(r => r.linha === 'financeiro') || null;\n} else {\n  // DIGITAL: comportamento inalterado, com uma guarda a mais — nunca escolher\n  // roteiro de outra linha, mesmo que a sentinela da D36 mude um dia.\n  roteiro = roteiros.find(r => r.perfil_oferta === lead.perfil_oferta && r.linha !== 'financeiro') || null;\n}\n\nreturn [{ json: { lead, ctx, roteiro } }];"
         },
         "id": "7d51a717-425e-451f-8c62-080fa3111dfa",
         "name": "Juntar Lead + Roteiro",
@@ -1414,7 +1569,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Valida a mensagem e resolve o DESTINO.\n// 15/08: passou a ser ciente de LINHA — modo_teste, numero de teste e copy de\n// fallback sao proprios de cada linha.\nconst base = $('Juntar Lead + Roteiro').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\nconst ehFin = ctx.linha_alvo === 'financeiro';\n\nlet texto = null;\ntry {\n  texto = ($input.first().json.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();\n} catch (e) { texto = null; }\n\nconst PROIBIDAS = /\\b(gr[aá]tis|promo[cç][aã]o|imperd[ií]vel|desconto|urgente|oportunidade [uú]nica)\\b/i;\nconst TEM_LINK = /https?:\\/\\/|www\\./i;\nconst valido = !!texto && !TEM_LINK.test(texto) && !PROIBIDAS.test(texto)\n  && texto.length >= 60 && texto.length <= 700 && /\\?/.test(texto);\n\n// 🔴 O fallback digital fala de \"presenca digital\" — mandar isso para um lead de\n// controladoria seria o mesmo vazamento que o casamento por perfil_oferta\n// causava. Cada linha tem o seu.\nconst FALLBACK_DIGITAL = 'Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Vi a ' + lead.nome_exibicao + ' aqui em ' + lead.municipio + ' e reparei em algumas coisas na presenca digital de voces que podem estar deixando clientes pelo caminho. Posso te mostrar rapidinho o que encontrei?';\n// Financeiro: gancho + oferta do Raio-X + pedido de permissao, SEM LINK\n// (o link so vai depois do sim — regra da msg1 financeira).\nconst FALLBACK_FINANCEIRO = 'Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Trabalho com controle financeiro para pequenos negocios e queria te oferecer um Raio-X do caixa da ' + lead.nome_exibicao + ': sao 10 perguntas rapidas e no fim voce recebe a leitura de onde o dinheiro pode estar vazando. Posso te explicar como funciona?';\n\nconst FALLBACK = (ehFin ? FALLBACK_FINANCEIRO : FALLBACK_DIGITAL).replace(/\\s+/g, ' ').trim();\n\nconst mensagem = valido ? texto : FALLBACK;\n\n// Modo teste e numero de teste sao POR LINHA.\nconst modoTeste  = ehFin ? ctx.fin_modo_teste : ctx.modo_teste;\nconst numeroTeste = ehFin ? ctx.fin_numero_teste : ctx.numero_teste;\nconst destino = modoTeste ? numeroTeste : String(lead.whatsapp || '');\nif (!destino) throw new Error('Lead sem WhatsApp — abortando (lead ' + lead.slug + ' fica em status abordando para revisao)');\n\n// Delay humano aleatorio: 60s a 40min antes do envio\nconst delaySegundos = 60 + Math.floor(Math.random() * 2340);\n\nreturn [{ json: {\n  lead, ctx, mensagem,\n  copy_fallback: !valido,\n  destino,\n  linha_alvo: ctx.linha_alvo,\n  roteiro_codigo: (base.roteiro && base.roteiro.codigo) || null,\n  etapa: modoTeste ? 'msg1_teste' : 'msg1',\n  delay_segundos: delaySegundos\n} }];"
+          "jsCode": "// Valida a mensagem e resolve o DESTINO.\n// 15/08: passou a ser ciente de LINHA — modo_teste, numero de teste e copy de\n// fallback sao proprios de cada linha.\nconst base = $('Juntar Lead + Roteiro').first().json;\nconst lead = base.lead;\nconst ctx = base.ctx;\nconst ehFin = ctx.linha_alvo === 'financeiro';\nconst ehPrevia = !!(base.roteiro && base.roteiro.codigo === 'previa_msg1');\n\nlet texto = null;\ntry {\n  texto = ($input.first().json.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();\n} catch (e) { texto = null; }\n\nconst PROIBIDAS = /\\b(gr[aá]tis|promo[cç][aã]o|imperd[ií]vel|desconto|urgente|oportunidade [uú]nica)\\b/i;\nconst TEM_LINK = /https?:\\/\\/|www\\./i;\n// Excecao ao TEM_LINK, e SO na msg1 de previa: a mensagem existe para entregar\n// o endereco da previa. Removemos o link permitido e exigimos que o resto do\n// texto continue sem link nenhum — outro dominio segue barrado.\n// Sem /g no que vai para .test(): RegExp global guarda lastIndex entre chamadas\n// e o segundo teste do mesmo texto voltaria falso sem motivo.\nconst LINK_PREVIA = /(https?:\\/\\/)?(www\\.)?somosatitude\\.com\\.br\\/previa\\/[a-z0-9-]+\\/?/i;\nconst LINK_PREVIA_TODOS = new RegExp(LINK_PREVIA.source, 'ig');\nconst semLinkPermitido = String(texto || '').replace(LINK_PREVIA_TODOS, ' ');\nconst linkOk = ehPrevia\n  ? (LINK_PREVIA.test(String(texto || '')) && !TEM_LINK.test(semLinkPermitido))\n  : !TEM_LINK.test(String(texto || ''));\n\n// PROIBIDAS e a pergunta final continuam valendo para todas as linhas.\nconst valido = !!texto && linkOk && !PROIBIDAS.test(texto)\n  && texto.length >= 60 && texto.length <= 700 && /\\?/.test(texto);\n\n// 🔴 O fallback digital fala de \"presenca digital\" — mandar isso para um lead de\n// controladoria seria o mesmo vazamento que o casamento por perfil_oferta\n// causava. Cada linha tem o seu.\nconst FALLBACK_DIGITAL = 'Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Vi a ' + lead.nome_exibicao + ' aqui em ' + lead.municipio + ' e reparei em algumas coisas na presenca digital de voces que podem estar deixando clientes pelo caminho. Posso te mostrar rapidinho o que encontrei?';\n// Financeiro: gancho + oferta do Raio-X + pedido de permissao, SEM LINK\n// (o link so vai depois do sim — regra da msg1 financeira).\nconst FALLBACK_FINANCEIRO = 'Oi, ' + (lead.nome_socio || '') + '! Tudo bem? Trabalho com controle financeiro para pequenos negocios e queria te oferecer um Raio-X do caixa da ' + lead.nome_exibicao + ': sao 10 perguntas rapidas e no fim voce recebe a leitura de onde o dinheiro pode estar vazando. Posso te explicar como funciona?';\n\n// A previa tem fallback proprio: sem o link a mensagem perde o sentido, e o\n// fallback digital fala de diagnostico, que nao e o que foi prometido aqui.\nconst FALLBACK_PREVIA = 'Oi, ' + (lead.nome_socio || '') + '. Vi as ' + lead.gbp_avaliacoes + ' avaliacoes da ' + lead.nome_exibicao + ' no Google, nota ' + lead.gbp_rating + ', e coloquei o site de voces no ar pra voce ver como fica: ' + String(lead.previa_url || '').replace(/^https?:\\/\\//, '') + ' Esta com suas avaliacoes reais e as fotos do seu perfil. Fica no ar por 7 dias. O que voce mudaria nele?';\n\nconst FALLBACK = (ehPrevia ? FALLBACK_PREVIA : (ehFin ? FALLBACK_FINANCEIRO : FALLBACK_DIGITAL)).replace(/\\s+/g, ' ').trim();\n\nconst mensagem = valido ? texto : FALLBACK;\n\n// Modo teste e numero de teste sao POR LINHA.\nconst modoTeste  = ehFin ? ctx.fin_modo_teste : ctx.modo_teste;\nconst numeroTeste = ehFin ? ctx.fin_numero_teste : ctx.numero_teste;\nconst destino = modoTeste ? numeroTeste : String(lead.whatsapp || '');\nif (!destino) throw new Error('Lead sem WhatsApp — abortando (lead ' + lead.slug + ' fica em status abordando para revisao)');\n\n// Delay humano aleatorio: 60s a 40min antes do envio\nconst delaySegundos = 60 + Math.floor(Math.random() * 2340);\n\nreturn [{ json: {\n  lead, ctx, mensagem,\n  copy_fallback: !valido,\n  destino,\n  linha_alvo: ctx.linha_alvo,\n  roteiro_codigo: (base.roteiro && base.roteiro.codigo) || null,\n  eh_previa: ehPrevia,\n  previa_screenshot_url: (ehPrevia && lead.previa_screenshot_url) || null,\n  etapa: modoTeste ? 'msg1_teste' : 'msg1',\n  delay_segundos: delaySegundos\n} }];"
         },
         "id": "08267024-35b9-46db-9d86-19e47f6cca40",
         "name": "Validar + Resolver Destino",
@@ -1456,7 +1611,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ number: $json.destino, text: $json.mensagem, delay: 4000 }) }}",
+          "jsonBody": "={{ JSON.stringify({ number: $('Validar + Resolver Destino').first().json.destino, text: $('Validar + Resolver Destino').first().json.mensagem, delay: 4000 }) }}",
           "options": {
             "timeout": 45000
           }
@@ -1546,7 +1701,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ empresa_id: $json.lead.id, canal: 'whatsapp', direcao: 'saida', etapa: $json.etapa, roteiro_codigo: ($json.roteiro_codigo || ($json.lead.perfil_oferta + '_msg1')), mensagem: $json.mensagem, copy_fallback: $json.copy_fallback, evolution_id: $json.evolution_id }) }}",
+          "jsonBody": "={{ JSON.stringify((() => { const j = $json; const texto = { empresa_id: j.lead.id, canal: 'whatsapp', direcao: 'saida', etapa: j.etapa, roteiro_codigo: (j.roteiro_codigo || (j.lead.perfil_oferta + '_msg1')), mensagem: j.mensagem, copy_fallback: j.copy_fallback, evolution_id: j.evolution_id }; if (!(j.eh_previa && j.previa_screenshot_url)) return texto; return [ Object.assign({}, texto, { mensagem: j.previa_screenshot_url, midia_tipo: 'image', evolution_id: null }), texto ]; })()) }}",
           "options": {}
         },
         "id": "39f81840-5362-4e94-bac8-6fd09339f626",
@@ -1683,6 +1838,121 @@
           }
         },
         "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.previa_screenshot_url }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                },
+                "id": "pv0000c3-0000-0000-0000-0000000000p1"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          3536,
+          304
+        ],
+        "id": "pv111111-0000-4000-8000-00000000pv11",
+        "name": "Tem imagem de prévia?"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://whatsapp.atitudesolucoes.com.br/message/sendMedia/atitude-principal",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ number: $json.destino, mediatype: 'image', media: $json.previa_screenshot_url, caption: '' }) }}",
+          "options": {
+            "timeout": 45000,
+            "response": {
+              "response": {
+                "neverError": true
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3640,
+          208
+        ],
+        "id": "pv222222-0000-4000-8000-00000000pv22",
+        "name": "Evolution Enviar Mídia",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "lGhduTvTTMaZoDWT",
+            "name": "Evolution apikey"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/followups_agendados",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "supabaseApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify((() => { const j = $('Avaliar Envio').first().json; if (!j.eh_previa) return []; const id = j.lead.id; const em = (dias, h, m) => { const d = new Date(); d.setUTCDate(d.getUTCDate() + dias); d.setUTCHours(h + 3, m, 0, 0); return d.toISOString(); }; const ctxt = j.lead.previa_url || null; return [{ empresa_id: id, tipo: 'previa_d2', devido_em: em(2, 9, 30), contexto: ctxt }, { empresa_id: id, tipo: 'previa_d5', devido_em: em(5, 9, 30), contexto: ctxt }, { empresa_id: id, tipo: 'previa_d7_expira', devido_em: em(7, 18, 0), contexto: ctxt } ]; })()) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4784,
+          240
+        ],
+        "id": "pv333333-0000-4000-8000-00000000pv33",
+        "name": "Agendar Follow-ups da Prévia",
+        "credentials": {
+          "supabaseApi": {
+            "id": "TI9uXqodlyBVC9Se",
+            "name": "Supabase account"
+          }
+        }
       }
     ],
     "connections": {
@@ -1877,7 +2147,7 @@
         "main": [
           [
             {
-              "node": "Evolution Enviar",
+              "node": "Tem imagem de prévia?",
               "type": "main",
               "index": 0
             }
@@ -1945,6 +2215,46 @@
             }
           ]
         ]
+      },
+      "Tem imagem de prévia?": {
+        "main": [
+          [
+            {
+              "node": "Evolution Enviar Mídia",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Evolution Enviar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evolution Enviar Mídia": {
+        "main": [
+          [
+            {
+              "node": "Evolution Enviar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Marcar Lead Abordado": {
+        "main": [
+          [
+            {
+              "node": "Agendar Follow-ups da Prévia",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
@@ -1954,18 +2264,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-08-15T00:49:17.537Z",
-        "id": 261,
+        "createdAt": "2026-08-24T19:42:45.263Z",
+        "id": 283,
         "workflowId": "PGxUrAok89DfXs9u",
-        "versionId": "3ab8edfd-ce5a-430c-8b6b-0973d281a593",
+        "versionId": "097d52b7-5022-4b6b-b724-2402baf33e2b",
         "event": "deactivated",
         "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
       },
       {
-        "createdAt": "2026-08-15T00:49:17.622Z",
-        "id": 262,
+        "createdAt": "2026-08-24T19:42:45.304Z",
+        "id": 284,
         "workflowId": "PGxUrAok89DfXs9u",
-        "versionId": "3ab8edfd-ce5a-430c-8b6b-0973d281a593",
+        "versionId": "097d52b7-5022-4b6b-b724-2402baf33e2b",
         "event": "activated",
         "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
       }
