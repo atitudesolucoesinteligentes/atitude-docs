@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-24)
+# Schema — Somos Atitude (gerado em 2026-08-25)
 
 # TABELAS
 
@@ -231,6 +231,14 @@
 - `raiox_fin_faixa` text
 - `raiox_fin_em` timestamp with time zone
 - `linha` text
+- `previa_url` text
+- `previa_status` text
+- `previa_publicada_em` timestamp with time zone
+- `previa_expira_em` timestamp with time zone
+- `previa_screenshot_url` text
+- `previa_views` integer DEFAULT 0
+- `previa_json` jsonb
+- `lote` text
 
 ## Tabela: followups_agendados
 - `id` bigint NOT NULL
@@ -969,6 +977,117 @@
   WHERE (esteira IS NULL);
 ```
 
+## View: vw_fila_previa
+```sql
+ SELECT v.id,
+    v.cnpj,
+    v.cnpj_raiz,
+    v.filial_numero,
+    v.matriz_filial,
+    v.razao_social,
+    v.nome_fantasia,
+    v.nome_exibicao,
+    v.situacao,
+    v.situacao_motivo,
+    v.situacao_data,
+    v.data_abertura,
+    v.natureza_juridica_codigo,
+    v.natureza_juridica,
+    v.qualificacao_responsavel,
+    v.cnae_principal,
+    v.cnae_descricao,
+    v.cnaes_secundarios,
+    v.segmento,
+    v.mei,
+    v.simples,
+    v.porte_codigo,
+    v.porte_descricao,
+    v.capital_social,
+    v.situacao_especial,
+    v.situacao_especial_data,
+    v.cep,
+    v.tipo_logradouro,
+    v.logradouro,
+    v.numero,
+    v.complemento,
+    v.bairro,
+    v.municipio,
+    v.uf,
+    v.codigo_ibge,
+    v.lat,
+    v.lng,
+    v.telefone_original,
+    v.whatsapp,
+    v.whatsapp_valido,
+    v.whatsapp_verificado_em,
+    v.email,
+    v.email_contab,
+    v.tem_site,
+    v.site_url,
+    v.site_status,
+    v.site_sinais,
+    v.site_diagnostico,
+    v.tem_gbp,
+    v.gbp_place_id,
+    v.gbp_rating,
+    v.gbp_avaliacoes,
+    v.gbp_reviews,
+    v.gbp_url,
+    v.gbp_match_confianca,
+    v.tem_instagram,
+    v.instagram,
+    v.instagram_url,
+    v.enriquecido_em,
+    v.perfil_oferta,
+    v.dor_resumida,
+    v.score,
+    v.status,
+    v.opt_out,
+    v.tentativas,
+    v.ultimo_contato,
+    v.proximo_followup,
+    v.interesse_servicos,
+    v.obs,
+    v.origem,
+    v.importacao_id,
+    v.criado_em,
+    v.atualizado_em,
+    v.slug,
+    v.producao_status,
+    v.url_nova,
+    v.url_proposta,
+    v.contrato_status,
+    v.contrato_em,
+    v.telefones_json,
+    v.emails_json,
+    v.tem_celular,
+    v.situacao_codigo,
+    v.motivo_codigo,
+    v.porte_codigo_num,
+    v.natureza_codigo,
+    v.simples_desde,
+    v.mei_desde,
+    v.fonte_atualizado_em,
+    v.nome_socio,
+    v.flag_filial_repetida,
+    v.flag_rede,
+    v.flag_tel_repetido,
+    v.gancho_abordagem,
+    v.enriquecimento_extra,
+    v.esteira,
+    e.lote,
+    e.previa_url,
+    e.previa_status,
+    e.previa_publicada_em,
+    e.previa_expira_em,
+    e.previa_screenshot_url,
+    e.previa_views
+   FROM (vw_fila_disparo_digital v
+     JOIN empresas e ON ((e.id = v.id)))
+  WHERE ((e.previa_status = 'publicada'::text) AND (v.status = 'fila'::text) AND (e.lote = 'previa_estetica_01'::text) AND (v.cnae_principal = '9602502'::text))
+  ORDER BY v.score DESC NULLS LAST;
+```
+
 ## View: vw_fila_priorizada
 ```sql
  SELECT id,
@@ -1273,7 +1392,31 @@ UNION ALL
    FROM ((negocios n
      CROSS JOIN cfg)
      JOIN empresas e ON ((e.id = n.empresa_id)))
-  WHERE ((n.status = 'checkout_enviado'::text) AND (n.pago IS NULL) AND fn_contato_permitido(e.*));
+  WHERE ((n.status = 'checkout_enviado'::text) AND (n.pago IS NULL) AND fn_contato_permitido(e.*))
+UNION ALL
+ SELECT fa.empresa_id,
+    e.slug,
+    fa.tipo,
+    fa.devido_em,
+    NULL::text AS email_followup,
+    false AS email_contab,
+    fa.contexto
+   FROM (followups_agendados fa
+     JOIN empresas e ON ((e.id = fa.empresa_id)))
+  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)))
+UNION ALL
+ SELECT fa.empresa_id,
+    e.slug,
+    fa.tipo,
+    fa.devido_em,
+    NULL::text AS email_followup,
+    false AS email_contab,
+    fa.contexto
+   FROM (followups_agendados fa
+     JOIN empresas e ON ((e.id = fa.empresa_id)))
+  WHERE ((fa.tipo = 'reenvio_pos_bot'::text) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND (NOT (EXISTS ( SELECT 1
+           FROM followups_agendados f2
+          WHERE ((f2.empresa_id = fa.empresa_id) AND (f2.tipo = 'reenvio_pos_bot'::text) AND (f2.executado_em IS NOT NULL))))));
 ```
 
 ## View: vw_followups_devidos
@@ -2007,6 +2150,66 @@ begin
   return v;
 end;
 $function$
+
+```
+
+## Função: fn_previa_d7
+```sql
+CREATE OR REPLACE FUNCTION public.fn_previa_d7(p_empresa_id bigint)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+AS $function$
+declare
+  v_slug text;
+  v_teve_entrada boolean;
+begin
+  select slug into v_slug from empresas where id = p_empresa_id;
+  if v_slug is null then
+    return jsonb_build_object('erro', 'empresa nao encontrada');
+  end if;
+
+  -- NAO mexe em previa_status de proposito. Quem expira de verdade e o
+  -- tools/previa/expirar.js: ele apaga a pasta no FTP e SO ENTAO marca
+  -- 'expirada'. Dois donos para o mesmo campo dariam pagina no ar com
+  -- status expirada, e o cron nunca mais acharia a pasta para limpar.
+  select exists (
+    select 1 from interacoes where empresa_id = p_empresa_id and direcao = 'entrada'
+  ) into v_teve_entrada;
+
+  if not v_teve_entrada then
+    perform fn_encerrar_silencio(v_slug);
+  end if;
+
+  return jsonb_build_object(
+    'slug', v_slug,
+    'teve_entrada_humana', v_teve_entrada,
+    'encerrado_silencio', not v_teve_entrada
+  );
+end $function$
+
+```
+
+## Função: fn_previa_view
+```sql
+CREATE OR REPLACE FUNCTION public.fn_previa_view(p_slug text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+AS $function$
+declare
+  v_views int;
+begin
+  if p_slug is null or length(p_slug) > 120 then
+    return jsonb_build_object('ok', false, 'motivo', 'slug invalido');
+  end if;
+
+  update empresas
+     set previa_views = coalesce(previa_views, 0) + 1
+   where slug = p_slug
+     and previa_status = 'publicada'
+  returning previa_views into v_views;
+
+  return jsonb_build_object('ok', v_views is not null, 'views', v_views);
+end $function$
 
 ```
 
