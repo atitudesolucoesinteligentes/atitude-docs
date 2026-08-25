@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-23T16:25:53.167Z",
+  "updatedAt": "2026-08-24T18:51:25.271Z",
   "createdAt": "2026-07-16T18:54:51.316Z",
   "id": "NNZqfMGl15XqIizu",
   "name": "A1 Higienização p1",
@@ -174,7 +174,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Cruza o resultado da Evolution com os candidatos de cada lead:\n// o primeiro candidato com exists=true vira o whatsapp oficial.\n// Sem nenhum candidato válido => lead sai do funil (status: sem_whatsapp).\nconst resp = $input.all().map(i => i.json).flat();\nconst existe = new Map();\nfor (const r of resp) {\n  if (!r) continue;\n  const num = String(r.number || r.jid || '').replace(/\\D/g, '');\n  existe.set(num, !!r.exists);\n  // Evolution pode devolver o jid com 8 dígitos (sem o nono) — indexa também\n  if (r.jid) existe.set(String(r.jid).split('@')[0].replace(/\\D/g, ''), !!r.exists);\n}\nconst mapa = $('Montar Lote de Números').first().json.mapa || [];\nconst agora = new Date().toISOString();\nconst out = [];\nfor (const m of mapa) {\n  const valido = m.candidatos.find(c => existe.get(String(c).replace(/\\D/g, '')) === true);\n  out.push({ json: {\n    id: m.id,\n    slug: m.slug,\n    body: valido\n      ? { whatsapp: valido, whatsapp_valido: true,  whatsapp_verificado_em: agora }\n      : {                    whatsapp_valido: false, whatsapp_verificado_em: agora, status: 'sem_whatsapp' }\n  }});\n}\nif (out.length === 0) return [{ json: { __vazio: true } }];\nreturn out;"
+        "jsCode": "// Cruza o resultado da Evolution com os candidatos de cada lead:\n// o primeiro candidato com exists=true vira o whatsapp oficial.\n// Sem nenhum candidato válido => lead sai do funil (status: sem_whatsapp).\nconst resp = $('Evolution Validar Números').all().map(i => i.json).flat();\n// Numeros que ja pertencem a outra empresa: empresas.whatsapp tem indice UNICO,\n// entao gravar um numero ja usado derruba o lote inteiro com 409 (aconteceu com\n// duas unidades da mesma franquia Maislaser em 24/08/2026).\nconst dono = new Map();\nfor (const r of $input.all().map(i => i.json).flat()) {\n  if (r && r.whatsapp) dono.set(String(r.whatsapp).replace(/\\D/g, ''), r.id);\n}\nconst existe = new Map();\nfor (const r of resp) {\n  if (!r) continue;\n  const num = String(r.number || r.jid || '').replace(/\\D/g, '');\n  existe.set(num, !!r.exists);\n  // Evolution pode devolver o jid com 8 dígitos (sem o nono) — indexa também\n  if (r.jid) existe.set(String(r.jid).split('@')[0].replace(/\\D/g, ''), !!r.exists);\n}\nconst mapa = $('Montar Lote de Números').first().json.mapa || [];\nconst agora = new Date().toISOString();\nconst out = [];\nfor (const m of mapa) {\n  const existeNoWpp = c => existe.get(String(c).replace(/\\D/g, '')) === true;\n  const donoDe = c => dono.get(String(c).replace(/\\D/g, ''));\n  // So pode assumir um numero que exista no WhatsApp E que nao tenha outro dono.\n  const valido = m.candidatos.find(c => existeNoWpp(c) && (donoDe(c) === undefined || donoDe(c) === m.id));\n  // Tinha numero valido, mas todos ja pertencem a outra empresa (franquia/contador):\n  // marca flag_tel_repetido em vez de estourar o lote. vw_fila_disparo ja filtra por ele.\n  const tomado = !valido && m.candidatos.some(c => existeNoWpp(c) && donoDe(c) !== undefined && donoDe(c) !== m.id);\n  let body;\n  if (valido) {\n    body = { whatsapp: valido, whatsapp_valido: true, whatsapp_verificado_em: agora };\n  } else if (tomado) {\n    const numero = m.candidatos.find(c => existeNoWpp(c) && donoDe(c) !== undefined);\n    body = { whatsapp_valido: false, whatsapp_verificado_em: agora, status: 'sem_whatsapp',\n             flag_tel_repetido: true,\n             obs: 'whatsapp ' + numero + ' ja pertence ao lead ' + donoDe(numero) + ' (' + agora.slice(0, 10) + ')' };\n  } else {\n    body = { whatsapp_valido: false, whatsapp_verificado_em: agora, status: 'sem_whatsapp' };\n  }\n  out.push({ json: { id: m.id, slug: m.slug, body } });\n}\nif (out.length === 0) return [{ json: { __vazio: true } }];\nreturn out;"
       },
       "id": "dda6f05a-4d0d-47a7-bd7b-4cd726c4c04d",
       "name": "Aplicar Resultado",
@@ -248,6 +248,28 @@
         1984,
         320
       ]
+    },
+    {
+      "parameters": {
+        "url": "https://qqxnnwycebhugikunxne.supabase.co/rest/v1/empresas?select=id,whatsapp&whatsapp=not.is.null&limit=50000",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1216,
+        224
+      ],
+      "id": "b7c1e5a2-0f44-4d19-9a3e-5f1c2d8b4e70",
+      "name": "Buscar WhatsApps Ocupados",
+      "credentials": {
+        "supabaseApi": {
+          "id": "TI9uXqodlyBVC9Se",
+          "name": "Supabase account"
+        }
+      }
     }
   ],
   "connections": {
@@ -317,7 +339,7 @@
       "main": [
         [
           {
-            "node": "Aplicar Resultado",
+            "node": "Buscar WhatsApps Ocupados",
             "type": "main",
             "index": 0
           }
@@ -356,6 +378,17 @@
           }
         ]
       ]
+    },
+    "Buscar WhatsApps Ocupados": {
+      "main": [
+        [
+          {
+            "node": "Aplicar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -367,9 +400,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "63e40252-7668-48b7-979b-d81a35445006",
+  "versionId": "456a77d4-6369-4e1f-969b-72f1e74b86a1",
   "activeVersionId": null,
-  "versionCounter": 8,
+  "versionCounter": 9,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
