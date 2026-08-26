@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-08-25)
+# Schema — Somos Atitude (gerado em 2026-08-26)
 
 # TABELAS
 
@@ -1250,7 +1250,7 @@
             m.enviada_em
            FROM (empresas e
              JOIN msg1 m ON ((m.empresa_id = e.id)))
-          WHERE ((e.status = 'abordado'::text) AND (COALESCE(e.origem, ''::text) <> ALL (ARRAY['anuncio'::text, 'site'::text])) AND fn_contato_permitido(e.*) AND (NOT (EXISTS ( SELECT 1
+          WHERE ((e.status = 'abordado'::text) AND (e.lote IS DISTINCT FROM 'previa_estetica_01'::text) AND (COALESCE(e.origem, ''::text) <> ALL (ARRAY['anuncio'::text, 'site'::text])) AND fn_contato_permitido(e.*) AND (NOT (EXISTS ( SELECT 1
                    FROM interacoes i2
                   WHERE ((i2.empresa_id = e.id) AND (i2.direcao = 'entrada'::text))))))
         ), conversa_parada_auto AS (
