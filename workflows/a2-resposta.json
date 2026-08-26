@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-24T22:39:08.107Z",
+  "updatedAt": "2026-08-25T15:46:31.215Z",
   "createdAt": "2026-07-18T20:23:27.679Z",
   "id": "XnkBvkMuIRWwAuSN",
   "name": "A2 Resposta",
@@ -2029,7 +2029,8 @@
           "id": "TI9uXqodlyBVC9Se",
           "name": "Supabase account"
         }
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -2841,9 +2842,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "8b28836f-38af-420f-a7cc-b34e821d498b",
-  "activeVersionId": "8b28836f-38af-420f-a7cc-b34e821d498b",
-  "versionCounter": 254,
+  "versionId": "414e9c94-fa8a-4e15-b03a-ed9471c3ab2e",
+  "activeVersionId": "414e9c94-fa8a-4e15-b03a-ed9471c3ab2e",
+  "versionCounter": 255,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "shared": [
@@ -2868,9 +2869,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-08-24T22:39:08.111Z",
-    "createdAt": "2026-08-24T22:39:08.111Z",
-    "versionId": "8b28836f-38af-420f-a7cc-b34e821d498b",
+    "updatedAt": "2026-08-25T15:46:31.218Z",
+    "createdAt": "2026-08-25T15:46:31.218Z",
+    "versionId": "414e9c94-fa8a-4e15-b03a-ed9471c3ab2e",
     "workflowId": "XnkBvkMuIRWwAuSN",
     "nodes": [
       {
@@ -4895,7 +4896,8 @@
             "id": "TI9uXqodlyBVC9Se",
             "name": "Supabase account"
           }
-        }
+        },
+        "alwaysOutputData": true
       },
       {
         "parameters": {
@@ -5705,18 +5707,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-08-24T22:39:08.216Z",
-        "id": 293,
+        "createdAt": "2026-08-25T15:46:31.439Z",
+        "id": 301,
         "workflowId": "XnkBvkMuIRWwAuSN",
-        "versionId": "8b28836f-38af-420f-a7cc-b34e821d498b",
+        "versionId": "414e9c94-fa8a-4e15-b03a-ed9471c3ab2e",
         "event": "deactivated",
         "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
       },
       {
-        "createdAt": "2026-08-24T22:39:08.288Z",
-        "id": 294,
+        "createdAt": "2026-08-25T15:46:31.479Z",
+        "id": 302,
         "workflowId": "XnkBvkMuIRWwAuSN",
-        "versionId": "8b28836f-38af-420f-a7cc-b34e821d498b",
+        "versionId": "414e9c94-fa8a-4e15-b03a-ed9471c3ab2e",
         "event": "activated",
         "userId": "4570e340-aa88-4fa1-a637-7729c8d959cb"
       }
