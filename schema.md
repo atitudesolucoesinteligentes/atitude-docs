@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-01)
+# Schema — Somos Atitude (gerado em 2026-09-02)
 
 # TABELAS
 
@@ -239,6 +239,7 @@
 - `previa_views` integer DEFAULT 0
 - `previa_json` jsonb
 - `lote` text
+- `pediu_texto_em` timestamp with time zone
 
 ## Tabela: followups_agendados
 - `id` bigint NOT NULL
@@ -1084,7 +1085,7 @@
     e.previa_views
    FROM (vw_fila_disparo_digital v
      JOIN empresas e ON ((e.id = v.id)))
-  WHERE ((e.previa_status = 'publicada'::text) AND (v.status = 'fila'::text) AND (e.lote = 'previa_estetica_01'::text) AND (v.cnae_principal = '9602502'::text))
+  WHERE ((e.previa_status = 'publicada'::text) AND (v.status = 'fila'::text) AND (e.lote = 'previa_estetica_01'::text) AND (v.cnae_principal = '9602502'::text) AND (v.gbp_match_confianca = ANY (ARRAY['telefone'::text, 'telefone_places'::text, 'nome_endereco_forte'::text])))
   ORDER BY v.score DESC NULLS LAST;
 ```
 
@@ -1403,7 +1404,9 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)))
+  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
+           FROM interacoes i
+          WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text)))))))
 UNION ALL
  SELECT fa.empresa_id,
     e.slug,
@@ -2149,6 +2152,38 @@ begin
   ) into v;
   return v;
 end;
+$function$
+
+```
+
+## Função: fn_marcar_lead_em_conversa
+```sql
+CREATE OR REPLACE FUNCTION public.fn_marcar_lead_em_conversa()
+ RETURNS jsonb
+ LANGUAGE plpgsql
+AS $function$
+declare
+  n integer;
+begin
+  update followups_agendados f
+  set executado_em = now(),
+      cancelado_motivo = 'lead_em_conversa'
+  from empresas e
+  where e.id = f.empresa_id
+    and f.tipo in ('previa_d2', 'previa_d5')
+    and f.executado_em is null
+    and f.cancelado_motivo is null
+    and exists (
+      select 1 from interacoes i
+      where i.empresa_id = e.id
+        and i.direcao = 'entrada'
+        and i.criado_em > coalesce(e.previa_publicada_em, '-infinity'::timestamptz)
+        and coalesce(i.midia_tipo, '') <> 'bot');
+
+  get diagnostics n = row_count;
+
+  return jsonb_build_object('marcadas', n, 'em', now());
+end
 $function$
 
 ```
