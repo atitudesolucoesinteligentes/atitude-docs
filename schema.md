@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-02)
+# Schema — Somos Atitude (gerado em 2026-09-03)
 
 # TABELAS
 
@@ -1404,7 +1404,7 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
+  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
            FROM interacoes i
           WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text)))))))
 UNION ALL
@@ -1417,7 +1417,7 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = 'reenvio_pos_bot'::text) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND (NOT (EXISTS ( SELECT 1
+  WHERE ((fa.tipo = 'reenvio_pos_bot'::text) AND (e.previa_expira_em > now()) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND (NOT (EXISTS ( SELECT 1
            FROM followups_agendados f2
           WHERE ((f2.empresa_id = fa.empresa_id) AND (f2.tipo = 'reenvio_pos_bot'::text) AND (f2.executado_em IS NOT NULL))))));
 ```
@@ -2145,10 +2145,21 @@ begin
       '\s+(LTDA|EIRELI|EIRELE|MEI?|EPP|S/?A)\.?\s*$', '', 'i'))
   where nome_exibicao ~* '\s(LTDA|EIRELI|EIRELE|MEI?|EPP|S/?A)\.?\s*$';
 
+  -- 3.5 (02/09) MEI sem nome fantasia vem como "NN.NNN.NNN NOME DA PESSOA".
+  --     Tira a raiz do CNPJ e aplica caixa de título — o nome vira o título da
+  --     prévia, e "54.133.295 LILIAM KELLY DE SOUZA" não é nome de negócio.
+  --     O padrão é específico (raiz de CNPJ formatada), então não toca em nomes
+  --     legítimos que começam com número, como "5INCO" ou "Capilar Turbo 10".
+  update empresas
+  set nome_exibicao = fn_titulo_pt(
+        regexp_replace(nome_exibicao, '^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\s+', ''))
+  where nome_exibicao ~ '^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\s';
+
   select jsonb_build_object(
     'filiais_repetidas', (select count(*) from empresas where flag_filial_repetida),
     'redes',             (select count(*) from empresas where flag_rede),
-    'tel_repetidos',     (select count(*) from empresas where flag_tel_repetido)
+    'tel_repetidos',     (select count(*) from empresas where flag_tel_repetido),
+    'nomes_cnpj_limpos', (select count(*) from empresas where nome_exibicao ~ '^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\s')
   ) into v;
   return v;
 end;
@@ -2370,6 +2381,24 @@ begin
 
   return v_id;
 end $function$
+
+```
+
+## Função: fn_titulo_pt
+```sql
+CREATE OR REPLACE FUNCTION public.fn_titulo_pt(p_texto text)
+ RETURNS text
+ LANGUAGE sql
+ IMMUTABLE
+AS $function$
+  select nullif(btrim((
+    select string_agg(
+      case when lower(t.p) in ('de','da','do','das','dos','e') and t.ord > 1
+           then lower(t.p) else initcap(t.p) end, ' ' order by t.ord)
+    from unnest(string_to_array(btrim(p_texto), ' ')) with ordinality as t(p, ord)
+    where t.p <> ''
+  )), '');
+$function$
 
 ```
 
