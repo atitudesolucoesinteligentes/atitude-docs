@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-03)
+# Schema — Somos Atitude (gerado em 2026-09-04)
 
 # TABELAS
 
@@ -1085,7 +1085,7 @@
     e.previa_views
    FROM (vw_fila_disparo_digital v
      JOIN empresas e ON ((e.id = v.id)))
-  WHERE ((e.previa_status = 'publicada'::text) AND (v.status = 'fila'::text) AND (e.lote = 'previa_estetica_01'::text) AND (v.cnae_principal = '9602502'::text) AND (v.gbp_match_confianca = ANY (ARRAY['telefone'::text, 'telefone_places'::text, 'nome_endereco_forte'::text])))
+  WHERE ((e.previa_status = 'publicada'::text) AND (v.status = 'fila'::text) AND (e.lote = 'previa_estetica_01'::text) AND (v.cnae_principal = ANY (ARRAY['9602502'::text, '9602501'::text, '8650003'::text, '8690901'::text])) AND (v.gbp_match_confianca = ANY (ARRAY['telefone'::text, 'telefone_places'::text, 'nome_endereco_forte'::text])))
   ORDER BY v.score DESC NULLS LAST;
 ```
 
