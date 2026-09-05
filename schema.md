@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-04)
+# Schema — Somos Atitude (gerado em 2026-09-05)
 
 # TABELAS
 
@@ -1419,7 +1419,9 @@ UNION ALL
      JOIN empresas e ON ((e.id = fa.empresa_id)))
   WHERE ((fa.tipo = 'reenvio_pos_bot'::text) AND (e.previa_expira_em > now()) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND (NOT (EXISTS ( SELECT 1
            FROM followups_agendados f2
-          WHERE ((f2.empresa_id = fa.empresa_id) AND (f2.tipo = 'reenvio_pos_bot'::text) AND (f2.executado_em IS NOT NULL))))));
+          WHERE ((f2.empresa_id = fa.empresa_id) AND (f2.tipo = 'reenvio_pos_bot'::text) AND (f2.executado_em IS NOT NULL))))) AND (NOT (EXISTS ( SELECT 1
+           FROM interacoes i
+          WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text))))));
 ```
 
 ## View: vw_followups_devidos
@@ -1570,6 +1572,74 @@ UNION ALL
    FROM empresas
   WHERE (status = 'sem_celular'::text)
   ORDER BY (((email IS NOT NULL))::integer + ((nome_socio IS NOT NULL))::integer) DESC, criado_em;
+```
+
+## View: vw_sondas
+```sql
+ SELECT 'followup_elegivel_nao_sai'::text AS sonda,
+    'alto'::text AS gravidade,
+    f.empresa_id,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    ((f.tipo || ' vencido em '::text) || (f.devido_em)::date) AS detalhe
+   FROM (followups_agendados f
+     JOIN empresas e ON ((e.id = f.empresa_id)))
+  WHERE ((f.executado_em IS NULL) AND (f.cancelado_motivo IS NULL) AND (f.devido_em < (now() - '2 days'::interval)) AND (EXISTS ( SELECT 1
+           FROM vw_followups_devidos d
+          WHERE ((d.empresa_id = f.empresa_id) AND (d.tipo = f.tipo)))))
+UNION ALL
+ SELECT 'previa_vencida_ainda_publicada'::text AS sonda,
+    'alto'::text AS gravidade,
+    e.id AS empresa_id,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    (('venceu em '::text || (e.previa_expira_em)::date) || ' e segue publicada'::text) AS detalhe
+   FROM empresas e
+  WHERE ((e.previa_status = 'publicada'::text) AND (e.previa_expira_em < (now() - '1 day'::interval)))
+UNION ALL
+ SELECT 'previa_sem_data_de_expiracao'::text AS sonda,
+    'medio'::text AS gravidade,
+    e.id AS empresa_id,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    'previa_expira_em nulo'::text AS detalhe
+   FROM empresas e
+  WHERE ((e.previa_status = 'publicada'::text) AND (e.previa_expira_em IS NULL))
+UNION ALL
+ SELECT 'recusado_ainda_contactavel'::text AS sonda,
+    'alto'::text AS gravidade,
+    e.id AS empresa_id,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    (('estagio='::text || e.estagio_conversa) || ' mas fn_contato_permitido=true'::text) AS detalhe
+   FROM empresas e
+  WHERE ((e.estagio_conversa = ANY (ARRAY['recusado'::text, 'opt_out'::text])) AND fn_contato_permitido(e.*))
+UNION ALL
+ SELECT 'recusa_sem_estado'::text AS sonda,
+    'alto'::text AS gravidade,
+    e.id AS empresa_id,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    ('disse: '::text || "left"(regexp_replace(i.mensagem, '[
+]+'::text, ' '::text, 'g'::text), 60)) AS detalhe
+   FROM (empresas e
+     JOIN LATERAL ( SELECT i_1.mensagem
+           FROM interacoes i_1
+          WHERE ((i_1.empresa_id = e.id) AND (i_1.direcao = 'entrada'::text) AND (COALESCE(i_1.midia_tipo, ''::text) <> 'bot'::text) AND (i_1.mensagem ~* '(n[ãa]o (tenho|temos) interesse|n[ãa]o quero|n[ãa]o me (mande|envie)|descadastr|pare de me)'::text))
+          ORDER BY i_1.criado_em DESC
+         LIMIT 1) i ON (true))
+  WHERE (fn_contato_permitido(e.*) AND (COALESCE(e.estagio_conversa, ''::text) <> ALL (ARRAY['recusado'::text, 'opt_out'::text])))
+UNION ALL
+ SELECT 'slug_com_cnpj_em_fila'::text AS sonda,
+    'medio'::text AS gravidade,
+    e.id AS empresa_id,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    ('slug: '::text || e.slug) AS detalhe
+   FROM empresas e
+  WHERE ((e.slug ~ '^[0-9]{2}-[0-9]{3}-[0-9]{3}-'::text) AND (e.status = 'fila'::text))
+UNION ALL
+ SELECT 'fila_com_previa_vencida'::text AS sonda,
+    'alto'::text AS gravidade,
+    v.id AS empresa_id,
+    COALESCE(v.nome_fantasia, v.nome_exibicao) AS nome,
+    ('expira em '::text || (v.previa_expira_em)::date) AS detalhe
+   FROM vw_fila_previa v
+  WHERE (v.previa_expira_em < now());
 ```
 
 # FUNÇÕES
@@ -1853,6 +1923,7 @@ AS $function$
   SELECT NOT e.opt_out
      AND NOT e.atendimento_humano
      AND COALESCE(e.bot_suspeito, false) = false
+     AND COALESCE(e.estagio_conversa, '') NOT IN ('recusado', 'opt_out')
      AND e.status NOT LIKE 'descartado%'
      AND e.status NOT IN ('perdido_silencio','perdido','sem_celular',
                           'sem_whatsapp','opt_out','invalido',
@@ -2120,8 +2191,6 @@ CREATE OR REPLACE FUNCTION public.fn_higiene_cadastral()
 AS $function$
 declare v jsonb;
 begin
-  -- 3.1 Mesma raiz de CNPJ na base: mantém a MATRIZ (ou a de menor id)
-  --     como principal; as demais ganham a flag
   update empresas e set flag_filial_repetida = true
   where exists (
     select 1 from empresas x
@@ -2129,37 +2198,65 @@ begin
       and ( (x.matriz_filial = 'MATRIZ' and e.matriz_filial <> 'MATRIZ')
          or (x.matriz_filial = e.matriz_filial and x.id < e.id) ));
 
-  -- 3.2 Rede/franquia: 3+ estabelecimentos da mesma raiz
   update empresas e set flag_rede = true
   where (select count(*) from empresas x where x.cnpj_raiz = e.cnpj_raiz) >= 3;
 
-  -- 3.3 WhatsApp repetido entre raízes diferentes (provável contador)
   update empresas e set flag_tel_repetido = true
   where e.whatsapp is not null
     and exists (select 1 from empresas x
                 where x.whatsapp = e.whatsapp
                   and x.cnpj_raiz <> e.cnpj_raiz);
 
-  -- 3.4 Limpeza do nome de exibição vindo de razão social
   update empresas set nome_exibicao = trim(regexp_replace(nome_exibicao,
       '\s+(LTDA|EIRELI|EIRELE|MEI?|EPP|S/?A)\.?\s*$', '', 'i'))
   where nome_exibicao ~* '\s(LTDA|EIRELI|EIRELE|MEI?|EPP|S/?A)\.?\s*$';
 
   -- 3.5 (02/09) MEI sem nome fantasia vem como "NN.NNN.NNN NOME DA PESSOA".
-  --     Tira a raiz do CNPJ e aplica caixa de título — o nome vira o título da
-  --     prévia, e "54.133.295 LILIAM KELLY DE SOUZA" não é nome de negócio.
-  --     O padrão é específico (raiz de CNPJ formatada), então não toca em nomes
-  --     legítimos que começam com número, como "5INCO" ou "Capilar Turbo 10".
   update empresas
   set nome_exibicao = fn_titulo_pt(
         regexp_replace(nome_exibicao, '^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\s+', ''))
   where nome_exibicao ~ '^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\s';
 
+  -- 3.6 (04/09) O slug tem de acompanhar o nome. Roda DEPOIS do 3.5.
+  --     Guardas: nunca reescrever slug de pagina no ar; nunca gerar slug
+  --     degenerado; nunca colidir (empresas.slug NAO tem indice unico, entao
+  --     colisao daria duas previas se sobrescrevendo no FTP).
+  with calculado as (
+    select e.id,
+      lower(regexp_replace(regexp_replace(translate(e.nome_exibicao,
+        'áàâãäéèêëíìîïóòôõöúùûüçñÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ',
+        'aaaaaeeeeiiiiooooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN'),
+        '[^A-Za-z0-9]+','-','g'),'(^-+|-+$)','','g'))
+      || '-' ||
+      lower(regexp_replace(regexp_replace(translate(e.municipio,
+        'áàâãäéèêëíìîïóòôõöúùûüçñÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ',
+        'aaaaaeeeeiiiiooooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN'),
+        '[^A-Za-z0-9]+','-','g'),'(^-+|-+$)','','g'))
+      || '-' || right(regexp_replace(e.cnpj,'\D','','g'), 4) as slug_novo
+    from empresas e
+    where e.slug ~ '^[0-9]{2}-[0-9]{3}-[0-9]{3}-'
+      and e.previa_status is null
+      and e.nome_exibicao is not null
+      and e.nome_exibicao !~ '^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\s'
+      and e.municipio is not null
+      and length(regexp_replace(e.cnpj,'\D','','g')) >= 4
+  )
+  update empresas e
+  set slug = c.slug_novo
+  from calculado c
+  where e.id = c.id
+    and c.slug_novo !~ '^[0-9]'
+    and length(c.slug_novo) > 8
+    and not exists (select 1 from empresas x where x.slug = c.slug_novo and x.id <> c.id);
+
   select jsonb_build_object(
     'filiais_repetidas', (select count(*) from empresas where flag_filial_repetida),
     'redes',             (select count(*) from empresas where flag_rede),
     'tel_repetidos',     (select count(*) from empresas where flag_tel_repetido),
-    'nomes_cnpj_limpos', (select count(*) from empresas where nome_exibicao ~ '^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\s')
+    'nomes_cnpj_limpos', (select count(*) from empresas where nome_exibicao ~ '^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\s'),
+    'slugs_cnpj_restantes', (select count(*) from empresas where slug ~ '^[0-9]{2}-[0-9]{3}-[0-9]{3}-'),
+    'slugs_cnpj_com_previa', (select count(*) from empresas
+                              where slug ~ '^[0-9]{2}-[0-9]{3}-[0-9]{3}-' and previa_status is not null)
   ) into v;
   return v;
 end;
@@ -2336,8 +2433,16 @@ CREATE OR REPLACE FUNCTION public.fn_registrar_oferta_cupom(p_empresa_id bigint)
 AS $function$
 declare v_dias int;
 begin
-  select cupom_prazo_dias into v_dias
-  from servicos where cupom_codigo = 'PRIME30' and ativo = true limit 1;
+  -- MAIOR prazo entre os servicos ativos com o cupom: entregar menos do que foi
+  -- prometido quebra promessa feita ao lead; entregar mais e inofensivo.
+  select max(cupom_prazo_dias) into v_dias
+  from servicos
+  where cupom_codigo = 'PRIME30' and ativo = true and cupom_prazo_dias is not null;
+
+  -- Sem servico ativo com o cupom, nao gravar validade nula em silencio: a
+  -- A2 Resposta leria `cupom_expira_em = null` como "nunca expira".
+  v_dias := coalesce(v_dias, 7);
+
   update empresas
   set cupom_oferecido_em = now(),
       cupom_expira_em = now() + make_interval(days => v_dias)
