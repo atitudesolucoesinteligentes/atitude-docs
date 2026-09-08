@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-07)
+# Schema — Somos Atitude (gerado em 2026-09-08)
 
 # TABELAS
 
@@ -1085,8 +1085,12 @@
     e.previa_views
    FROM (vw_fila_disparo_digital v
      JOIN empresas e ON ((e.id = v.id)))
-  WHERE ((e.previa_status = 'publicada'::text) AND (v.status = 'fila'::text) AND (e.lote = 'previa_estetica_01'::text) AND (v.cnae_principal = ANY (ARRAY['9602502'::text, '9602501'::text, '8650003'::text, '8690901'::text])) AND (v.gbp_match_confianca = ANY (ARRAY['telefone'::text, 'telefone_places'::text, 'nome_endereco_forte'::text])))
-  ORDER BY v.score DESC NULLS LAST;
+  WHERE ((e.previa_status = 'publicada'::text) AND (v.status = 'fila'::text) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND (v.cnae_principal = ANY (ARRAY['9602502'::text, '9602501'::text, '8650003'::text, '8690901'::text])) AND (v.gbp_match_confianca = ANY (ARRAY['telefone'::text, 'telefone_places'::text, 'nome_endereco_forte'::text])))
+  ORDER BY COALESCE((e.previa_expira_em < (now() + '2 days'::interval)), false) DESC,
+        CASE
+            WHEN COALESCE((e.previa_expira_em < (now() + '2 days'::interval)), false) THEN e.previa_expira_em
+            ELSE NULL::timestamp with time zone
+        END, v.score DESC NULLS LAST;
 ```
 
 ## View: vw_fila_priorizada
@@ -1251,7 +1255,7 @@
             m.enviada_em
            FROM (empresas e
              JOIN msg1 m ON ((m.empresa_id = e.id)))
-          WHERE ((e.status = 'abordado'::text) AND (e.lote IS DISTINCT FROM 'previa_estetica_01'::text) AND (COALESCE(e.origem, ''::text) <> ALL (ARRAY['anuncio'::text, 'site'::text])) AND fn_contato_permitido(e.*) AND (NOT (EXISTS ( SELECT 1
+          WHERE ((e.status = 'abordado'::text) AND (NOT COALESCE(starts_with(e.lote, 'previa_'::text), false)) AND (COALESCE(e.origem, ''::text) <> ALL (ARRAY['anuncio'::text, 'site'::text])) AND fn_contato_permitido(e.*) AND (NOT (EXISTS ( SELECT 1
                    FROM interacoes i2
                   WHERE ((i2.empresa_id = e.id) AND (i2.direcao = 'entrada'::text))))))
         ), conversa_parada_auto AS (
@@ -1404,7 +1408,7 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
+  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
            FROM interacoes i
           WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text)))))))
 UNION ALL
@@ -1417,7 +1421,7 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = 'reenvio_pos_bot'::text) AND (e.previa_expira_em > now()) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND (e.lote = 'previa_estetica_01'::text) AND (e.previa_status = 'publicada'::text) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND (NOT (EXISTS ( SELECT 1
+  WHERE ((fa.tipo = 'reenvio_pos_bot'::text) AND (e.previa_expira_em > now()) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND (e.previa_status = 'publicada'::text) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND (NOT (EXISTS ( SELECT 1
            FROM followups_agendados f2
           WHERE ((f2.empresa_id = fa.empresa_id) AND (f2.tipo = 'reenvio_pos_bot'::text) AND (f2.executado_em IS NOT NULL))))) AND (NOT (EXISTS ( SELECT 1
            FROM interacoes i
@@ -1639,7 +1643,20 @@ UNION ALL
     COALESCE(v.nome_fantasia, v.nome_exibicao) AS nome,
     ('expira em '::text || (v.previa_expira_em)::date) AS detalhe
    FROM vw_fila_previa v
-  WHERE (v.previa_expira_em < now());
+  WHERE (v.previa_expira_em < now())
+UNION ALL
+ SELECT 'followup_perdido_previa_vencida'::text AS sonda,
+    'alto'::text AS gravidade,
+    f.empresa_id,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    (((f.tipo || ' vencido em '::text) || (f.devido_em)::date) || (' e a previa morreu em '::text || (e.previa_expira_em)::date)) AS detalhe
+   FROM (followups_agendados f
+     JOIN empresas e ON ((e.id = f.empresa_id)))
+  WHERE ((f.executado_em IS NULL) AND (f.cancelado_motivo IS NULL) AND (f.devido_em < now()) AND (f.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'reenvio_pos_bot'::text])) AND (e.previa_expira_em IS NOT NULL) AND (e.previa_expira_em < now()) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND ((f.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (COALESCE(e.estagio_conversa, ''::text) <> ALL (ARRAY['recusado'::text, 'opt_out'::text])) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND ((f.tipo = 'reenvio_pos_bot'::text) OR (COALESCE(e.bot_suspeito, false) = false)) AND (NOT (EXISTS ( SELECT 1
+           FROM followups_agendados f2
+          WHERE ((f2.empresa_id = f.empresa_id) AND (f2.tipo = f.tipo) AND (f2.executado_em IS NOT NULL))))) AND (NOT (EXISTS ( SELECT 1
+           FROM interacoes i
+          WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text))))));
 ```
 
 # FUNÇÕES
