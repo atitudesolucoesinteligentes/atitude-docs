@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-15)
+# Schema — Somos Atitude (gerado em 2026-09-16)
 
 # TABELAS
 
@@ -1652,7 +1652,9 @@ UNION ALL
     (((f.tipo || ' vencido em '::text) || (f.devido_em)::date) || (' e a previa morreu em '::text || (e.previa_expira_em)::date)) AS detalhe
    FROM (followups_agendados f
      JOIN empresas e ON ((e.id = f.empresa_id)))
-  WHERE ((f.executado_em IS NULL) AND (f.cancelado_motivo IS NULL) AND (f.devido_em < now()) AND (f.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'reenvio_pos_bot'::text])) AND (e.previa_expira_em IS NOT NULL) AND (e.previa_expira_em < now()) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND ((f.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (COALESCE(e.estagio_conversa, ''::text) <> ALL (ARRAY['recusado'::text, 'opt_out'::text])) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND ((f.tipo = 'reenvio_pos_bot'::text) OR (COALESCE(e.bot_suspeito, false) = false)) AND (NOT (EXISTS ( SELECT 1
+  WHERE ((f.executado_em IS NULL) AND (f.cancelado_motivo IS NULL) AND (f.devido_em < now()) AND (f.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'reenvio_pos_bot'::text])) AND (e.previa_expira_em IS NOT NULL) AND (e.previa_expira_em < now()) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND ((f.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND (NOT ((f.tipo = 'previa_d2'::text) AND (EXISTS ( SELECT 1
+           FROM followups_agendados f3
+          WHERE ((f3.empresa_id = f.empresa_id) AND (f3.tipo = 'previa_d5'::text) AND (f3.executado_em IS NOT NULL)))))) AND (NOT e.opt_out) AND (NOT e.atendimento_humano) AND (COALESCE(e.estagio_conversa, ''::text) <> ALL (ARRAY['recusado'::text, 'opt_out'::text])) AND (e.status !~~ 'descartado%'::text) AND (e.status <> ALL (ARRAY['perdido_silencio'::text, 'perdido'::text, 'sem_celular'::text, 'sem_whatsapp'::text, 'opt_out'::text, 'invalido'::text, 'cliente'::text, 'pos_venda'::text])) AND ((f.tipo = 'reenvio_pos_bot'::text) OR (COALESCE(e.bot_suspeito, false) = false)) AND (NOT (EXISTS ( SELECT 1
            FROM followups_agendados f2
           WHERE ((f2.empresa_id = f.empresa_id) AND (f2.tipo = f.tipo) AND (f2.executado_em IS NOT NULL))))) AND (NOT (EXISTS ( SELECT 1
            FROM interacoes i
