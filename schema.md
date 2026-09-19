@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-18)
+# Schema — Somos Atitude (gerado em 2026-09-19)
 
 # TABELAS
 
@@ -240,6 +240,19 @@
 - `previa_json` jsonb
 - `lote` text
 - `pediu_texto_em` timestamp with time zone
+
+## Tabela: esteira_rodadas
+- `id` bigint NOT NULL DEFAULT nextval('esteira_rodadas_id_seq'::regclass)
+- `dia` date NOT NULL
+- `n8n_iniciado_em` timestamp with time zone
+- `n8n_terminado_em` timestamp with time zone
+- `n8n_resumo` jsonb
+- `previa_iniciado_em` timestamp with time zone
+- `previa_terminado_em` timestamp with time zone
+- `previa_resumo` jsonb
+- `erro` text
+- `relatorio_enviado_em` timestamp with time zone
+- `criado_em` timestamp with time zone NOT NULL DEFAULT now()
 
 ## Tabela: followups_agendados
 - `id` bigint NOT NULL
@@ -1889,6 +1902,23 @@ begin
   end if;
   return new;
 end;
+$function$
+
+```
+
+## Função: fn_cnpjs_base
+```sql
+CREATE OR REPLACE FUNCTION public.fn_cnpjs_base()
+ RETURNS jsonb
+ LANGUAGE sql
+ STABLE
+AS $function$
+  select jsonb_build_object(
+    'total', count(*),
+    'cnpjs', coalesce(jsonb_agg(cnpj order by id), '[]'::jsonb)
+  )
+  from empresas
+  where cnpj is not null;
 $function$
 
 ```
