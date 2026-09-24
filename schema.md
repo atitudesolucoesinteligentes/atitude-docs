@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-23)
+# Schema — Somos Atitude (gerado em 2026-09-24)
 
 # TABELAS
 
@@ -1421,7 +1421,7 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo <> 'previa_d2'::text) OR (COALESCE(e.previa_views, 0) > 0)) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
+  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
            FROM interacoes i
           WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text)))))))
 UNION ALL
@@ -1571,6 +1571,33 @@ UNION ALL
      JOIN interacoes i ON (((i.empresa_id = e.id) AND (i.etapa = 'msg1'::text))))
   WHERE (e.estagio_manual = 'mensagem_gerada'::text)
   ORDER BY e.mensagem_gerada_em DESC;
+```
+
+## View: vw_retidos_pendentes
+```sql
+ SELECT a.id,
+    a.empresa_id,
+    a.numero,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    e.previa_url,
+    e.estagio_conversa,
+    a.intencao,
+    a.confianca_geracao,
+    a.resumo_classificacao,
+    a."resposta_balões" AS respostas,
+    a.criado_em,
+    round((EXTRACT(epoch FROM (now() - a.criado_em)) / 3600.0), 1) AS horas_parado,
+    ( SELECT "left"(regexp_replace(i.mensagem, '[\n\r]+'::text, ' '::text, 'g'::text), 200) AS "left"
+           FROM interacoes i
+          WHERE ((i.empresa_id = a.empresa_id) AND (i.direcao = 'entrada'::text))
+          ORDER BY i.criado_em DESC
+         LIMIT 1) AS ultima_entrada
+   FROM (aprovacoes_pendentes a
+     JOIN empresas e ON ((e.id = a.empresa_id)))
+  WHERE ((a.status = 'pendente'::text) AND (a.criado_em < (now() - '02:00:00'::interval)) AND (NOT e.opt_out) AND (NOT (EXISTS ( SELECT 1
+           FROM interacoes i
+          WHERE ((i.empresa_id = a.empresa_id) AND (i.direcao = 'saida'::text) AND (i.criado_em > a.criado_em))))))
+  ORDER BY a.criado_em;
 ```
 
 ## View: vw_sem_celular
