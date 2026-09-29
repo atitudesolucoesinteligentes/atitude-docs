@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-28)
+# Schema — Somos Atitude (gerado em 2026-09-29)
 
 # TABELAS
 
@@ -1421,7 +1421,9 @@ UNION ALL
     fa.contexto
    FROM (followups_agendados fa
      JOIN empresas e ON ((e.id = fa.empresa_id)))
-  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
+  WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND ((fa.tipo <> 'previa_d2'::text) OR (NOT (EXISTS ( SELECT 1
+           FROM followups_agendados f5
+          WHERE ((f5.empresa_id = fa.empresa_id) AND (f5.tipo = 'previa_d5'::text) AND (f5.executado_em IS NOT NULL)))))) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
            FROM interacoes i
           WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text)))))))
 UNION ALL
@@ -1913,6 +1915,43 @@ begin
   from empresas e
   where e.slug = p_slug and f.empresa_id = e.id
     and f.executado_em is null and f.cancelado_motivo is null;
+end $function$
+
+```
+
+## Função: fn_cancelar_followups_previa_morta
+```sql
+CREATE OR REPLACE FUNCTION public.fn_cancelar_followups_previa_morta()
+ RETURNS jsonb
+ LANGUAGE plpgsql
+AS $function$
+declare v_morta int; v_pos_d5 int;
+begin
+  -- 1. prévia não está mais publicada: o follow-up perdeu o objeto
+  update followups_agendados f
+     set cancelado_motivo = 'previa_fora_do_ar'
+    from empresas e
+   where e.id = f.empresa_id
+     and f.executado_em is null
+     and f.cancelado_motivo is null
+     and f.tipo in ('previa_d2', 'previa_d5', 'reenvio_pos_bot')
+     and coalesce(e.previa_status, '') <> 'publicada';
+  get diagnostics v_morta = row_count;
+
+  -- 2. o D5 já foi enviado: o D2 ("chegou a ver?") vira ruído depois do aviso de
+  -- expiração com preço. Em 24/09 catorze leads receberam os dois no mesmo dia.
+  update followups_agendados f
+     set cancelado_motivo = 'superado_pelo_d5'
+   where f.executado_em is null
+     and f.cancelado_motivo is null
+     and f.tipo = 'previa_d2'
+     and exists (select 1 from followups_agendados f5
+                  where f5.empresa_id = f.empresa_id
+                    and f5.tipo = 'previa_d5'
+                    and f5.executado_em is not null);
+  get diagnostics v_pos_d5 = row_count;
+
+  return jsonb_build_object('previa_fora_do_ar', v_morta, 'superado_pelo_d5', v_pos_d5, 'em', now());
 end $function$
 
 ```
