@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-09-29)
+# Schema — Somos Atitude (gerado em 2026-09-30)
 
 # TABELAS
 
@@ -1700,7 +1700,20 @@ UNION ALL
            FROM followups_agendados f2
           WHERE ((f2.empresa_id = f.empresa_id) AND (f2.tipo = f.tipo) AND (f2.executado_em IS NOT NULL))))) AND (NOT (EXISTS ( SELECT 1
            FROM interacoes i
-          WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text))))));
+          WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text))))))
+UNION ALL
+ SELECT 'previa_conteudo_errado'::text AS sonda,
+    'alto'::text AS gravidade,
+    e.id AS empresa_id,
+    COALESCE(e.nome_fantasia, e.nome_exibicao) AS nome,
+    ('disse: '::text || "left"(regexp_replace(i.mensagem, '[\n\r]+'::text, ' '::text, 'g'::text), 70)) AS detalhe
+   FROM (empresas e
+     JOIN LATERAL ( SELECT i2.mensagem
+           FROM interacoes i2
+          WHERE ((i2.empresa_id = e.id) AND (i2.direcao = 'entrada'::text) AND (COALESCE(i2.midia_tipo, ''::text) <> 'bot'::text) AND (i2.criado_em > (now() - '7 days'::interval)) AND (i2.mensagem ~* '(n[ãa]o (fa[çc]o|fazemos|trabalho com|trabalhamos com)|mudaria tudo|isso n[ãa]o (é|e) (meu|minha)|n[ãa]o (é|e) (meu|minha) (ramo|[áa]rea)|p[áa]gina errada|servi[çc]os? errado)'::text))
+          ORDER BY i2.criado_em DESC
+         LIMIT 1) i ON (true))
+  WHERE ((e.previa_status = ANY (ARRAY['publicada'::text, 'expirada'::text])) AND (e.status !~~ 'descartado%'::text) AND (NOT e.opt_out));
 ```
 
 # FUNÇÕES
