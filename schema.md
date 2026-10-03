@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-10-02)
+# Schema — Somos Atitude (gerado em 2026-10-03)
 
 # TABELAS
 
@@ -1423,7 +1423,7 @@ UNION ALL
      JOIN empresas e ON ((e.id = fa.empresa_id)))
   WHERE ((fa.tipo = ANY (ARRAY['previa_d2'::text, 'previa_d5'::text, 'previa_d7_expira'::text])) AND ((fa.tipo <> 'previa_d2'::text) OR (NOT (EXISTS ( SELECT 1
            FROM followups_agendados f5
-          WHERE ((f5.empresa_id = fa.empresa_id) AND (f5.tipo = 'previa_d5'::text) AND (f5.executado_em IS NOT NULL)))))) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND (e.previa_status = 'publicada'::text) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
+          WHERE ((f5.empresa_id = fa.empresa_id) AND (f5.tipo = 'previa_d5'::text) AND (f5.executado_em IS NOT NULL)))))) AND (fa.executado_em IS NULL) AND (fa.cancelado_motivo IS NULL) AND fn_contato_permitido(e.*) AND COALESCE(starts_with(e.lote, 'previa_'::text), false) AND ((e.previa_status = 'publicada'::text) OR ((fa.tipo = 'previa_d7_expira'::text) AND (e.previa_status = 'expirada'::text))) AND ((fa.tipo = 'previa_d7_expira'::text) OR (e.previa_expira_em > now())) AND ((fa.tipo = 'previa_d7_expira'::text) OR (NOT (EXISTS ( SELECT 1
            FROM interacoes i
           WHERE ((i.empresa_id = e.id) AND (i.direcao = 'entrada'::text) AND (i.criado_em > COALESCE(e.previa_publicada_em, '-infinity'::timestamp with time zone)) AND (COALESCE(i.midia_tipo, ''::text) <> 'bot'::text)))))))
 UNION ALL
