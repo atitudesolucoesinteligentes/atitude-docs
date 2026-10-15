@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-10-14)
+# Schema — Somos Atitude (gerado em 2026-10-15)
 
 # TABELAS
 
@@ -1445,16 +1445,18 @@ UNION ALL
 
 ## View: vw_followups_devidos
 ```sql
- SELECT empresa_id,
-    slug,
-    tipo,
-    devido_em,
-    email_followup,
-    email_contab,
-    contexto
-   FROM vw_followups_agenda
-  WHERE ((devido_em <= now()) OR (tipo = ANY (ARRAY['conversa_parada'::text, 'pos_checkout'::text])))
-  ORDER BY devido_em;
+ SELECT a.empresa_id,
+    a.slug,
+    a.tipo,
+    a.devido_em,
+    a.email_followup,
+    a.email_contab,
+    a.contexto,
+    e.previa_expira_em
+   FROM (vw_followups_agenda a
+     LEFT JOIN empresas e ON ((e.id = a.empresa_id)))
+  WHERE ((a.devido_em <= now()) OR (a.tipo = ANY (ARRAY['conversa_parada'::text, 'pos_checkout'::text])))
+  ORDER BY a.devido_em;
 ```
 
 ## View: vw_metricas_anuncio_diaria
