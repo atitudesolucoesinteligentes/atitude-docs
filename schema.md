@@ -1,4 +1,4 @@
-# Schema — Somos Atitude (gerado em 2026-10-25)
+# Schema — Somos Atitude (gerado em 2026-10-26)
 
 # TABELAS
 
